@@ -1,0 +1,39 @@
+apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
+
+android {
+    signingConfigs {
+        config {
+            keyAlias 'keyforwm'
+            keyPassword 'Zzz111'
+            storeFile file('D:/Android/Android Studio/mykeys.jks')
+            storePassword 'Zzz111'
+        }
+    }
+    compileSdkVersion 30
+    //buildToolsVersion '30.0.0'
+    defaultConfig {
+        applicationId "ru.handy.android.wm"
+        minSdkVersion 14
+        targetSdkVersion 30
+        versionCode 26
+        versionName "2.4"
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt')
+            signingConfig signingConfigs.config
+        }
+    }
+}
+
+dependencies {
+    def billing_version = "3.0.2"
+    implementation "com.android.billingclient:billing:$billing_version"
+    implementation files('libs/jxl.jar')
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'com.google.android.material:material:1.2.1'
+    implementation 'com.google.android.gms:play-services-analytics:17.0.0'
+}

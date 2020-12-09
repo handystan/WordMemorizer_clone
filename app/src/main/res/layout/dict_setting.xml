@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_image">
+
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#00000000">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#00000000"
+            android:orientation="vertical"
+            android:paddingTop="20dp">
+
+            <TextView
+                android:id="@+id/tvDirTrans"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:background="#00000000"
+                android:text="@string/translate_direct"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginTop="5dp"
+                android:background="#00000000">
+
+                <TextView
+                    android:id="@+id/tvFirstDir"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="#00000000"
+                    android:text="@string/english" />
+
+                <ImageButton
+                    android:id="@+id/ibChangeDirTrans"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_toRightOf="@+id/tvFirstDir"
+                    android:background="#00000000"
+                    android:contentDescription="@string/change_transl_dir"
+                    android:src="@android:drawable/stat_notify_sync" />
+
+                <TextView
+                    android:id="@+id/tvSecondDir"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toRightOf="@+id/ibChangeDirTrans"
+                    android:background="#00000000"
+                    android:text="@string/russian" />
+            </RelativeLayout>
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="10dp"
+                android:background="#888888" />
+
+            <TextView
+                android:id="@+id/tvSearchRule"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:background="#00000000"
+                android:text="@string/show_words"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <RadioGroup
+                android:id="@+id/rgSearchRule"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:background="#00000000">
+
+                <RadioButton
+                    android:id="@+id/rbSearchRule1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#00000000"
+                    android:text="@string/by_start_letters" />
+
+                <RadioButton
+                    android:id="@+id/rbSearchRule2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#00000000"
+                    android:text="@string/by_any_letters" />
+            </RadioGroup>
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="10dp"
+                android:background="#888888" />
+
+            <CheckBox
+                android:id="@+id/cbShowHistory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:background="#00000000"
+                android:text="@string/show_history" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

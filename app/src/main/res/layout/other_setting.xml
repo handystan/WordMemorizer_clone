@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_image"
+    android:orientation="vertical"
+    android:paddingTop="20dp">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#00000000"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingTop="5dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#00000000"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvBGColor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:background="#00000000"
+                android:text="@string/change_background"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <TableLayout
+                android:id="@+id/tlBGColor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#00000000">
+
+                <TableRow android:background="#00000000">
+
+                    <LinearLayout
+                        android:layout_margin="7dp"
+                        android:layout_weight="1"
+                        android:background="#999999">
+
+                        <Button
+                            android:id="@+id/bBGColor1"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_margin="3dp"
+                            android:background="@color/colorPrimary1" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_margin="7dp"
+                        android:layout_weight="1"
+                        android:background="#999999">
+
+                        <Button
+                            android:id="@+id/bBGColor2"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_margin="3dp"
+                            android:background="@color/colorPrimary2" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_margin="7dp"
+                        android:layout_weight="1"
+                        android:background="#999999">
+
+                        <Button
+                            android:id="@+id/bBGColor3"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_margin="3dp"
+                            android:background="@color/colorPrimary3" />
+                    </LinearLayout>
+                </TableRow>
+
+                <TableRow android:background="#00000000">
+
+                    <LinearLayout
+                        android:layout_margin="7dp"
+                        android:layout_weight="1"
+                        android:background="#999999">
+
+                        <Button
+                            android:id="@+id/bBGColor4"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_margin="3dp"
+                            android:background="@color/colorPrimary4" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_margin="7dp"
+                        android:layout_weight="1"
+                        android:background="#999999">
+
+                        <Button
+                            android:id="@+id/bBGColor5"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_margin="3dp"
+                            android:background="@color/colorPrimary5" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_margin="7dp"
+                        android:layout_weight="1"
+                        android:background="#999999">
+
+                        <Button
+                            android:id="@+id/bBGColor6"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_margin="3dp"
+                            android:background="@color/colorPrimary6" />
+                    </LinearLayout>
+                </TableRow>
+
+                <TableRow android:background="#00000000">
+
+                    <LinearLayout
+                        android:layout_margin="7dp"
+                        android:layout_weight="1"
+                        android:background="#999999">
+
+                        <Button
+                            android:id="@+id/bBGColor7"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_margin="3dp"
+                            android:background="@color/colorPrimary7" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_margin="7dp"
+                        android:layout_weight="1"
+                        android:background="#999999">
+
+                        <Button
+                            android:id="@+id/bBGColor8"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_margin="3dp"
+                            android:background="@color/colorPrimary8" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_margin="7dp"
+                        android:layout_weight="1"
+                        android:background="#999999">
+
+                        <Button
+                            android:id="@+id/bBGColor9"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_margin="3dp"
+                            android:background="@color/colorPrimary9" />
+                    </LinearLayout>
+                </TableRow>
+
+                <TableRow android:background="#00000000">
+
+                    <LinearLayout
+                        android:layout_margin="7dp"
+                        android:layout_weight="1"
+                        android:background="#999999">
+
+                        <Button
+                            android:id="@+id/bBGColor10"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_margin="3dp"
+                            android:background="@color/colorPrimary10" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_margin="7dp"
+                        android:layout_weight="1"
+                        android:background="#999999">
+
+                        <Button
+                            android:id="@+id/bBGColor11"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_margin="3dp"
+                            android:background="@color/colorPrimary11" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_margin="7dp"
+                        android:layout_weight="1"
+                        android:background="#999999">
+
+                        <Button
+                            android:id="@+id/bBGColor12"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_margin="3dp"
+                            android:background="@color/colorPrimary12" />
+                    </LinearLayout>
+                </TableRow>
+
+                <TableRow android:background="#00000000">
+
+                    <LinearLayout
+                        android:layout_margin="7dp"
+                        android:layout_weight="1"
+                        android:background="#999999">
+
+                        <Button
+                            android:id="@+id/bBGColor13"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_margin="3dp"
+                            android:background="@color/colorPrimary13" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_margin="7dp"
+                        android:layout_weight="1"
+                        android:background="#999999">
+
+                        <Button
+                            android:id="@+id/bBGColor14"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_margin="3dp"
+                            android:background="@color/colorPrimary14" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_margin="7dp"
+                        android:layout_weight="1"
+                        android:background="#999999">
+
+                        <Button
+                            android:id="@+id/bBGColor15"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_margin="3dp"
+                            android:background="@color/colorPrimary15" />
+                    </LinearLayout>
+                </TableRow>
+            </TableLayout>
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginTop="10dp"
+                android:background="#888888" />
+
+            <TextView
+                android:id="@+id/tvUSOrUK"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#00000000"
+                android:text="@string/read_words"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <RadioGroup
+                android:id="@+id/rgUSOrUK"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#00000000">
+
+                <RadioButton
+                    android:id="@+id/rbUS"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#00000000"
+                    android:text="@string/us" />
+
+                <RadioButton
+                    android:id="@+id/rbUK"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#00000000"
+                    android:text="@string/uk" />
+            </RadioGroup>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

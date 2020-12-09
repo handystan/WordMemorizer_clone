@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <group android:id="@+id/group_addrec">
+        <item
+            android:id="@+id/iaddrec"
+            android:icon="@drawable/ic_menu_add"
+            android:orderInCategory="1"
+            android:title="@string/add_record"
+            app:showAsAction="ifRoom" />
+    </group>
+
+    <group android:id="@+id/group_dictionary">
+        <item
+            android:id="@+id/idictionary"
+            android:icon="@drawable/ic_menu_search"
+            android:orderInCategory="2"
+            android:title="@string/dictionary"
+            app:showAsAction="ifRoom" />
+    </group>
+
+    <group android:id="@+id/group_statistics">
+        <item
+            android:id="@+id/statistics"
+            android:icon="@drawable/statistics"
+            android:orderInCategory="3"
+            android:title="@string/statistics"
+            app:showAsAction="always" />
+    </group>
+
+    <group android:id="@+id/group_action_settings">
+        <item
+            android:id="@+id/action_settings"
+            android:icon="@drawable/ic_menu_preferences"
+            android:orderInCategory="4"
+            android:title="@string/action_settings"
+            app:showAsAction="ifRoom" />
+    </group>
+
+    <group android:id="@+id/group_resetStat">
+        <item
+            android:id="@+id/resetStat"
+            android:icon="@drawable/ic_menu_delete"
+            android:orderInCategory="5"
+            android:title="@string/reset_statistics"
+            app:showAsAction="ifRoom" />
+    </group>
+
+    <group android:id="@+id/group_ihelp">
+        <item
+            android:id="@+id/ihelp"
+            android:icon="@drawable/ic_menu_help"
+            android:orderInCategory="6"
+            android:title="@string/help"
+            app:showAsAction="never" />
+    </group>
+
+    <group android:id="@+id/group_idata">
+        <item
+            android:id="@+id/idata"
+            android:icon="@drawable/ic_menu_upload"
+            android:orderInCategory="7"
+            android:title="@string/data"
+            app:showAsAction="never" />
+    </group>
+
+    <group android:id="@+id/group_clear_hist">
+        <item
+            android:id="@+id/clear_history"
+            android:icon="@drawable/ic_menu_delete"
+            android:orderInCategory="8"
+            android:title="@string/clear_history"
+            app:showAsAction="never" />
+    </group>
+
+
+    <group android:id="@+id/group_donate">
+        <item
+            android:id="@+id/donate"
+            android:icon="@drawable/ic_coins_l"
+            android:orderInCategory="9"
+            android:title="@string/title_thanks"
+            app:showAsAction="never" />
+    </group>
+
+    <group android:id="@+id/group_about">
+        <item
+            android:id="@+id/about"
+            android:icon="@drawable/ic_menu_info_details"
+            android:orderInCategory="10"
+            android:title="@string/about"
+            app:showAsAction="never" />
+    </group>
+
+    <group android:id="@+id/group_exit">
+        <item
+            android:id="@+id/exit"
+            android:icon="@drawable/ic_menu_close_clear_cancel"
+            android:orderInCategory="11"
+            android:title="@string/exit"
+            app:showAsAction="never" />
+    </group>
+
+</menu>

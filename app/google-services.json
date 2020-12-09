@@ -1,0 +1,38 @@
+{
+  "project_info": {
+    "project_number": "394240320850",
+    "project_id": "firebase-wordmemorizer"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:394240320850:android:ba2c5ce7ef81dd09",
+        "android_client_info": {
+          "package_name": "ru.handy.android.wm"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0Z00qjMwGlHQ2smPzScFJIUVx4_NJmbM"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 2,
+          "analytics_property": {
+            "tracking_id": "UA-83704598-1"
+          }
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

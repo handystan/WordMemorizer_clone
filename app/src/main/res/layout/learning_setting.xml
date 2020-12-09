@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_image">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#00000000">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#00000000"
+            android:orientation="vertical"
+            android:paddingTop="20dp">
+
+            <TextView
+                android:id="@+id/tvLearningType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:background="#00000000"
+                android:text="@string/learning_type"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <RadioGroup
+                android:id="@+id/rgLearningType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:background="#00000000">
+
+                <RadioButton
+                    android:id="@+id/rbChoiceLearning"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#00000000"
+                    android:text="@string/choice_learning" />
+
+                <RadioButton
+                    android:id="@+id/rbWritingLearning"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#00000000"
+                    android:text="@string/write_learning" />
+
+                <RadioButton
+                    android:id="@+id/rbComplexLearning"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#00000000"
+                    android:text="@string/complex_learning" />
+            </RadioGroup>
+
+            <LinearLayout
+                android:id="@+id/llRepeatsAmount"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#00000000"
+                android:orientation="vertical">
+
+                <View
+                    android:layout_width="fill_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginTop="10dp"
+                    android:background="#888888" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:background="#00000000">
+
+                    <Spinner
+                        android:id="@+id/sRepeatsAmount"
+                        android:layout_width="50dp"
+                        android:layout_height="30dp"
+                        android:background="#00000000"
+                        android:spinnerMode="dropdown" />
+
+                    <TextView
+                        android:id="@+id/tvRepeatsAmount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_toRightOf="@+id/sRepeatsAmount"
+                        android:background="#00000000"
+                        android:text="@string/repeats_amount" />
+
+                </RelativeLayout>
+            </LinearLayout>
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="10dp"
+                android:background="#888888" />
+
+            <CheckBox
+                android:id="@+id/cbSpeak"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:background="#00000000"
+                android:text="@string/speak_eng_word" />
+
+            <LinearLayout
+                android:id="@+id/llEngOrRus"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#00000000"
+                android:orientation="vertical">
+
+                <View
+                    android:layout_width="fill_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginTop="10dp"
+                    android:background="#888888" />
+
+                <TextView
+                    android:id="@+id/tvEngOrRus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:background="#00000000"
+                    android:text="@string/learning_words"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                <RadioGroup
+                    android:id="@+id/rgEngOrRus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:background="#00000000">
+
+                    <RadioButton
+                        android:id="@+id/rbEng"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="#00000000"
+                        android:text="@string/englishs" />
+
+                    <RadioButton
+                        android:id="@+id/rbRus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="#00000000"
+                        android:text="@string/russians" />
+                </RadioGroup>
+            </LinearLayout>
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="10dp"
+                android:background="#888888" />
+
+            <CheckBox
+                android:id="@+id/cbShowTranscr"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:background="#00000000"
+                android:text="@string/show_transcr" />
+
+            <LinearLayout
+                android:id="@+id/llAmountWords"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#00000000"
+                android:orientation="vertical">
+
+                <View
+                    android:layout_width="fill_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginTop="10dp"
+                    android:background="#888888" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:background="#00000000">
+
+                    <Spinner
+                        android:id="@+id/sAmountWords"
+                        android:layout_width="50dp"
+                        android:layout_height="30dp"
+                        android:background="#00000000"
+                        android:spinnerMode="dropdown" />
+
+                    <TextView
+                        android:id="@+id/tvAmountWords"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_toRightOf="@+id/sAmountWords"
+                        android:background="#00000000"
+                        android:text="@string/amount_words" />
+
+                </RelativeLayout>
+            </LinearLayout>
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="10dp"
+                android:background="#888888" />
+
+            <CheckBox
+                android:id="@+id/cbShowDontKnow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:background="#00000000"
+                android:text="@string/show_dont_know" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

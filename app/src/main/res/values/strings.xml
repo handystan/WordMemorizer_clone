@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bright_blue">#9999CCFF</color>
+
+    <string name="app_name">Word Memorizer</string>
+    <string name="word_memorizer">Запоминалка слов</string>
+    <string name="action_settings">Настройки</string>
+    <string name="search">ПОИСК</string>
+    <string name="show_record">показать</string>
+    <string name="edit_record">редактировать</string>
+    <string name="add_record">добавить</string>
+    <string name="delete_record">удалить</string>
+    <string name="categories">Категории</string>
+    <string name="english_word">английское слово</string>
+    <string name="transcription">транскрипция</string>
+    <string name="translate">русский перевод</string>
+    <string name="save">сохранить</string>
+    <string name="dictionary">Словарь</string>
+    <string name="data">Данные</string>
+    <string name="learning">обучение</string>
+    <string name="location">Путь</string>
+    <string name="cant_read_folder">нельзя открыть директорию!</string>
+    <string name="nnew">Новый</string>
+    <string name="select">Выбрать</string>
+    <string name="file_name">Имя файла:</string>
+    <string name="cancel">Отмена</string>
+    <string name="create">Сохранить</string>
+    <string name="no_data">Нет данных</string>
+    <string name="help">Помощь</string>
+    <string name="upload_file">Загрузка данных из файла</string>
+    <string name="download_file">Выгрузка данных в файл</string>
+    <string name="path_file">Путь к файлу</string>
+    <string name="file">файл</string>
+    <string name="delete_data">удалить существующие данные</string>
+    <string name="semicolon_row">- разделитель для столбцов</string>
+    <string name="semicolon">;</string>
+    <string name="upload_data">загрузить данные</string>
+    <string name="download_data">выгрузить данные</string>
+    <string name="amount_load_rows">Количество загруженных из файла строк</string>
+    <string name="not_load_rows">Не загрузились строки № </string>
+    <string name="must_be_utf8">Для правильного отображения символов у текстового файла кодировка должна UTF-8.</string>
+    <string name="template_in_help">Описание шаблона текстового файла см. в справке.</string>
+    <string name="file_not_fit_template">Файл не соответствует шаблону.</string>
+    <string name="spinner_xls">файл-excel 2003 (xls)</string>
+    <string name="spinner_txt">текстовый файл</string>
+    <string name="spinner_title">текстовый файл</string>
+    <string name="choose_file">Нужно выбрать файл.</string>
+    <string name="file_dialog">Выбор файла</string>
+    <string name="view">просмотр</string>
+    <string name="edit">редактирование</string>
+    <string name="word_is_deleted">слово удалено</string>
+    <string name="word_is_changed">слово изменено</string>
+    <string name="word_is_added">слово добавлено</string>
+    <string name="empty_delimiter">Поле с разделителем должно быть заполнено.</string>
+    <string name="amount_save_rows">Количество сохраненных в файле строк</string>
+    <string name="failed_download">Данные не выгружены в файл</string>
+    <string name="android_version_rescription">Текущая версия Android не позволяет сохранить файл на внешнюю SD Card (sdcard1). Файл нужно сохранить на внутренней памяти телефона (sdcard0).</string>
+    <string name="no_data_for_download">Нет данных для выгрузки в файл</string>
+    <string name="should_be_xls">Экселевский файл должен быть с раширением \'xls\'</string>
+    <string name="shouldnt_be_xls">Текстовый файл не должен быть с раширением \'xls\'</string>
+    <string name="choose_category">Выбрать категорию</string>
+    <string name="category">категория:</string>
+    <string name="ofWords">Слов</string>
+    <string name="right">Верно</string>
+    <string name="wrong">Не верно</string>
+    <string name="ok">OK</string>
+    <string name="english">Aнглийский</string>
+    <string name="russian">Русский</string>
+    <string name="translate_direct">Направление перевода:</string>
+    <string name="change_transl_dir">Сменить направление перевода</string>
+    <string name="show_words">Показывать слова:</string>
+    <string name="by_start_letters">по начальным буквам</string>
+    <string name="by_any_letters">по буквам в любой части слова</string>
+    <string name="learning_words">Какие слова учить:</string>
+    <string name="englishs">Aнглийские</string>
+    <string name="russians">Русские</string>
+    <string name="show_transcr">Показывать транскрипцию</string>
+    <string name="show_dont_know">Показывать кнопку \'Не знаю\'</string>
+    <string name="speak_eng_word">Автоматически озвучивать англ. слово</string>
+    <string name="clear_history">Очистить историю</string>
+    <string name="about">О программе</string>
+    <string name="exit">Выход</string>
+    <string name="show_history">показывать последние просмотренные слова, когда строка поиска пустая</string>
+    <string name="no_last_query">Нет последних запросов</string>
+    <string name="last_query">Последние запросы</string>
+    <string name="no_category">Нужно выбрать категорию</string>
+    <string name="no_wrong_words">Нет неправильно отгаданных слов!</string>
+    <string name="wrong_words">Не отгаданные слова</string>
+    <string name="word_list_category">Слова категории</string>
+    <string name="berries">ягоды</string>
+    <string name="amount_words">Количество слов для выбора</string>
+    <string name="thank_you">Спасибо за вашу поддержку!</string>
+    <string name="title_thanks">Благодарность</string>
+    <string name="rub">руб</string>
+    <string name="text_for_donate">Если вам понравилось приложение, вы можете поддержать разработчика небольшим взносом:</string>
+    <string name="donate">Поддержать</string>
+    <string name="evaluate">Оценить</string>
+    <string name="text_for_evaluate1">и (или) оценить приложение в Google Play:</string>
+    <string name="text_for_evaluate2">Оцените, пожалуйста, приложение в Google Play:</string>
+    <string name="donate_developer">Поддержите разработчика!</string>
+    <string name="attention">Внимание</string>
+    <string name="rationale_for_read">Для чтения из файла необходимо разрешение</string>
+    <string name="rationale_for_write">Для записи в файл необходимо разрешение</string>
+    <string name="rationale_for_file_system">Для работы с файловой системой необходимо разрешение</string>
+    <string name="unabled_permissions">Для выполнения операции не установлены разрешения</string>
+    <string name="other">прочее</string>
+    <string name="change_background">Поменять фон</string>
+    <string name="buy_paid_features">Купить платные функции?</string>
+    <string name="buying_is_allowed">Приобретение платного контента позволяет:</string>
+    <string name="see_statistics">- посмотреть статистику и запускать уроки со словами с ранее сделанными ошибками;</string>
+    <string name="unlimited_downloads">- загружать неограниченное количество слов из файлов;</string>
+    <string name="change_background2">- изменять цвет фона приложения;</string>
+    <string name="other_learning_type">- использовать другие способы обучения: написание слов и комплексное обучение;</string>
+    <string name="change_language">- менять направление обучения с английкого на русский;</string>
+    <string name="change_amount_words">- изменять количество слов для выбора при отгадывании слов.</string>
+    <string name="pay_information">По умолчанию из файла можно загрузить не более 10 слов. Для безлимитной загрузки слов нужно внести небольшую плату.</string>
+    <string name="pay">Оплатить</string>
+    <string name="right_answers">"Верные ответы: "</string>
+    <string name="wrong_answers">"Неверные ответы: "</string>
+    <string name="no_wrong_answers">Нет неверных ответов ни в одной категории</string>
+    <string name="learning_with_mistakes">Обучение только по словам с ошибками</string>
+    <string name="learning_with_all">Обучение со всеми словами</string>
+    <string name="statistics">Статистика</string>
+    <string name="reset_statistics">Сбросить статистику</string>
+    <string name="you_want_reset_stat">Сбросить статистику?</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="learning_type">Тип обучения:</string>
+    <string name="choice_learning">Выбор верного варианта</string>
+    <string name="write_learning">Написание слова</string>
+    <string name="complex_learning">"Комплексное обучение "</string>
+    <string name="complex_description">(по каждому слову последоват-но: выбор варианта из рус. перевода, выбор варианта из англ. перевода, написание англ. перевода)</string>
+    <string name="repeats_amount">Количество повторений последоват-тей в комплексном обучении</string>
+    <string name="inter_translate">Введите перевод слова</string>
+    <string name="dont_know">Не знаю</string>
+    <string name="hint_dont_know">Через статистику можно запускать уроки только с неотгаданными словами</string>
+    <string name="already_know">Уже знаю</string>
+    <string name="hint_know">Если слово известно, можно не проходить все стадии комплексного обучения</string>
+    <string name="further">Далее</string>
+    <string name="check">Проверить</string>
+    <string name="wrong_right_answer">Неправильно, верный ответ</string>
+    <string name="need_category">Нужно выбрать хотя бы одну категорию</string>
+    <string name="accessibility_overflow">Фон кнопки overflow и  других кнопок в тулбаре</string>
+    <string name="add_new_word">Добавление нового слова</string>
+    <string name="read_words">Какую озвучку слов применять:</string>
+    <string name="us">Американский английский</string>
+    <string name="uk">Британский аглийский</string>
+    <string name="buy">Купить</string>
+    <string name="try_30day_free">Попробовать 30 дней бесплатно</string>
+    <string name="aready_purchased">Товар уже приобретен. Повторная покупка не возможна</string>
+    <string name="pay_service_disconnected">Нет связи с сервисом покупки</string>
+    <string name="purchase_error">Ошибка покупки товара</string>
+    <string name="helpForLearning">
+<![CDATA[
+<p><b><big>WordMemorizer</big></b> - программа-помощник в запоминании английских слов.
+<p></p>Для начала обучения нужно выбрать <a href=\'#\'>категорию(и)</a>&nbsp;слов,
+чтобы появились слова данной <a href=\'#\'>категории(й)</a>.
+<br>Есть 3 варианта обучения:
+<br>&nbsp;&nbsp;&nbsp;- отгадать верный перевод из предложенных вариантов или
+<br>&nbsp;&nbsp;&nbsp;- написать (продиктовать) перевод или
+<br>&nbsp;&nbsp;&nbsp;- комплексный вариант: по каждому слову сначала предлагается выбор варианта из рус. перевода, потом выбор варианта из англ. перевода и наконец написание англ. перевода.
+<p></p>В настройках к обучению можно:
+<br>&nbsp;&nbsp;&nbsp;- настроить отгадывание как английских, так и русских слов;
+<br>&nbsp;&nbsp;&nbsp;- отображать, либо скрывать транскрипцию;
+<br>&nbsp;&nbsp;&nbsp;- включить автоматическую озвучку английского слова после каждого отгадывания;
+<br>&nbsp;&nbsp;&nbsp;- изменять количество вариантов ответов при отгадывании слов;
+<br>&nbsp;&nbsp;&nbsp;- изменять цвет фона;
+<br>&nbsp;&nbsp;&nbsp;- выбирать произношение английского слова (американское или британское).
+<p></p>Нажатием кнопки слева можно посмотреть все слова выбранной <a href=\'#\'>категории(й)</a>&nbsp;
+(слово по английски, его транскрипция и русский перевод): можно прослушать произношение английского слова, добавить, удалить или отредактировать слово.
+<br>Также нажатием нижней строки можно посмотреть все слова, в которых допускались ошибки.
+<p><b><a href=\'#\'>Статистика</a></b>
+<br>Позволяет посмотреть количество правильных и не правильных ответов по каждой <a href=\'#\'>категории(й)</a>.
+<p><b><a href=\'#\'>Словарь</a></b>
+<br>Словарь, который позволяет быстро найти нужное слово, посмотреть его перевод и транскрипцию.
+<p><b><a href=\'#\'>Данные</a></b>
+<br>В этом разделе можно загружать и выгружать слова в словарь.
+    ]]>
+    </string>
+    <string name="helpForStat">
+<![CDATA[
+<p></p><b>Статистика</b>
+<br>Позволяет посмотреть количество и долю правильных и не правильных ответов в целом и в разрезе каждой <a href=\'#\'>категории(й)</a>.
+<p></p>Здесь можно выбрать интересующую <a href=\'#\'>категорию(и)</a>&nbsp; и запустить урок со словами с ошибками или всеми словами выбранных категорий.
+<p><b><a href=\'#\'>На главную</a></b><p>
+    ]]>
+    </string>
+    <string name="helpForDict">
+<![CDATA[
+<p><b>Словарь</b>
+<br>В словаре можно найти английское или русское слово (в зависимости от выбранных настроек).
+<p>В настройках также можно выбрать одно из правил поиска слов в словаре:
+<br>&nbsp;&nbsp;- по начальным буквам слова;
+<br>&nbsp;&nbsp;- в любой части слова.
+<p></p>Словарь позволяет (с помощью контекстного меню) редактировать, добавлять
+и удалять слова, их перевод, транскрипцию и <a href=\'#\'>категорию(и)</a>.
+<br>Допустимо в одно слово вписывать несколько категорий через запятую.
+<p>В настройках словаря можно выбрать опцию, по которой в случае пустой строки 
+поиска отображаются все последние слова, которые были просмотрены.
+<br>По умолчанию при пустой строке поиска отображаются все слова из словаря.
+<p><b><a href=\'#\'>На главную</a></b><p>
+    ]]>
+    </string>
+    <string name="helpForData">
+<![CDATA[
+<p><b>Данные</b>
+<br>Данный раздел позволяет загружать словарь из Excel-файла (расширение xls) или текстового файла определенного формата:
+<br>&nbsp;&nbsp;- 1 столбец: английское слово
+<br>&nbsp;&nbsp;- 2 столбец: транскрипция
+<br>&nbsp;&nbsp;- 3 столбец: русский перевод
+<br>&nbsp;&nbsp;- 4 столбец: категория.
+<br>Для текстового формата разделитель слов по умолчанию - \";\". Текстовые файлы нужно загружать с кодировкой UTF-8.
+<p>По умолчанию из файла можно загрузить не более 10 слов. Для безлимитной загрузки слов нужно внести небольшую плату.
+<p>Также он позволяет выгружать словарь в Excel-файл или текстовый файл такого же формата.
+<p><b>Совет:</b> для правильного отображения транскрипции лучше пользоваться
+выгрузкой/загрузкой в Excel-файл.
+<p><b><a href=\'#\'>На главную</a></b><p>
+    ]]>
+    </string>
+    <string name="helpCategory">
+<![CDATA[
+<p><b>Что такое Категория?</b>
+<br>Это некий признак, объединяющий определенное количество слов. 
+<br>С его помощью в Запоминалке можно учить не все слова,
+а слова только определенных категорий.
+<br>Название категории может нести смысловую нагрузку (например, "еда", "отдых"),
+а может и не нести и просто служить неким маркером определенных слов, которые вы хотите выучить.
+<p><b><a href=\'#\'>На главную</a></b><p>
+    ]]>
+    </string>
+    <string name="about_desc">
+<![CDATA[
+<p><big><b>WordMemorizer</b></big>
+<br>Версия 2.4 для Google Android 4.0 и выше.
+<p><b>Производитель</b>
+<br>Handy Systems
+<p><b>e-mail</b>
+<br>handy@list.ru
+    ]]>
+    </string>
+</resources>

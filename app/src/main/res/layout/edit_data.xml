@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_image"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/llKeyboardVeiew"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:background="#00000000">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#00000000"
+                android:orientation="vertical"
+                android:padding="5dp">
+
+                <LinearLayout
+                    android:id="@+id/llPayInformation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#00000000"
+                    android:orientation="vertical"
+                    android:padding="5dp">
+
+                    <TextView
+                        android:id="@+id/tvPayInformation"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="#00000000"
+                        android:gravity="center"
+                        android:text="@string/pay_information"
+                        android:textColor="@android:color/black" />
+
+                    <Button
+                        android:id="@+id/bPay"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bord_action_button"
+                        android:text="@string/pay" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:background="#555555"
+                    android:measureWithLargestChild="false"
+                    android:padding="1dp">
+
+                    <RelativeLayout
+                        android:id="@+id/rlUpload"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="5dp"
+                        android:theme="@style/AppThemeBase1">
+
+                        <TextView
+                            android:id="@+id/tvUpload"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentTop="true"
+                            android:layout_centerHorizontal="true"
+                            android:background="#00000000"
+                            android:text="@string/upload_file"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:textColor="@android:color/black" />
+
+                        <EditText
+                            android:id="@+id/etFileUpload"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
+                            android:layout_below="@+id/tvUpload"
+                            android:layout_toLeftOf="@+id/bDialogUpload"
+                            android:ems="10"
+                            android:enabled="false"
+                            android:hint="@string/path_file"
+                            android:textSize="13sp" />
+
+                        <Button
+                            android:id="@+id/bDialogUpload"
+                            style="?android:attr/buttonStyleSmall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentRight="true"
+                            android:layout_alignTop="@+id/etFileUpload"
+                            android:background="@drawable/bord_action_button"
+                            android:minHeight="30dp"
+                            android:text="@string/file" />
+
+                        <CheckBox
+                            android:id="@+id/cbDelete"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
+                            android:layout_below="@+id/etFileUpload"
+                            android:background="#00000000"
+                            android:checked="true"
+                            android:text="@string/delete_data"
+                            android:textSize="13sp" />
+
+                        <Button
+                            android:id="@+id/bUpload"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/cbDelete"
+                            android:layout_centerHorizontal="true"
+                            android:background="@drawable/bord_action_button"
+                            android:paddingLeft="5dp"
+                            android:paddingRight="5dp"
+                            android:text="@string/upload_data" />
+                    </RelativeLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:background="#555555"
+                    android:padding="1dp">
+
+                    <RelativeLayout
+                        android:id="@+id/rlDownload"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="5dp"
+                        android:theme="@style/AppThemeBase1">
+
+                        <TextView
+                            android:id="@+id/tvDownload"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentTop="true"
+                            android:layout_centerHorizontal="true"
+                            android:background="#00000000"
+                            android:text="@string/download_file"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:textColor="@android:color/black" />
+
+                        <Spinner
+                            android:id="@+id/sFileType"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
+                            android:layout_below="@+id/tvDownload"
+                            android:background="#00000000" />
+
+                        <EditText
+                            android:id="@+id/etFileDownload"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
+                            android:layout_below="@+id/sFileType"
+                            android:layout_toLeftOf="@+id/bDialogDownload"
+                            android:ems="10"
+                            android:enabled="false"
+                            android:hint="@string/path_file"
+                            android:textSize="13sp" />
+
+                        <Button
+                            android:id="@+id/bDialogDownload"
+                            style="?android:attr/buttonStyleSmall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentRight="true"
+                            android:layout_alignTop="@+id/etFileDownload"
+                            android:background="@drawable/bord_action_button"
+                            android:minHeight="30dp"
+                            android:text="@string/file" />
+
+                        <EditText
+                            android:id="@+id/etSemicolon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
+                            android:layout_below="@+id/etFileDownload"
+                            android:width="35dp"
+                            android:ems="10"
+                            android:maxLength="1"
+                            android:text="@string/semicolon"
+                            android:visibility="invisible" />
+
+                        <TextView
+                            android:id="@+id/tvSemicolon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignBottom="@+id/etSemicolon"
+                            android:layout_toRightOf="@+id/etSemicolon"
+                            android:text="@string/semicolon_row"
+                            android:visibility="invisible" />
+
+                        <Button
+                            android:id="@+id/bDownload"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/etSemicolon"
+                            android:layout_centerHorizontal="true"
+                            android:background="@drawable/bord_action_button"
+                            android:paddingLeft="5dp"
+                            android:paddingRight="5dp"
+                            android:text="@string/download_data" />
+                    </RelativeLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+
+        <LinearLayout
+            android:id="@+id/llKeyboardVeiew"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true">
+
+            <android.inputmethodservice.KeyboardView
+                android:id="@+id/specKeyboardView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:visibility="gone" />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

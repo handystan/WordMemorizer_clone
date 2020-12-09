@@ -1,0 +1,214 @@
+<resources>
+
+    <!--Эта тема нужна, чтобы по дескрипшну достатать кнопку overflow и сделать светлый цвет-->
+    <style name="Widget.ActionButton.Light.Overflow" parent="@android:style/Widget.Holo.Light.ActionButton.Overflow">
+        <item name="android:src">@drawable/ic_menu_overflow_light</item>
+        <item name="android:contentDescription">@string/accessibility_overflow</item>
+    </style>
+
+    <!--Эта тема нужна, чтобы по дескрипшну достатать кнопку overflow и сделать темный цвет -->
+    <style name="Widget.ActionButton.Overflow" parent="@android:style/Widget.Holo.ActionButton.Overflow">
+        <item name="android:src">@drawable/ic_menu_overflow_dark</item>
+        <item name="android:contentDescription">@string/accessibility_overflow</item>
+    </style>
+
+    <style name="AppThemeBase1" parent="Theme.AppCompat.Light">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/colorPrimary1</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark1</item>
+        <item name="colorAccent">@color/colorAccent1</item>
+        <item name="android:background">@color/colorPrimary1</item>
+        <item name="actionOverflowButtonStyle">@style/Widget.ActionButton.Light.Overflow</item>
+    </style>
+    <style name="AppThemeBase1.AppThemeAnim1"><!--Это нужно, чтобы в настройках моментально менять цвет-->
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+    </style>
+
+    <style name="AppThemeBase2" parent="Theme.AppCompat.Light">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/colorPrimary2</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark2</item>
+        <item name="colorAccent">@color/colorAccent2</item>
+        <item name="android:background">@color/colorPrimary2</item>
+        <item name="actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
+    </style>
+    <style name="AppThemeBase2.AppThemeAnim2"><!--Это нужно, чтобы в настройках моментально менять цвет-->
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+    </style>
+
+    <style name="AppThemeBase3" parent="Theme.AppCompat.Light">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/colorPrimary3</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark3</item>
+        <item name="colorAccent">@color/colorAccent3</item>
+        <item name="android:background">@color/colorPrimary3</item>
+        <item name="actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
+    </style>
+    <style name="AppThemeBase3.AppThemeAnim3"><!--Это нужно, чтобы в настройках моментально менять цвет-->
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+    </style>
+
+    <style name="AppThemeBase4" parent="Theme.AppCompat.Light">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/colorPrimary4</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark4</item>
+        <item name="colorAccent">@color/colorAccent4</item>
+        <item name="android:background">@color/colorPrimary4</item>
+        <item name="actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
+    </style>
+    <style name="AppThemeBase4.AppThemeAnim4"><!--Это нужно, чтобы в настройках моментально менять цвет-->
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+    </style>
+
+    <style name="AppThemeBase5" parent="Theme.AppCompat.Light">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/colorPrimary5</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark5</item>
+        <item name="colorAccent">@color/colorAccent5</item>
+        <item name="android:background">@color/colorPrimary5</item>
+        <item name="actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
+    </style>
+    <style name="AppThemeBase5.AppThemeAnim5"><!--Это нужно, чтобы в настройках моментально менять цвет-->
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+    </style>
+
+    <style name="AppThemeBase6" parent="Theme.AppCompat.Light">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/colorPrimary6</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark6</item>
+        <item name="colorAccent">@color/colorAccent6</item>
+        <item name="android:background">@color/colorPrimary6</item>
+        <item name="actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
+    </style>
+    <style name="AppThemeBase6.AppThemeAnim6"><!--Это нужно, чтобы в настройках моментально менять цвет-->
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+    </style>
+
+    <style name="AppThemeBase7" parent="Theme.AppCompat.Light">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/colorPrimary7</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark7</item>
+        <item name="colorAccent">@color/colorAccent7</item>
+        <item name="android:background">@color/colorPrimary7</item>
+        <item name="actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
+    </style>
+    <style name="AppThemeBase7.AppThemeAnim7"><!--Это нужно, чтобы в настройках моментально менять цвет-->
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+    </style>
+
+    <style name="AppThemeBase8" parent="Theme.AppCompat.Light">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/colorPrimary8</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark8</item>
+        <item name="colorAccent">@color/colorAccent8</item>
+        <item name="android:background">@color/colorPrimary8</item>
+        <item name="actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
+    </style>
+    <style name="AppThemeBase8.AppThemeAnim8"><!--Это нужно, чтобы в настройках моментально менять цвет-->
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+    </style>
+
+    <style name="AppThemeBase9" parent="Theme.AppCompat.Light">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/colorPrimary9</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark9</item>
+        <item name="colorAccent">@color/colorAccent9</item>
+        <item name="android:background">@color/colorPrimary9</item>
+        <item name="actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
+    </style>
+    <style name="AppThemeBase9.AppThemeAnim9"><!--Это нужно, чтобы в настройках моментально менять цвет-->
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+    </style>
+
+    <style name="AppThemeBase10" parent="Theme.AppCompat.Light">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/colorPrimary10</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark10</item>
+        <item name="colorAccent">@color/colorAccent10</item>
+        <item name="android:background">@color/colorPrimary10</item>
+        <item name="actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
+    </style>
+    <style name="AppThemeBase10.AppThemeAnim10"><!--Это нужно, чтобы в настройках моментально менять цвет-->
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+    </style>
+
+    <style name="AppThemeBase11" parent="Theme.AppCompat.Light">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/colorPrimary11</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark11</item>
+        <item name="colorAccent">@color/colorAccent11</item>
+        <item name="android:background">@color/colorPrimary11</item>
+        <item name="actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
+    </style>
+    <style name="AppThemeBase11.AppThemeAnim11"><!--Это нужно, чтобы в настройках моментально менять цвет-->
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+    </style>
+
+    <style name="AppThemeBase12" parent="Theme.AppCompat.Light">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/colorPrimary12</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark12</item>
+        <item name="colorAccent">@color/colorAccent12</item>
+        <item name="android:background">@color/colorPrimary12</item>
+        <item name="actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
+    </style>
+    <style name="AppThemeBase12.AppThemeAnim12"><!--Это нужно, чтобы в настройках моментально менять цвет-->
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+    </style>
+
+    <style name="AppThemeBase13" parent="Theme.AppCompat.Light">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/colorPrimary10</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark13</item>
+        <item name="colorAccent">@color/colorAccent13</item>
+        <item name="android:background">@color/colorPrimary13</item>
+        <item name="actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
+    </style>
+    <style name="AppThemeBase13.AppThemeAnim13"><!--Это нужно, чтобы в настройках моментально менять цвет-->
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+    </style>
+
+    <style name="AppThemeBase14" parent="Theme.AppCompat.Light">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/colorPrimary14</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark14</item>
+        <item name="colorAccent">@color/colorAccent14</item>
+        <item name="android:background">@color/colorPrimary14</item>
+        <item name="actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
+    </style>
+    <style name="AppThemeBase14.AppThemeAnim14"><!--Это нужно, чтобы в настройках моментально менять цвет-->
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+    </style>
+
+    <style name="AppThemeBase15" parent="Theme.AppCompat.Light">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/colorPrimary15</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark15</item>
+        <item name="colorAccent">@color/colorAccent15</item>
+        <item name="android:background">@color/colorPrimary15</item>
+        <item name="actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
+    </style>
+    <style name="AppThemeBase15.AppThemeAnim15"><!--Это нужно, чтобы в настройках моментально менять цвет-->
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+    </style>
+
+    <!-- This will set without animation on all your activities by default -->
+    <style name="WindowAnimationTransition">
+    </style>
+
+</resources>

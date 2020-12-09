@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_image"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:showIn="@layout/learning_md">
+
+    <RelativeLayout
+        android:id="@+id/rlUpLearning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:background="#00000000"
+        android:padding="2dp">
+
+        <Button
+            android:id="@+id/bCategory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/bord_action_button"
+            android:paddingBottom="3dp"
+            android:paddingTop="0dp"
+            android:text="@string/choose_category"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/llCenterLearning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/llDontKnow"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/rlUpLearning"
+        android:background="#00000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:orientation="vertical"
+        android:padding="5dp">
+
+        <RelativeLayout
+            android:id="@+id/rlForWord"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#00000000">
+
+            <TextView
+                android:id="@+id/tvCheckedWord"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#00000000"
+                android:clickable="true"
+                android:paddingBottom="5dp"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+
+            <ImageView
+                android:id="@+id/ivSound"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:background="#00000000"
+                android:clickable="true"
+                android:src="@drawable/ic_lock_ringer_on_alpha" />
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#888888" />
+
+        <ScrollView
+            android:id="@+id/svChoice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#00000000"
+            android:paddingTop="5dp">
+
+            <TableLayout
+                android:id="@+id/tlChoice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#00000000">
+
+                <TableRow
+                    android:id="@+id/trChoice1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#00000000">
+
+                    <Button
+                        android:id="@+id/bChoice1"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bord_ans_buttons"
+                        android:paddingBottom="15dp"
+                        android:paddingRight="5dp"
+                        android:paddingTop="15dp"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                    <Button
+                        android:id="@+id/bChoice2"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bord_ans_buttons"
+                        android:paddingBottom="15dp"
+                        android:paddingLeft="5dp"
+                        android:paddingTop="15dp"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+                </TableRow>
+
+                <TableRow
+                    android:id="@+id/trChoice2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#00000000">
+
+                    <Button
+                        android:id="@+id/bChoice3"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bord_ans_buttons"
+                        android:paddingBottom="15dp"
+                        android:paddingRight="5dp"
+                        android:paddingTop="15dp"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                    <Button
+                        android:id="@+id/bChoice4"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bord_ans_buttons"
+                        android:paddingBottom="15dp"
+                        android:paddingLeft="5dp"
+                        android:paddingTop="15dp"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+                </TableRow>
+
+                <TableRow
+                    android:id="@+id/trChoice3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#00000000">
+
+                    <Button
+                        android:id="@+id/bChoice5"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bord_ans_buttons"
+                        android:paddingBottom="15dp"
+                        android:paddingRight="5dp"
+                        android:paddingTop="15dp"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                    <Button
+                        android:id="@+id/bChoice6"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bord_ans_buttons"
+                        android:paddingBottom="15dp"
+                        android:paddingLeft="5dp"
+                        android:paddingTop="15dp"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+                </TableRow>
+
+                <TableRow
+                    android:id="@+id/trChoice4"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#00000000">
+
+                    <Button
+                        android:id="@+id/bChoice7"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bord_ans_buttons"
+                        android:paddingBottom="15dp"
+                        android:paddingRight="5dp"
+                        android:paddingTop="15dp"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                    <Button
+                        android:id="@+id/bChoice8"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bord_ans_buttons"
+                        android:paddingBottom="15dp"
+                        android:paddingLeft="5dp"
+                        android:paddingTop="15dp"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+                </TableRow>
+
+                <TableRow
+                    android:id="@+id/trChoice5"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#00000000">
+
+                    <Button
+                        android:id="@+id/bChoice9"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bord_ans_buttons"
+                        android:paddingBottom="15dp"
+                        android:paddingRight="5dp"
+                        android:paddingTop="15dp"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                    <Button
+                        android:id="@+id/bChoice10"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bord_ans_buttons"
+                        android:paddingBottom="15dp"
+                        android:paddingLeft="5dp"
+                        android:paddingTop="15dp"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+                </TableRow>
+
+                <TableRow
+                    android:id="@+id/trChoice6"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#00000000">
+
+                    <Button
+                        android:id="@+id/bChoice11"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bord_ans_buttons"
+                        android:paddingBottom="15dp"
+                        android:paddingRight="5dp"
+                        android:paddingTop="15dp"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                    <Button
+                        android:id="@+id/bChoice12"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bord_ans_buttons"
+                        android:paddingBottom="15dp"
+                        android:paddingLeft="5dp"
+                        android:paddingTop="15dp"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+                </TableRow>
+            </TableLayout>
+        </ScrollView>
+
+        <ScrollView
+            android:id="@+id/svWriteWord"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#00000000"
+            android:paddingTop="25dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#00000000"
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/etAnswerWord"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:hint="@string/inter_translate"
+                    android:imeOptions="actionDone"
+                    android:inputType="text"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <TextView
+                    android:id="@+id/tvMessage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="10dp"
+                    android:background="#00000000"
+                    android:minHeight="0dp"
+                    android:text="@string/wrong_right_answer" />
+
+                <TextView
+                    android:id="@+id/tvRightAnswer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="5dp"
+                    android:background="#00000000"
+                    android:minHeight="0dp"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:textColor="#00BB00" />
+            </LinearLayout>
+        </ScrollView>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llDontKnow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/llDownLearning"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:background="#00000000"
+        android:orientation="horizontal"
+        android:padding="5dp">
+
+        <Button
+            android:id="@+id/bDontKnow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="10"
+            android:background="@drawable/bord_know_button"
+            android:padding="2dp"
+            android:text="@string/dont_know"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <Button
+            android:id="@+id/bKnow"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="5dp"
+            android:layout_weight="1"
+            android:background="@drawable/bord_know_button"
+            android:padding="2dp"
+            android:text="@string/already_know"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llDownLearning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/llThanks"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:background="#99BBBBBB"
+        android:clickable="true"
+        android:padding="5dp">
+
+        <TextView
+            android:id="@+id/tvAmountWords"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#00000000" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llThanks"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:background="#8899ccff"
+        android:clickable="true"
+        android:padding="5dp">
+
+        <TextView
+            android:id="@+id/tvThanks"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#00000000"
+            android:gravity="center"
+            android:text="@string/donate_developer" />
+    </LinearLayout>
+
+</RelativeLayout>

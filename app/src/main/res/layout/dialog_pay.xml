@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#7FC9FF"
+        android:gravity="center_vertical|center_horizontal"
+        android:padding="10dp"
+        android:text="@string/buy_paid_features"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <ScrollView
+        android:id="@+id/scrollView1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FFFFFF">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#FFFFFF"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvMessage1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#FFFFFF"
+                android:paddingBottom="5dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="10dp"
+                android:text="@string/buying_is_allowed" />
+
+            <TextView
+                android:id="@+id/tvMessage2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#FFFFFF"
+                android:paddingBottom="5dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="10dp"
+                android:text="@string/see_statistics" />
+
+            <TextView
+                android:id="@+id/tvMessage3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#FFFFFF"
+                android:paddingLeft="20dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="10dp"
+                android:text="@string/unlimited_downloads" />
+
+            <TextView
+                android:id="@+id/tvMessage4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#FFFFFF"
+                android:paddingLeft="20dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="5dp"
+                android:text="@string/change_background2" />
+
+            <TextView
+                android:id="@+id/tvMessage5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#FFFFFF"
+                android:paddingLeft="20dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="5dp"
+                android:text="@string/other_learning_type" />
+
+            <TextView
+                android:id="@+id/tvMessage6"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#FFFFFF"
+                android:paddingLeft="20dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="5dp"
+                android:text="@string/change_language" />
+
+            <TextView
+                android:id="@+id/tvMessage7"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#FFFFFF"
+                android:paddingLeft="20dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="5dp"
+                android:text="@string/change_amount_words" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

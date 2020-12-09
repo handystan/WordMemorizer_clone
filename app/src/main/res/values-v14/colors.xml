@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary1">#FAFAFA</color> <!--основной цвет-->
+    <color name="colorPrimaryDark1">#BDBDBD</color> <!--цвет для фона toolbar-->
+    <color name="colorAccent1">#1565C0</color> <!--вспомогательный цвет для редактируемого поля и др.-->
+    <color name="fontColorToolbar1">#000000</color> <!--цвет шрифта для toolbar-->
+    <color name="colorForIcon1">#666666</color> <!--цвет для иконки со статистикой в toolbar-->
+    <color name="fabBackground1">#CC90A4AE</color> <!--цвет фона для плавающей кнопки-->
+
+    <color name="colorPrimary2">#BDBDBD</color>
+    <color name="colorPrimaryDark2">#616161</color>
+    <color name="colorAccent2">#1565C0</color>
+    <color name="fontColorToolbar2">#FFFFFF</color>
+    <color name="colorForIcon2">#DDDDDD</color>
+    <color name="fabBackground2">#CC607D8B</color>
+
+    <color name="colorPrimary3">#FFCDD2</color>
+    <color name="colorPrimaryDark3">#E57373</color>
+    <color name="colorAccent3">#1565C0</color>
+    <color name="fontColorToolbar3">#000000</color>
+    <color name="colorForIcon3">#666666</color>
+    <color name="fabBackground3">#CCCE93D8</color>
+
+    <color name="colorPrimary4">#EF9A9A</color>
+    <color name="colorPrimaryDark4">#EF5350 </color>
+    <color name="colorAccent4">#1565C0</color>
+    <color name="fontColorToolbar4">#FFFFFF</color>
+    <color name="colorForIcon4">#DDDDDD</color>
+    <color name="fabBackground4">#CCF48FB1</color>
+
+    <color name="colorPrimary5">#F8BBD0</color>
+    <color name="colorPrimaryDark5">#F06292</color>
+    <color name="colorAccent5">#1565C0</color>
+    <color name="fontColorToolbar5">#FFFFFF</color>
+    <color name="colorForIcon5">#DDDDDD</color>
+    <color name="fabBackground5">#CCE1BEE7</color>
+
+    <color name="colorPrimary6">#FFF9C4</color>
+    <color name="colorPrimaryDark6">#FFF176</color>
+    <color name="colorAccent6">#1565C0</color>
+    <color name="fontColorToolbar6">#000000</color>
+    <color name="colorForIcon6">#666666</color>
+    <color name="fabBackground6">#CCE6EE9C</color>
+
+    <color name="colorPrimary7">#DCEDC8</color>
+    <color name="colorPrimaryDark7">#AED581</color>
+    <color name="colorAccent7">#1565C0</color>
+    <color name="fontColorToolbar7">#000000</color>
+    <color name="colorForIcon7">#666666</color>
+    <color name="fabBackground7">#CCB2DFDB</color>
+
+    <color name="colorPrimary8">#81C784</color>
+    <color name="colorPrimaryDark8">#43A047</color>
+    <color name="colorAccent8">#1565C0</color>
+    <color name="fontColorToolbar8">#FFFFFF</color>
+    <color name="colorForIcon8">#DDDDDD</color>
+    <color name="fabBackground8">#CCAED581</color>
+
+    <color name="colorPrimary9">#E1F5FE</color>
+    <color name="colorPrimaryDark9">#81D4FA</color>
+    <color name="colorAccent9">#EC407A</color>
+    <color name="fontColorToolbar9">#000000</color>
+    <color name="colorForIcon9">#666666</color>
+    <color name="fabBackground9">#CC80CBC4</color>
+
+    <color name="colorPrimary10">#81D4FA</color>
+    <color name="colorPrimaryDark10">#29B6F6</color>
+    <color name="colorAccent10">#EC407A</color>
+    <color name="fontColorToolbar10">#000000</color>
+    <color name="colorForIcon10">#666666</color>
+    <color name="fabBackground10">#CC80CBC4</color>
+
+    <color name="colorPrimary11">#C5CAE9</color>
+    <color name="colorPrimaryDark11">#9FA8DA</color>
+    <color name="colorAccent11">#EC407A</color>
+    <color name="fontColorToolbar11">#000000</color>
+    <color name="colorForIcon11">#666666</color>
+    <color name="fabBackground11">#CCBBDEFB</color>
+
+    <color name="colorPrimary12">#9FA8DA</color>
+    <color name="colorPrimaryDark12">#7986CB</color>
+    <color name="colorAccent12">#EC407A</color>
+    <color name="fontColorToolbar12">#FFFFFF</color>
+    <color name="colorForIcon12">#DDDDDD</color>
+    <color name="fabBackground12">#CC1E88E5</color>
+
+    <color name="colorPrimary13">#B39DDB</color>
+    <color name="colorPrimaryDark13">#9575CD</color>
+    <color name="colorAccent13">#EC407A</color>
+    <color name="fontColorToolbar13">#FFFFFF</color>
+    <color name="colorForIcon13">#DDDDDD</color>
+    <color name="fabBackground13">#CC9FA8DA</color>
+
+    <color name="colorPrimary14">#FFE082</color>
+    <color name="colorPrimaryDark14">#FFCA28</color>
+    <color name="colorAccent14">#1565C0</color>
+    <color name="fontColorToolbar14">#000000</color>
+    <color name="colorForIcon14">#666666</color>
+    <color name="fabBackground14">#CCFFB74D</color>
+
+    <color name="colorPrimary15">#FFAB91</color>
+    <color name="colorPrimaryDark15">#FF7043</color>
+    <color name="colorAccent15">#1565C0</color>
+    <color name="fontColorToolbar15">#000000</color>
+    <color name="colorForIcon15">#666666</color>
+    <color name="fabBackground15">#CCEF9A9A</color>
+</resources>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_image"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <ScrollView
+            android:id="@+id/scrollView1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/llKeyboardVeiew"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:background="#00000000">
+
+            <LinearLayout
+                android:id="@+id/llMain"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#00000000"
+                android:orientation="vertical"
+                android:paddingTop="20dp">
+
+                <EditText
+                    android:id="@+id/etEngWord"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="20dp"
+                    android:ems="10"
+                    android:hint="@string/english_word">
+
+                    <requestFocus />
+                </EditText>
+
+                <EditText
+                    android:id="@+id/etTrascrip"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="20dp"
+                    android:ems="10"
+                    android:hint="@string/transcription" />
+
+                <EditText
+                    android:id="@+id/etTranslate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="20dp"
+                    android:ems="10"
+                    android:hint="@string/translate" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginTop="20dp"
+                    android:background="#00000000"
+                    android:text="@string/category" />
+
+                <LinearLayout
+                    android:id="@+id/llMACTV"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:background="#00000000"
+                    android:orientation="vertical" />
+
+                <Button
+                    android:id="@+id/bSave"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|center_horizontal"
+                    android:background="@drawable/bord_action_button"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:text="@string/save" />
+
+            </LinearLayout>
+        </ScrollView>
+
+        <LinearLayout
+            android:id="@+id/llKeyboardVeiew"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:background="#00000000">
+
+            <android.inputmethodservice.KeyboardView
+                android:id="@+id/keyboardView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:visibility="gone" />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
