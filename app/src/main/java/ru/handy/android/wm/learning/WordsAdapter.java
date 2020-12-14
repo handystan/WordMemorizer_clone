@@ -1,9 +1,13 @@
 package ru.handy.android.wm.learning;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -27,11 +31,11 @@ import ru.handy.android.wm.dictionary.WordDescription;
  */
 public class WordsAdapter extends BaseAdapter {
 
-    private GlobApp app;
+    private final GlobApp app;
     private AppCompatActivity act;
-    private Context ctx;
-    private LayoutInflater lInflater;
-    private ArrayList<Word> objects;
+    private final Context ctx;
+    private final LayoutInflater lInflater;
+    private final ArrayList<Word> objects;
 
     WordsAdapter(GlobApp app, ArrayList<Word> words) {
         this.app = app;
@@ -67,6 +71,7 @@ public class WordsAdapter extends BaseAdapter {
     }
 
     // пункт списка
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         // используем созданные, но не используемые view
@@ -79,14 +84,27 @@ public class WordsAdapter extends BaseAdapter {
         final Drawable defBackground = view.getBackground();
 
         // заполняем View в пункте списка данными из категорий: текст чек-бокса и кол-во
-        final TextView tvEngWord = (TextView) view.findViewById(R.id.tvEngWord);
-        final TextView tvTransc = (TextView) view.findViewById(R.id.tvTransc);
-        final TextView tvRusWord = (TextView) view.findViewById(R.id.tvRusWord);
-        final ImageView ivSound = (ImageView) view.findViewById(R.id.ivSound);
+        final TextView tvEngWord = view.findViewById(R.id.tvEngWord);
+        final TextView tvTransc = view.findViewById(R.id.tvTransc);
+        final TextView tvRusWord = view.findViewById(R.id.tvRusWord);
+        final ImageView ivSound = view.findViewById(R.id.ivSound);
         tvEngWord.setText(word.getEngWord());
         tvTransc.setText(word.getTranscription());
         tvRusWord.setText(word.getRusTranslate());
-        if (act != null) {
+        if (word.getResult() == null) {
+            tvEngWord.setTextColor(Color.parseColor("black"));
+            tvTransc.setTextColor(Color.parseColor("black"));
+            tvRusWord.setTextColor(Color.parseColor("black"));
+        } else if (word.getResult().equals("1")) {
+            tvEngWord.setTextColor(Color.parseColor("#00BB00"));
+            tvTransc.setTextColor(Color.parseColor("#00BB00"));
+            tvRusWord.setTextColor(Color.parseColor("#00BB00"));
+        } else if (word.getResult().equals("0")) {
+            tvEngWord.setTextColor(Color.parseColor("red"));
+            tvTransc.setTextColor(Color.parseColor("red"));
+            tvRusWord.setTextColor(Color.parseColor("red"));
+        }
+        if (act != null) { // эо делалось для старой формы списка слов (сейчас уже не использую)
             // чтобы контекстное меню корректно работало
             act.registerForContextMenu(tvEngWord);
             act.unregisterForContextMenu(tvEngWord);
@@ -123,6 +141,7 @@ public class WordsAdapter extends BaseAdapter {
             }
         });
         view.setOnTouchListener(new OnTouchListener() {
+            @SuppressLint("ClickableViewAccessibility")
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 WordsAdapter.this.setBackground(tvEngWord, tvTransc, tvRusWord, ivSound, event, defBackground);
@@ -208,7 +227,7 @@ public class WordsAdapter extends BaseAdapter {
 
     /**
      * обновление или добавление слова в адаптере
-     * @param word
+     * @param word добавляемое (обновляемое) слово
      */
     public void updateWord (Word word) {
         for (int i = 0; i < objects.size(); i++) {

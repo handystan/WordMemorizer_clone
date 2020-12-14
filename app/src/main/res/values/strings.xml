@@ -86,7 +86,8 @@
     <string name="no_category">Нужно выбрать категорию</string>
     <string name="no_wrong_words">Нет неправильно отгаданных слов!</string>
     <string name="wrong_words">Не отгаданные слова</string>
-    <string name="word_list_category">Слова категории</string>
+    <string name="right_words">Отгаданные слова</string>
+    <string name="category_words_list">Слова категории</string>
     <string name="berries">ягоды</string>
     <string name="amount_words">Количество слов для выбора</string>
     <string name="thank_you">Спасибо за вашу поддержку!</string>

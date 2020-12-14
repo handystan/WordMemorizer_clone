@@ -27,7 +27,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_above="@+id/llDownWLC"
+            android:layout_above="@+id/llDownCWL"
             android:layout_alignParentLeft="true"
             android:layout_alignParentRight="true"
             android:background="#00000000"
@@ -35,38 +35,64 @@
             android:padding="5dp">
 
             <ListView
-                android:id="@+id/lvWordListCat"
+                android:id="@+id/lvCatWordsList"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
                 android:background="#00000000" />
 
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/llDownWLC"
+            android:id="@+id/llDownCWL"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentRight="true"
             android:background="#88BBBBBB"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="0dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentStart="true">
 
-            <TextView
-                android:id="@+id/tvAmountWordsWLC"
+            <Button
+                android:id="@+id/bAllWordsCWL"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="#00000000" />
+                android:minHeight="30dp"
+                android:background="#00000000"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="@string/ofWords"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp" />
+
+            <Button
+                android:id="@+id/bRightWordsCWL"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="30dp"
+                android:background="#00000000"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="@string/right"
+                android:textColor="#00BB00"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp" />
+
+            <Button
+                android:id="@+id/bWrongWordsCWL"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="30dp"
+                android:background="#00000000"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="@string/wrong"
+                android:textColor="#FF0000"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp" />
         </LinearLayout>
 
     </RelativeLayout>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@android:drawable/ic_menu_add" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

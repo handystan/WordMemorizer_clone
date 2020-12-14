@@ -1,12 +1,7 @@
-/**
- * 
- */
 package ru.handy.android.wm.learning;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-
-import java.io.Serializable;
 
 /**
  * @author Администратор
@@ -19,6 +14,7 @@ public class Word implements Parcelable, Comparable<Word> {
 	private String transcription;
 	private String rusTranslate;
 	private String category;
+	private String result = null; // отгадано слово в данном уроке или нет ("1" - отгадано, "0" - не отгадано, null - еще не отгадывалось
 
 	public Word(int id, String engWord, String transcription,
 				String rusTranslate) {
@@ -39,12 +35,24 @@ public class Word implements Parcelable, Comparable<Word> {
 		this.category = category;
 	}
 
+	public Word(int id, String engWord, String transcription,
+				String rusTranslate, String category, String result) {
+		super();
+		this.id = id;
+		this.engWord = engWord;
+		this.transcription = transcription;
+		this.rusTranslate = rusTranslate;
+		this.category = category;
+		this.result = result;
+	}
+
 	protected Word(Parcel in) {
 		id = in.readInt();
 		engWord = in.readString();
 		transcription = in.readString();
 		rusTranslate = in.readString();
 		category = in.readString();
+		result = in.readString();
 	}
 
 	/**
@@ -73,6 +81,7 @@ public class Word implements Parcelable, Comparable<Word> {
 		dest.writeString(transcription);
 		dest.writeString(rusTranslate);
 		dest.writeString(category);
+		dest.writeString(result);
 	}
 
 	public static final Creator<Word> CREATOR = new Creator<Word>() {
@@ -117,12 +126,21 @@ public class Word implements Parcelable, Comparable<Word> {
 	public void setCategory(String category) {
 		this.category = category;
 	}
+	public String getResult() {
+		return result;
+	}
+	public void setResult(String result) {
+		this.result = result;
+	}
 
+	/**
+	 * @return string of Word
+	 */
 	@Override
 	public String toString() {
-		return "Word{" + "id=" + id + ", engWord='" + engWord + '\'' + ", transcription='" +
-				transcription + '\'' + ", rusTranslate='" + rusTranslate + '\'' +
-				", category='" + category + '\'' + '}';
+		return "Word{id=" + id + ", engWord='" + engWord + "', transcription='" + transcription +
+				"', rusTranslate='" + rusTranslate + "', category='" + category +
+				(result == null ? "" : "', result='" + result) + "'}";
 	}
 
 	@Override
@@ -134,9 +152,7 @@ public class Word implements Parcelable, Comparable<Word> {
 		if (getClass() != obj.getClass())
 			return false;
 		Word other = (Word) obj;
-		if (id != other.id)
-			return false;
-		return true;
+		return id == other.id;
 	}
 
 	/**
