@@ -58,7 +58,7 @@ import ru.handy.android.wm.setting.Utils;
 
 public class Learning extends AppCompatActivity implements OnClickListener, OnTouchListener {
 
-    private static int GET_CATEGORIES = 1;
+    private static final int GET_CATEGORIES = 1;
     private GlobApp app;
     private LinearLayout llDownLearning;
     private LinearLayout llCenterLearning;

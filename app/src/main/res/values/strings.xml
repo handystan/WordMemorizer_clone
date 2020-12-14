@@ -107,14 +107,14 @@
     <string name="other">прочее</string>
     <string name="change_background">Поменять фон</string>
     <string name="buy_paid_features">Купить платные функции?</string>
-    <string name="buying_is_allowed">Приобретение платного контента позволяет:</string>
+    <string name="buying_is_allowed">Приобретение платного контента за 99 руб. позволяет:</string>
     <string name="see_statistics">- посмотреть статистику и запускать уроки со словами с ранее сделанными ошибками;</string>
     <string name="unlimited_downloads">- загружать неограниченное количество слов из файлов;</string>
     <string name="change_background2">- изменять цвет фона приложения;</string>
     <string name="other_learning_type">- использовать другие способы обучения: написание слов и комплексное обучение;</string>
     <string name="change_language">- менять направление обучения с английкого на русский;</string>
     <string name="change_amount_words">- изменять количество слов для выбора при отгадывании слов.</string>
-    <string name="pay_information">По умолчанию из файла можно загрузить не более 10 слов. Для безлимитной загрузки слов нужно внести небольшую плату.</string>
+    <string name="pay_information">По умолчанию из файла можно загрузить не более 10 слов. Для безлимитной загрузки слов нужно внести небольшую плату 99 руб.</string>
     <string name="pay">Оплатить</string>
     <string name="right_answers">"Верные ответы: "</string>
     <string name="wrong_answers">"Неверные ответы: "</string>
