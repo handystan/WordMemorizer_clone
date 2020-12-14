@@ -25,8 +25,6 @@ public class DB {
     public static final String C_EW_RUSTRANSLATE = "ew_rustranslate";
     public static final String C_EW_CATEGORY = "ew_category";
     public static final String C_EW_HISTORY = "ew_history";
-    public static final int RUS_WORDS = 0; // указатель на русские слова
-    public static final int ENG_WORDS = 1; // указатель на английские слова
     // таблица с тек. уроком
     public static final String T_LESSON = "lesson";
     public static final String C_L_ID = "_id";
@@ -290,11 +288,11 @@ public class DB {
         String column = engOrRus ? C_EW_ENGWORD : C_EW_RUSTRANSLATE;
         if (partOfWord != null && !partOfWord.equals("")) {
             partOfWord = partOfWord.replace("'", "");
-            whereClause = C_EW_ENGWORD + " LIKE " + (isStartWord ? "'" : "'%") + partOfWord + "%' COLLATE NOCASE OR "
-                    + C_EW_RUSTRANSLATE + " LIKE " + (isStartWord ? "'" : "'%") + partOfWord + "%' COLLATE NOCASE";
+            whereClause = C_EW_ENGWORD + " LIKE " + (isStartWord ? "'" : "'%") + partOfWord + "%' OR "
+                    + C_EW_RUSTRANSLATE + " LIKE " + (isStartWord ? "'" : "'%") + partOfWord + "%'";
         }
         return mDB.query(T_ENGWORDS, null, whereClause, null, null, null,
-                column + " COLLATE NOCASE");
+                "LOWER(" + column + ")");
     }
 
     /**
@@ -339,7 +337,7 @@ public class DB {
      * @return ArrayList<Word> - список слов с данной категорией
      */
     public ArrayList<Word> getWordsByCategory(String category) {
-        return getWordList("SELECT * FROM " + T_ENGWORDS + " WHERE " + getWhereClauseForCategory(category) + " ORDER BY " + C_EW_ENGWORD + " COLLATE NOCASE");
+        return getWordList("SELECT * FROM " + T_ENGWORDS + " WHERE " + getWhereClauseForCategory(category) + " ORDER BY LOWER(" + C_EW_ENGWORD + ")");
     }
 
     private String getWhereClauseForCategory(String category) {
