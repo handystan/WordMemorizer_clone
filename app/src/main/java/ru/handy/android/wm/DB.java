@@ -194,7 +194,7 @@ public class DB {
                         for (int i = 1; i < s1.length(); i++) {
                             try {
                                 n1 = Integer.parseInt(s1.substring(s1.length()
-                                        - i, s1.length()));
+                                        - i));
                                 s1p = s1.substring(0, s1.length() - i);
                             } catch (Exception e) {
                                 break;
@@ -204,7 +204,7 @@ public class DB {
                         for (int i = 1; i < s2.length(); i++) {
                             try {
                                 n2 = Integer.parseInt(s2.substring(s2.length()
-                                        - i, s2.length()));
+                                        - i));
                                 s2p = s2.substring(0, s2.length() - i);
                             } catch (Exception e) {
                                 break;
@@ -336,49 +336,53 @@ public class DB {
      * Получает слова из таблицы engwords по категории
      *
      * @param category - категория, к которой может относится слово
-     * @return ArrayList<Word> - список слов с данной катеогрией
+     * @return ArrayList<Word> - список слов с данной категорией
      */
     public ArrayList<Word> getWordsByCategory(String category) {
         return getWordList("SELECT * FROM " + T_ENGWORDS + " WHERE " + getWhereClauseForCategory(category) + " ORDER BY " + C_EW_ENGWORD + " COLLATE NOCASE");
     }
 
     private String getWhereClauseForCategory(String category) {
-        String whereClause = "";
+        StringBuilder whereClause = new StringBuilder();
         if (category != null) {
             String[] arr = category.split(",");
             for (String cat : arr) {
                 String c = cat.trim().replace("'", "''");
                 if (!c.equals(""))
-                    whereClause = whereClause + C_EW_CATEGORY + "='" + c + "' OR " + C_EW_CATEGORY
-                            + " LIKE '" + c + ",%' OR " + C_EW_CATEGORY + " LIKE '" + c
-                            + " ,%' OR " + C_EW_CATEGORY + " LIKE '" + c + "  ,%' OR "
-                            + C_EW_CATEGORY + " LIKE '%," + c + "' OR " + C_EW_CATEGORY
-                            + " LIKE '%, " + c + "' OR " + C_EW_CATEGORY + " LIKE '%,  "
-                            + c + "' OR " + C_EW_CATEGORY + " LIKE '%," + c + ",%' OR "
-                            + C_EW_CATEGORY + " LIKE '%, " + c + ",%' OR " + C_EW_CATEGORY
-                            + " LIKE '%,  " + c + ",%' OR " + C_EW_CATEGORY + " LIKE '%," + c
-                            + " ,%' OR " + C_EW_CATEGORY + " LIKE '%," + c + "  ,%' OR "
-                            + C_EW_CATEGORY + " LIKE '%, " + c + " ,%' OR " + C_EW_CATEGORY
-                            + " LIKE '%, " + c + "  ,%' OR " + C_EW_CATEGORY + " LIKE '%,  "
-                            + c + " ,%' OR " + C_EW_CATEGORY + " LIKE '%,  " + c + "  ,%' OR ";
+                    whereClause.append(C_EW_CATEGORY).append("='").append(c).append("' OR ")
+                            .append(C_EW_CATEGORY).append(" LIKE '").append(c).append(",%' OR ")
+                            .append(C_EW_CATEGORY).append(" LIKE '").append(c).append(" ,%' OR ")
+                            .append(C_EW_CATEGORY).append(" LIKE '").append(c).append("  ,%' OR ")
+                            .append(C_EW_CATEGORY).append(" LIKE '%,").append(c).append("' OR ")
+                            .append(C_EW_CATEGORY).append(" LIKE '%, ").append(c).append("' OR ")
+                            .append(C_EW_CATEGORY).append(" LIKE '%,  ").append(c).append("' OR ")
+                            .append(C_EW_CATEGORY).append(" LIKE '%,").append(c).append(",%' OR ")
+                            .append(C_EW_CATEGORY).append(" LIKE '%, ").append(c).append(",%' OR ")
+                            .append(C_EW_CATEGORY).append(" LIKE '%,  ").append(c).append(",%' OR ")
+                            .append(C_EW_CATEGORY).append(" LIKE '%,").append(c).append(" ,%' OR ")
+                            .append(C_EW_CATEGORY).append(" LIKE '%,").append(c).append("  ,%' OR ")
+                            .append(C_EW_CATEGORY).append(" LIKE '%, ").append(c).append(" ,%' OR ")
+                            .append(C_EW_CATEGORY).append(" LIKE '%, ").append(c).append("  ,%' OR ")
+                            .append(C_EW_CATEGORY).append(" LIKE '%,  ").append(c).append(" ,%' OR ")
+                            .append(C_EW_CATEGORY).append(" LIKE '%,  ").append(c).append("  ,%' OR ");
             }
-            if (whereClause.equals(""))
-                whereClause = C_EW_CATEGORY + "=''";
+            if (whereClause.toString().equals(""))
+                whereClause = new StringBuilder(C_EW_CATEGORY + "=''");
             else
-                whereClause = whereClause
-                        .substring(0, whereClause.length() - 4);
+                whereClause = new StringBuilder(whereClause
+                        .substring(0, whereClause.length() - 4));
         }
-        return whereClause;
+        return whereClause.toString();
     }
 
     /**
      * Добавляем новое слово в главной таблице engwords английских слов
      * и в таблице с действующим уроком (если слово нужной категории)
      *
-     * @param engWord
-     * @param transcription
-     * @param rusTranslate
-     * @param category
+     * @param engWord английское слово
+     * @param transcription транскрипция
+     * @param rusTranslate русский перевод
+     * @param category категория
      * @return возвращает id нового слова в таблице T_ENGWORDS
      */
     public long addRecEngWord(String engWord, String transcription,
@@ -563,7 +567,7 @@ public class DB {
         }
     }
 
-    /**
+    /*
      * Отсюда методы по таблице Lesson
      **********************************************************************
      **********************************************************************
@@ -649,7 +653,8 @@ public class DB {
                         c.getString(c.getColumnIndex(engWord)),
                         c.getString(c.getColumnIndex(transcr)),
                         c.getString(c.getColumnIndex(rusTranslate)),
-                        c.getString(c.getColumnIndex(category)));
+                        c.getString(c.getColumnIndex(category)),
+                        sqlQuery.contains("FROM " + T_LESSON) ? c.getString(c.getColumnIndex(C_L_RESULT)) : null);
                 wordList.add(word);
             } while (c.moveToNext());
         }
@@ -805,7 +810,7 @@ public class DB {
         mDB.update(T_LESSON, cv, word == null ? null : C_L_ENGWORD_ID + " = " + word.getId(), null);
     }
 
-    /**
+    /*
      * Отсюда методы по таблице Statistics
      * *********************************************************************
      * *********************************************************************
@@ -890,7 +895,7 @@ public class DB {
         return mDB.delete(T_STATISTICS, null, null);
     }
 
-    /**
+    /*
      * Отсюда методы по таблице exitstate
      **********************************************************************
      **********************************************************************

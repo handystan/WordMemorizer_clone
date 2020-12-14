@@ -2,9 +2,7 @@ package ru.handy.android.wm.learning;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -17,7 +15,6 @@ import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -35,7 +32,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
@@ -43,12 +39,10 @@ import androidx.core.content.ContextCompat;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import ru.handy.android.wm.About;
 import ru.handy.android.wm.DB;
@@ -58,11 +52,9 @@ import ru.handy.android.wm.R;
 import ru.handy.android.wm.Thanks;
 import ru.handy.android.wm.dictionary.Dictionary;
 import ru.handy.android.wm.downloads.EditData;
-import ru.handy.android.wm.setting.LearningSetting;
 import ru.handy.android.wm.setting.Pay;
 import ru.handy.android.wm.setting.Settings;
 import ru.handy.android.wm.setting.Utils;
-import ru.handy.android.wm.statistics.Statistics;
 
 public class Learning extends AppCompatActivity implements OnClickListener, OnTouchListener {
 
@@ -83,9 +75,8 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
     private TextView tvRightAnswer;
     private Button bDontKnow;
     private Button bKnow;
-    private FloatingActionButton fab;
     private Menu menu;
-    private ArrayList<Button> buttons = new ArrayList<Button>();
+    private ArrayList<Button> buttons = new ArrayList<>();
     private DB db;
     private Fixing fixing; // класс, в котором хранится информация по текущему уроку с данной категорией
     private ArrayList<Word> words; // список слов, которые проставляются на кнопках
@@ -120,7 +111,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
     private Pay pay; // класс для обработки платежей
     private Tracker mTracker; // трекер для Google analitics, чтобы отслеживать активности пользователей
 
-    @SuppressLint("InflateParams")
+    @SuppressLint({"InflateParams", "ClickableViewAccessibility"})
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
@@ -155,10 +146,6 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         // устанавливаем цвет иконки со статистикой и overflow
         Drawable stat = ContextCompat.getDrawable(this, R.drawable.statistics);
         stat.setColorFilter(Utils.getColorForIcon(), PorterDuff.Mode.SRC_ATOP);
-        // устанавливаем плавающию кнопку с перечнем слов в категории
-        fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(this);
-        fab.setBackgroundTintList(ColorStateList.valueOf(Utils.getFabColor()));
 
         String lt = db.getValueByVariable(DB.LEARNING_TYPE);
         learningType = lt == null ? 0 : Integer.parseInt(lt);
@@ -421,7 +408,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
     /**
      * метод для сохранения состояния при повороте экрана
      *
-     * @param outState
+     * @param outState состояние
      */
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -444,6 +431,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         return true;
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -582,27 +570,18 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public void onClick(View v) {
         // обработка нажатия строки с количеством слов
         if (v.getId() == tvAmountWords.getId() || v.getId() == llDownLearning.getId()) {
-            startActivity(new Intent(this, WrongWords.class));
+            startActivity(new Intent(this, CategoreWordsList.class));
             return;
         }
         // обработка нажатия нижней строки с предложением поддержать разработчика
         if (v.getId() == tvThanks.getId() || v.getId() == llThanks.getId()) {
             // 2 означает класс Thanks
             startActivityForResult(new Intent(this, Thanks.class), 2);
-            return;
-        }
-        // обработка нажатия кнопки со списком всех слов категории
-        if (v.getId() == fab.getId()) {
-            String categories = fixing.getCategories();
-            if (categories.equals("")) {
-                Toast.makeText(getApplicationContext(), s(R.string.no_category), Toast.LENGTH_SHORT).show();
-            } else {
-                startActivity(new Intent(this, WordListCategory.class));
-            }
             return;
         }
         // обработка нажатия кнопки с категориями
@@ -689,7 +668,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
      * @param isForceTrue  true - для комплекного обучение нажата кнопка "Уже знаю", т.е. засчитать слово как известное, false - для остальных случаев
      */
     private void nextWord(Word selectedWord, boolean isForceTrue) {
-        Word rightWord = null;
+        Word rightWord;
         // текущее слово не определяем, если был поворот экрана и оно у нас сохранено
         if (!isWaitTouch) {
             ArrayList<Word> result = fixing.nextWord(selectedWord, isForceTrue);
