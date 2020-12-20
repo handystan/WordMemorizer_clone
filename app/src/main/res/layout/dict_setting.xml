@@ -4,14 +4,14 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_image">
 
-    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#00000000">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:background="#00000000"
             android:orientation="vertical"
             android:paddingTop="20dp">
@@ -21,6 +21,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
+                android:layout_marginStart="20dp"
                 android:background="#00000000"
                 android:text="@string/translate_direct"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
@@ -29,6 +30,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
+                android:layout_marginStart="20dp"
                 android:layout_marginTop="5dp"
                 android:background="#00000000">
 
@@ -46,9 +48,10 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
                     android:layout_toRightOf="@+id/tvFirstDir"
+                    android:layout_toEndOf="@+id/tvFirstDir"
                     android:background="#00000000"
                     android:contentDescription="@string/change_transl_dir"
-                    android:src="@android:drawable/stat_notify_sync" />
+                    android:src="@drawable/stat_notify_sync" />
 
                 <TextView
                     android:id="@+id/tvSecondDir"
@@ -56,6 +59,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_toRightOf="@+id/ibChangeDirTrans"
+                    android:layout_toEndOf="@+id/ibChangeDirTrans"
                     android:background="#00000000"
                     android:text="@string/russian" />
             </RelativeLayout>
@@ -74,6 +78,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
+                android:layout_marginStart="20dp"
                 android:background="#00000000"
                 android:text="@string/show_words"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
@@ -83,6 +88,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
+                android:layout_marginStart="20dp"
                 android:background="#00000000">
 
                 <RadioButton
@@ -114,6 +120,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
+                android:layout_marginStart="20dp"
                 android:background="#00000000"
                 android:text="@string/show_history" />
 

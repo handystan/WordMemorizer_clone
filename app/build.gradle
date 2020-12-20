@@ -6,7 +6,7 @@ android {
         config {
             keyAlias 'keyforwm'
             keyPassword 'Zzz111'
-            storeFile file('D:/Android/Android Studio/mykeys.jks')
+            storeFile file('C:/Android/mykeys.jks')
             storePassword 'Zzz111'
         }
     }
