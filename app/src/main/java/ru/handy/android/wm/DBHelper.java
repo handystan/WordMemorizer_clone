@@ -74,7 +74,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.beginTransaction();
         try {
-            if (oldVersion <= 12 && newVersion == 26) {
+            if (oldVersion <= 12 && newVersion == 27) {
                 insertExitState(db, DB.BG_COLOR, "1"); // белый фон
                 insertExitState(db, DB.OLD_FREE_DB, "1"); // клиенты из старой базы, которым автоматом все делается бесплатно
                 insertExitState(db, DB.LEARNING_TYPE, "0");
@@ -91,7 +91,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 db.delete(DB.T_ENGWORDS, null, null);
                 db.delete(DB.T_LESSON, null, null);
                 insertAllDict(db);
-            } else if (oldVersion == 13 && newVersion == 26) { // 14 и 15 версии были тестовыми
+            } else if (oldVersion == 13 && newVersion == 27) { // 14 и 15 версии были тестовыми
                 updateDictFrom13(db);
                 updateDictFrom16(db);
                 updateDictFrom17(db);
@@ -100,7 +100,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 updateDictFrom20(db);
                 updateDictFrom23(db);
                 updateDictFrom24(db);
-            } else if (oldVersion == 16 && newVersion == 26) {
+            } else if (oldVersion == 16 && newVersion == 27) {
                 updateDictFrom16(db);
                 updateDictFrom17(db);
                 updateDictFrom18(db);
@@ -108,33 +108,35 @@ public class DBHelper extends SQLiteOpenHelper {
                 updateDictFrom20(db);
                 updateDictFrom23(db);
                 updateDictFrom24(db);
-            } else if (oldVersion == 17 && newVersion == 26) {
+            } else if (oldVersion == 17 && newVersion == 27) {
                 updateDictFrom17(db);
                 updateDictFrom18(db);
                 updateDictFrom19(db);
                 updateDictFrom20(db);
                 updateDictFrom23(db);
                 updateDictFrom24(db);
-            } else if (oldVersion == 18 && newVersion == 26) {
+            } else if (oldVersion == 18 && newVersion == 27) {
                 updateDictFrom18(db);
                 updateDictFrom19(db);
                 updateDictFrom20(db);
                 updateDictFrom23(db);
                 updateDictFrom24(db);
-            } else if (oldVersion == 19 && newVersion == 26) {
+            } else if (oldVersion == 19 && newVersion == 27) {
                 updateDictFrom19(db);
                 updateDictFrom20(db);
                 updateDictFrom23(db);
                 updateDictFrom24(db);
-            } else if (oldVersion == 20 && newVersion == 26) { // версии 21, 22 не было, так как она запоролась в Google Console
+            } else if (oldVersion == 20 && newVersion == 27) { // версии 21, 22 не было, так как она запоролась в Google Console
                 updateDictFrom20(db);
                 updateDictFrom23(db);
                 updateDictFrom24(db);
-            } else if (oldVersion == 23 && newVersion == 26) {
+            } else if (oldVersion == 23 && newVersion == 27) {
                 updateDictFrom23(db);
                 updateDictFrom24(db);
-            }  else if (oldVersion == 24 && newVersion == 26) { // версия 25 была тестовой
+            }  else if (oldVersion == 24 && newVersion == 27) { // версия 25 была тестовой
                 updateDictFrom24(db);
+            }  else if (oldVersion == 26 && newVersion == 27) {
+                updateDictFrom26(db);
             }
             db.setTransactionSuccessful();
         } finally {
@@ -3474,7 +3476,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 }
                 c.close();
             }
-        } catch (Exception ex) {
+        } catch (Exception ignored) {
         }
         boolean isShowTrancr = (trancr.equals("") || trancr.equals("1"));
         ContentValues cv = new ContentValues();
@@ -3737,6 +3739,17 @@ public class DBHelper extends SQLiteOpenHelper {
         insertDict(db, "rassolnik", "[ˈrəsɒnɪk]", "рассольник", "еда2");
         insertDict(db, "sauce", "[sɔːs]", "соус", "еда2");
         insertDict(db, "sour cream", "[ˈsaʊə kriːm]", "сметана", "еда2");
+    }
+
+    // заполняем основную таблицу-словарь при переходе из версии 26
+    private void updateDictFrom26(SQLiteDatabase db) {
+        ContentValues cv = new ContentValues();
+        cv.put(DB.C_EW_TRANSCRIPTION, "[bloʊ, blu:, bloʊn]");
+        db.update(DB.T_ENGWORDS, cv, DB.C_EW_ENGWORD + "='blow, blew, blown'", null);
+        cv.put(DB.C_EW_RUSTRANSLATE, "врываться, вмешаться (в разговор)");
+        db.update(DB.T_ENGWORDS, cv, DB.C_EW_ENGWORD + "='break in'", null);
+        cv.put(DB.C_EW_ENGWORD, "Sorry, I meant well");
+        db.update(DB.T_ENGWORDS, cv, DB.C_EW_ENGWORD + "='Sorry I meant well'", null);
     }
 
     // вставка отдельно записи в таблице EW_ENGWORD

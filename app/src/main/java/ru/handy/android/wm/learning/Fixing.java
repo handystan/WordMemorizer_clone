@@ -1,5 +1,7 @@
 package ru.handy.android.wm.learning;
 
+import android.database.Cursor;
+
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -7,7 +9,7 @@ import ru.handy.android.wm.DB;
 
 /**
  * @author handy Класс, в котором генерится обрабатывается обучение по
- *         закреплению слов
+ * закреплению слов
  */
 public class Fixing {
 
@@ -15,10 +17,10 @@ public class Fixing {
     private String categories = ""; // массив категорий
 
     // массив слов, участвующий в обучении
-    private ArrayList<Word> lesson = new ArrayList<Word>();
+    private ArrayList<Word> lesson;
     // массив слов, с неправильными ответами
-    private ArrayList<Word> wrongAnswers = new ArrayList<Word>();
-    private int cur = 0; // текущая позиция в массиве слов
+    private ArrayList<Word> wrongAnswers = new ArrayList<>();
+    private int cur; // текущая позиция в массиве слов
     private int amountWords = 0; // кол-во слов в уроке
     private int amountWrongWords = 0; // кол-во не отгаданных слов в уроке
     private int amountRightWords = 0; // кол-во отгаданных слов в уроке
@@ -35,7 +37,7 @@ public class Fixing {
         if (fromDB == 0) {
             categories = cat;
             lesson = db.getRandomWords(categories, isOnlyMistakes); // список слов
-            wrongAnswers = new ArrayList<Word>();
+            wrongAnswers = new ArrayList<>();
             amountWords = lesson.size();
             amountWrongWords = 0;
             amountRightWords = 0;
@@ -99,7 +101,7 @@ public class Fixing {
      * окончание урока)
      */
     public ArrayList<Word> nextWord(Word selectedWord, boolean isForceTrue) {
-        ArrayList<Word> answer = new ArrayList<Word>();
+        ArrayList<Word> answer = new ArrayList<>();
         answer.add(null); // 0 - записывается верное слово (если была ошибка) или null (если все верно)
         answer.add(null); // 1 - следующее слово или null, если список слов в категории закончился
         answer.add(null); // 2 - записываются раличные сообщения или null, если это неокончание урока
@@ -111,7 +113,7 @@ public class Fixing {
             int learningType = lt == null ? 0 : Integer.parseInt(lt); // тип обучения (0, 1 или 2)
             String ra = db.getValueByVariable(DB.LEARNING_REPEATS_AMOUNT);
             int repeatsAmountCompl = ra == null ? 2 : Integer.parseInt(ra); // кол-во повторений для комплексного обучения
-            int curLearningTypeCompl = db.getCurLearningType(lesson.get(cur)); // текущий тип обучения в комплексном обучении: 0-отгадывание из из русс. перевода, 1-отгадывание из англ. перевода, 2-написание англ. слова
+            int curLearningTypeCompl = db.getCurLearningType(lesson.get(cur)); // текущий тип обучения в комплексном обучении: 0-отгадывание из русс. перевода, 1-отгадывание из англ. перевода, 2-написание англ. слова
             int curRepeatNumberCompl = db.getCurRepeatNumber(lesson.get(cur)); // номер текущего повторение данного слова
             boolean isRight = (learningType == 0 || (learningType == 2 && curLearningTypeCompl != 2))
                     ? selectedWord.equals(lesson.get(cur)) : isRightAnswer(selectedWord); // отгадано ли слово (пока не обрабатывается 2)
@@ -162,7 +164,7 @@ public class Fixing {
                 db.setNumberInLesson(null, 0);
                 db.setCurRepeatNumber(lesson.get(cur), 0);
                 db.setCurLearningType(lesson.get(cur), 0);
-                lesson = new ArrayList<Word>();
+                lesson = new ArrayList<>();
                 if (wrongAnswers.size() == 0) { // окончание урока без ошибок
                     // сообщение
                     answer.set(2, new Word(0, "Урок успешно пройден. Можно выбрать другую категорию.", "", ""));
@@ -175,7 +177,7 @@ public class Fixing {
                         db.setNumberInLesson(wrongAnswers.get(rand), lesson.size());
                         wrongAnswers.remove(rand);
                     }
-                    wrongAnswers = new ArrayList<Word>();
+                    wrongAnswers = new ArrayList<>();
                     cur = 0;
                     answer.set(1, lesson.get(cur)); // следующее слово
                     // сообщение
@@ -195,7 +197,7 @@ public class Fixing {
      * для типа обучения "написание слова" определяет, правильно ли написанное слово
      *
      * @param selectedWord - написанное слово
-     * @return
+     * @return отгадано слова (true) или нет (false)
      */
     private boolean isRightAnswer(Word selectedWord) {
         boolean isEngFixing = db.getValueByVariable(DB.LEARNING_LANGUAGE).equals("0");
@@ -206,31 +208,55 @@ public class Fixing {
         if (learningType == 2 && curLearningTypeCompl == 2) isEngFixing = false;
         String curWord = !isEngFixing ? lesson.get(cur).getEngWord() : lesson.get(cur).getRusTranslate();
         String answerWord = !isEngFixing ? selectedWord.getEngWord() : selectedWord.getRusTranslate();
-        String[] arrCurWord = curWord.split("(,|;)");
+        String[] arrCurWord = curWord.split("([,;])");
         ArrayList<String> alCurWord = new ArrayList<>();
-        for (int i = 0; i < arrCurWord.length; i++) {
-            String item = arrCurWord[i].trim();
-            alCurWord.add(item);
-            String item2 = item.replaceAll("(\\(|\\))", "");
-            if (!item.equals(item2))
-                alCurWord.add(item2);
-        }
-        String[] arrAnswerWord = answerWord.split("(,|;)");
+        String[] arrAnswerWord = answerWord.split("([,;])");
         ArrayList<String> alAnswerWord = new ArrayList<>();
-        for (int i = 0; i < arrAnswerWord.length; i++) {
-            String item = arrAnswerWord[i].trim();
-            alAnswerWord.add(item);
-            String item2 = item.replaceAll("(\\(|\\))", "");
-            if (!item.equals(item2))
-                alAnswerWord.add(item2);
+        String wordCat = "";
+        Cursor cursor = db.getWordById(lesson.get(cur).getId());
+        if (cursor != null && cursor.moveToFirst()) {
+            wordCat = cursor.getString(cursor.getColumnIndex(DB.C_EW_CATEGORY));
+            cursor.close();
         }
-        for (int i = 0; i < alCurWord.size(); i++) {
-            for (int j = 0; j < alAnswerWord.size(); j++) {
-                if (alCurWord.get(i).equalsIgnoreCase(alAnswerWord.get(j)))
-                    return true;
+        // если отгадывается неправильный глагол причем пишется слово по английски (отгадывается русское слово)
+        if (wordCat.contains("неправильные глаголы") && !isEngFixing) {
+            for (String s : arrCurWord) {
+                alCurWord.add(s.trim());
             }
+            for (String s : arrAnswerWord) {
+                alAnswerWord.add(s.trim());
+            }
+            if (alCurWord.size() != alAnswerWord.size()) return false;
+            for (int i = 0; i < alCurWord.size(); i++) {
+                if (!alCurWord.get(i).equalsIgnoreCase(alAnswerWord.get(i)))
+                    return false;
+            }
+            return true;
+        } else { // все остальное идет по более мягкому пути проверки
+            for (String s : arrCurWord) {
+                String item = s.trim();
+                alCurWord.add(item);
+                String item2 = item.replaceAll("([()])", "");
+                if (!item.equals(item2)) alCurWord.add(item2);
+                item2 = item.replaceAll("\\(.*\\)", "").trim();
+                if (!item.equals(item2)) alCurWord.add(item2);
+            }
+            for (String s : arrAnswerWord) {
+                String item = s.trim();
+                alAnswerWord.add(item);
+                String item2 = item.replaceAll("([()])", "");
+                if (!item.equals(item2)) alCurWord.add(item2);
+                item2 = item.replaceAll("\\(.*\\)", "").trim();
+                if (!item.equals(item2)) alAnswerWord.add(item2);
+            }
+            for (int i = 0; i < alCurWord.size(); i++) {
+                for (int j = 0; j < alAnswerWord.size(); j++) {
+                    if (alCurWord.get(i).equalsIgnoreCase(alAnswerWord.get(j)))
+                        return true;
+                }
+            }
+            return false;
         }
-        return false;
     }
 
     /**

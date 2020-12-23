@@ -54,7 +54,6 @@ import ru.handy.android.wm.GlobApp;
 import ru.handy.android.wm.Help;
 import ru.handy.android.wm.R;
 import ru.handy.android.wm.Thanks;
-import ru.handy.android.wm.learning.Word;
 import ru.handy.android.wm.setting.Settings;
 import ru.handy.android.wm.setting.Utils;
 
@@ -242,7 +241,7 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
                 Cursor c = (Cursor) scAdapter.getItem(firstVisibleItem);
-                if (c != null) {
+                if (c != null && c.getCount() > 0) {
                     String letter = c.getString(c.getColumnIndex(isEnglSearch ? DB.C_EW_ENGWORD : DB.C_EW_RUSTRANSLATE)).substring(0, 1).toUpperCase();
                     int index = Arrays.binarySearch(isEnglSearch ? engLetters : rusLetters, letter);
                     index = index == -1 ? 0 : index;
