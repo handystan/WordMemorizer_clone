@@ -114,8 +114,9 @@ public class DB {
             + T_EXITSTATE + " (" + C_ES_ID
             + " integer primary key autoincrement, " + C_ES_VARIABLE
             + " text, " + C_ES_VALUE + " text);";
+
     private static final String DB_NAME = "ewdb";
-    private static final int DB_VERSION = 26; // 13 - первая версия с платными настройками
+    private static final int DB_VERSION = 27; // 13 - первая версия с платными настройками
     private final Context mCtx;
 
     private DBHelper mDBHelper;
@@ -157,6 +158,10 @@ public class DB {
 
     public void endTransaction() {
         mDB.endTransaction();
+    }
+
+    public String getDbName() {
+        return DB_NAME;
     }
 
     /**

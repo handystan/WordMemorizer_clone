@@ -87,8 +87,10 @@ public class GlobApp extends Application {
                             Log.e("myLogs", "This Language Locale.US is not supported");
                         } else
                             tts.speak(text, TextToSpeech.QUEUE_ADD, null);
-                    } else
-                        Log.e("myLogs", "TextToSpeech initilization was failed!");
+                        Log.d("myLogs", "TextToSpeech initialization was successed!");
+                    } else {
+                        Log.e("myLogs", "TextToSpeech initialization was failed!");
+                    }
                 }
             });
         }
