@@ -1,15 +1,18 @@
 package ru.handy.android.wm.statistics;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,8 +23,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.ArrayList;
 
@@ -47,8 +49,9 @@ public class Statistics extends AppCompatActivity implements View.OnClickListene
     private Button bLearningAll;
     private CategoryAdapter cAdapter;
     private DB db;
-    private Tracker mTracker; // трекер для Google analitics, чтобы отслеживать активности пользователей
+    private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
+    @SuppressLint("DefaultLocale")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Utils.onActivityCreateSetTheme(this);
@@ -56,7 +59,11 @@ public class Statistics extends AppCompatActivity implements View.OnClickListene
         setContentView(R.layout.statistics);
 
         app = (GlobApp) getApplication(); // получаем доступ к приложению
-        mTracker = app.getDefaultTracker(); // Obtain the shared Tracker instance.
+        mFBAnalytics = app.getFBAnalytics(); // получение экземпляра FirebaseAnalytics
+        if (mFBAnalytics != null) {
+            String[] arrClName = this.getClass().toString().split("\\.");
+            app.openActEvent(arrClName[arrClName.length - 1]);
+        }
         db = app.getDb(); // открываем подключение к БД
 
         // устанавливаем toolbar и actionbar
@@ -87,11 +94,11 @@ public class Statistics extends AppCompatActivity implements View.OnClickListene
             int amountWrong = categoryStats.get(categoryStats.size() - 1).getAmountWrong();
             int percentRight = Math.round(((float) amountRight) / (amountRight + amountWrong) * 100);
             int percentWrong = Math.round(((float) amountWrong) / (amountRight + amountWrong) * 100);
-            tvRightAnswers.setText(s(R.string.right_answers) + amountRight + " (" + percentRight + "%)");
-            tvWrongAnswers.setText(s(R.string.wrong_answers) + amountWrong + " (" + percentWrong + "%)");
+            tvRightAnswers.setText(String.format("%s%d (%d%%)", s(R.string.right_answers), amountRight, percentRight));
+            tvWrongAnswers.setText(String.format("%s%d (%d%%)", s(R.string.wrong_answers), amountWrong, percentWrong));
         } else {
-            tvRightAnswers.setText(s(R.string.right_answers) + "0 (0%)");
-            tvWrongAnswers.setText(s(R.string.wrong_answers) + "0 (0%)");
+            tvRightAnswers.setText(String.format("%s0 (0%%)", s(R.string.right_answers)));
+            tvWrongAnswers.setText(String.format("%s0 (0%%)", s(R.string.wrong_answers)));
             bLearningMistakes.setText(s(R.string.no_wrong_answers));
             bLearningAll.setVisibility(View.GONE);
         }
@@ -119,17 +126,17 @@ public class Statistics extends AppCompatActivity implements View.OnClickListene
     public void onClick(View v) {
         // обработка нажатия кнопки с добровольным взносом
         if (v.getId() == bLearningMistakes.getId() || v.getId() == bLearningAll.getId()) {
-            String s = "";
+            StringBuilder s = new StringBuilder();
             for (Category c : cAdapter.getCheckedCategories()) {
                 if (c.isChecked())
-                    s += c.getName() + ", ";
+                    s.append(c.getName()).append(", ");
             }
-            if (s.equals("")) {
+            if (s.toString().equals("")) {
                 Toast.makeText(getApplicationContext(), getResources().getString(R.string.need_category), Toast.LENGTH_SHORT).show();
                 return;
             }
-            s = s.substring(0, s.length() - 2);
-            getIntent().putExtra(NEW_CATEGORIES, s);
+            s = new StringBuilder(s.substring(0, s.length() - 2));
+            getIntent().putExtra(NEW_CATEGORIES, s.toString());
             getIntent().putExtra("isOnlyMistakes", v.getId() == bLearningMistakes.getId());
             setResult(RESULT_OK, getIntent());
             finish();
@@ -172,8 +179,8 @@ public class Statistics extends AppCompatActivity implements View.OnClickListene
                                         db.removeStats();
                                     }
                                 }).start();
-                                tvRightAnswers.setText(s(R.string.right_answers) + "0 (0%)");
-                                tvWrongAnswers.setText(s(R.string.wrong_answers) + "0 (0%)");
+                                tvRightAnswers.setText(String.format("%s0 (0%%)", s(R.string.right_answers)));
+                                tvWrongAnswers.setText(String.format("%s0 (0%%)", s(R.string.wrong_answers)));
                                 bLearningMistakes.setText(s(R.string.no_wrong_answers));
                                 lvChooseCat.setVisibility(View.GONE);
                                 bLearningAll.setVisibility(View.GONE);
@@ -202,11 +209,6 @@ public class Statistics extends AppCompatActivity implements View.OnClickListene
 
     @Override
     public void onResume() {
-        if (mTracker != null) {
-            Log.i("myLogs", "Setting screen name: " + this.getLocalClassName());
-            mTracker.setScreenName("Activity " + this.getLocalClassName());
-            mTracker.send(new HitBuilders.ScreenViewBuilder().build());
-        }
         super.onResume();
     }
 

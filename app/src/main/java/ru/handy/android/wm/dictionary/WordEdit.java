@@ -1,14 +1,17 @@
 package ru.handy.android.wm.dictionary;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -21,11 +24,12 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+
 import androidx.appcompat.widget.AppCompatMultiAutoCompleteTextView;
+
 import android.widget.Toast;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.ArrayList;
 
@@ -49,15 +53,20 @@ public class WordEdit extends AppCompatActivity {
     private CustomKeyboard keyboard;
     private DB db;
     private long id = 0; // не 0 - редактирование, 0 - добавление записи
-    private Tracker mTracker; // трекер для Google analitics, чтобы отслеживать активности пользователей
+    private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
+    @SuppressLint("ClickableViewAccessibility")
     public void onCreate(Bundle savedInstanceState) {
         Utils.onActivityCreateSetTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.wordedit);
 
         app = (GlobApp) getApplication(); // получаем доступ к приложению
-        mTracker = app.getDefaultTracker(); // Obtain the shared Tracker instance.
+        mFBAnalytics = app.getFBAnalytics(); // получение экземпляра FirebaseAnalytics
+        if (mFBAnalytics != null) {
+            String[] arrClName = this.getClass().toString().split("\\.");
+            app.openActEvent(arrClName[arrClName.length - 1]);
+        }
         db = app.getDb(); // открываем подключение к БД
 
         // устанавливаем отдельную клавиатуру для поля с транскрипцией
@@ -86,7 +95,7 @@ public class WordEdit extends AppCompatActivity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 InputMethodManager imm = (InputMethodManager) WordEdit.this.getSystemService(
-                        WordEdit.this.INPUT_METHOD_SERVICE);
+                        WordEdit.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
                 return false;
             }
@@ -98,14 +107,14 @@ public class WordEdit extends AppCompatActivity {
         // массив категорий и программно добавляем поле
         // MultiAutoCompleteTextView
         categories = db.getCategories();
-        lastCategories = new ArrayList<String>();
+        lastCategories = new ArrayList<>();
         lastCategories.addAll(categories);
         LinearLayout llMACTV = (LinearLayout) findViewById(R.id.llMACTV);
         LinearLayout.LayoutParams lParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
         lParams.leftMargin = 20;
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_list_item_1, categories);
         mactvCategory = new MyMultiAutoCompleteTextView(this);
         mactvCategory.setAdapter(adapter);
@@ -129,7 +138,7 @@ public class WordEdit extends AppCompatActivity {
             if (!transcr.equals("") && transcr.endsWith("]"))
                 transcr = transcr.substring(0, transcr.length() - 1);
             if (!transcr.equals("") && transcr.startsWith("["))
-                transcr = transcr.substring(1, transcr.length());
+                transcr = transcr.substring(1);
             etTrascrip.setText(transcr);
             etTranslate.setText(intent.getStringExtra("c_ew_rustranslate"));
             String mmactv = intent.getStringExtra("c_ew_category").trim();
@@ -200,17 +209,15 @@ public class WordEdit extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Операции для выбранного пункта меню
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                if (keyboard != null && keyboard.isCustomKeyboardVisible()) {
-                    keyboard.hideCustomKeyboard();
-                } else {
-                    finish();
-                }
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == android.R.id.home) {
+            if (keyboard != null && keyboard.isCustomKeyboardVisible()) {
+                keyboard.hideCustomKeyboard();
+            } else {
+                finish();
+            }
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     // обработка кнопки назад
@@ -229,11 +236,6 @@ public class WordEdit extends AppCompatActivity {
 
     @Override
     public void onResume() {
-        if (mTracker != null) {
-            Log.i("myLogs", "Setting screen name: " + this.getLocalClassName());
-            mTracker.setScreenName("Activity " + this.getLocalClassName());
-            mTracker.send(new HitBuilders.ScreenViewBuilder().build());
-        }
         super.onResume();
     }
 
@@ -243,7 +245,7 @@ public class WordEdit extends AppCompatActivity {
     }
 
     private void changeAdapter() {
-        ArrayList<String> newCategories = new ArrayList<String>();
+        ArrayList<String> newCategories = new ArrayList<>();
         newCategories.addAll(categories);
         String[] arr = mactvCategory.getText().toString().split(",");
         for (String category : arr) {
@@ -253,10 +255,10 @@ public class WordEdit extends AppCompatActivity {
             }
         }
         if (lastCategories.size() != newCategories.size()) {
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                     android.R.layout.simple_list_item_1, newCategories);
             mactvCategory.setAdapter(adapter);
-            lastCategories = new ArrayList<String>();
+            lastCategories = new ArrayList<>();
             lastCategories.addAll(newCategories);
         }
     }

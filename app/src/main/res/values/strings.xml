@@ -27,15 +27,15 @@
     <string name="create">Сохранить</string>
     <string name="no_data">Нет данных</string>
     <string name="help">Помощь</string>
-    <string name="upload_file">Загрузка данных из файла</string>
-    <string name="download_file">Выгрузка данных в файл</string>
+    <string name="upload_file">Загрузка слов из файла</string>
+    <string name="download_file">Выгрузка слов в файл</string>
     <string name="path_file">Путь к файлу</string>
     <string name="file">файл</string>
-    <string name="delete_data">удалить существующие данные</string>
+    <string name="delete_data">удалить существующие слова</string>
     <string name="semicolon_row">- разделитель для столбцов</string>
     <string name="semicolon">;</string>
-    <string name="upload_data">загрузить данные</string>
-    <string name="download_data">выгрузить данные</string>
+    <string name="upload_data">загрузить слова</string>
+    <string name="download_data">выгрузить слова</string>
     <string name="amount_load_rows">Количество загруженных из файла строк</string>
     <string name="not_load_rows">Не загрузились строки № </string>
     <string name="must_be_utf8">Для правильного отображения символов у текстового файла кодировка должна UTF-8.</string>
@@ -75,7 +75,9 @@
     <string name="englishs">Aнглийские</string>
     <string name="russians">Русские</string>
     <string name="show_transcr">Показывать транскрипцию</string>
+    <string name="not_show_transcr">Не показывать транскрипцию</string>
     <string name="show_dont_know">Показывать кнопку \'Не знаю\'</string>
+    <string name="not_show_dont_know">Не показывать кнопку \'Не знаю\'</string>
     <string name="speak_eng_word">Автоматически озвучивать англ. слово</string>
     <string name="clear_history">Очистить историю</string>
     <string name="about">О программе</string>
@@ -118,6 +120,8 @@
     <string name="pay">Оплатить</string>
     <string name="right_answers">"Верные ответы: "</string>
     <string name="wrong_answers">"Неверные ответы: "</string>
+    <string name="right_answer">Верный ответ</string>
+    <string name="wrong_answer">"Неверный ответ"</string>
     <string name="no_wrong_answers">Нет неверных ответов ни в одной категории</string>
     <string name="learning_with_mistakes">Обучение только по словам с ошибками</string>
     <string name="learning_with_all">Обучение со всеми словами</string>
@@ -129,8 +133,8 @@
     <string name="learning_type">Тип обучения:</string>
     <string name="choice_learning">Выбор верного варианта</string>
     <string name="write_learning">Написание слова</string>
-    <string name="complex_learning">"Комплексное обучение "</string>
-    <string name="complex_description">(по каждому слову последоват-но: выбор варианта из рус. перевода, выбор варианта из англ. перевода, написание англ. перевода)</string>
+    <string name="complex_learning">Комплексное обучение</string>
+    <string name="complex_description">" (по каждому слову последоват-но: выбор варианта из рус. перевода, выбор варианта из англ. перевода, написание англ. перевода)"</string>
     <string name="repeats_amount">Количество повторений последоват-тей в комплексном обучении</string>
     <string name="inter_translate">Введите перевод слова</string>
     <string name="dont_know">Не знаю</string>
@@ -151,6 +155,23 @@
     <string name="aready_purchased">Товар уже приобретен. Повторная покупка не возможна</string>
     <string name="pay_service_disconnected">Нет связи с сервисом покупки</string>
     <string name="purchase_error">Ошибка покупки товара</string>
+    <string name="paid">Оплачено</string>
+    <string name="not_paid">Не оплачено</string>
+    <string name="learning_speak">Озвучивать слово</string>
+    <string name="not_learning_speak">Не озвучивать слово</string>
+    <string name="learning_eng_words">Англ. слова</string>
+    <string name="learning_rus_words">Рус. слова</string>
+    <string name="eng_rus">Англо-рус</string>
+    <string name="rus_eng">Русско-англ</string>
+    <string name="all_words">Все слова</string>
+    <string name="last_words">Последние просмотренные слова</string>
+    <string name="theme">THEME</string>
+    <string name="US_eng">Амер. английский</string>
+    <string name="UK_eng">Брит. английский</string>
+    <string name="from_thanks">Из Thanks</string>
+    <string name="data_from_file">Данные из файла</string>
+    <string name="learning_lang">Язык обучения</string>
+    <string name="bg_color">Цвет фона</string>
     <string name="helpForLearning">
 <![CDATA[
 <p><b><big>WordMemorizer</big></b> - программа-помощник в запоминании английских слов.
@@ -232,7 +253,7 @@
     <string name="about_desc">
 <![CDATA[
 <p><big><b>WordMemorizer</b></big>
-<br>Версия 2.4 для Google Android 4.1 и выше.
+<br>Версия 2.5 для Google Android 4.1 и выше.
 <p><b>Производитель</b>
 <br>Handy Systems
 <p><b>e-mail</b>

@@ -75,7 +75,7 @@ public class DB {
     // показывать в словаре последние выбранные слова: 0-нет, 1-да
     public static final String DICT_SHOW_HISTORY = "dictShowHistory";
     // сколько пользователь перечислил ознаграждения
-    public static final String AMOUNT_DONATE = "0";
+    public static final String AMOUNT_DONATE = "amount_donate";
     // какой фон выбран? по умолчанию - 1. Предложено 15 цветов
     public static final String BG_COLOR = "bgColor";
     // признак старой бесплатной БД: 1 - старая бесплатная БД, 0 - новая БД с платными настройками

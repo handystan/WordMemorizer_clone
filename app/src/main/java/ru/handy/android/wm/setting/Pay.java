@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -54,11 +56,12 @@ public class Pay implements PurchasesUpdatedListener {
     public static final String ITEM_SKU_99rub = "android.test.purchased";*/
     private BillingClient billingClient;
     private Activity act;
-    private List<SkuDetails> skuDetList = new ArrayList<> (); //список с идентификаторами возможных покупок
+    private List<SkuDetails> skuDetList = new ArrayList<>(); //список с идентификаторами возможных покупок
     private int reqCode; //код запроса при покупке, который помогает определить дальнейшие действия после покупки
     private GlobApp app;
     private int amountDonate = 0; // показывает сумму, которую пользователь пожертвовал разработчику
     private DB db;
+    private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
     public Pay(Activity activity) {
         act = activity;
@@ -69,11 +72,12 @@ public class Pay implements PurchasesUpdatedListener {
                 if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                     Log.i("myLogs", "Billing client successfully set up");
                     app = (GlobApp) act.getApplication(); // получаем доступ к приложению
+                    mFBAnalytics = app.getFBAnalytics(); // получение экземпляра FirebaseAnalytics
                     db = app.getDb(); // открываем подключение к БД
                     String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
                     amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
                     //заполняем список с идентификаторами возможных покупок
-                    List<String> skuList = new ArrayList<> ();
+                    List<String> skuList = new ArrayList<>();
                     skuList.add(ITEM_SKU_1dol);
                     skuList.add(ITEM_SKU_2dol);
                     skuList.add(ITEM_SKU_5dol);
@@ -93,6 +97,7 @@ public class Pay implements PurchasesUpdatedListener {
                     Log.i("myLogs", "Billing client set up with responseCode = " + billingResult.getResponseCode());
                 }
             }
+
             @Override
             public void onBillingServiceDisconnected() {
                 billingClient = null;
@@ -120,14 +125,14 @@ public class Pay implements PurchasesUpdatedListener {
         }
         if (skuDetails == null) return -1;
         BillingFlowParams purchaseParams = BillingFlowParams.newBuilder().setSkuDetails(skuDetails).build();
-        int responseCode = billingClient.launchBillingFlow(act, purchaseParams).getResponseCode();
-        return responseCode;
+        return billingClient.launchBillingFlow(act, purchaseParams).getResponseCode();
     }
 
     /**
      * слушатель, который обрабатывает покупку
-     * @param billingResult
-     * @param purchases
+     *
+     * @param billingResult результат покупки
+     * @param purchases перечень покупок
      */
     @Override
     public void onPurchasesUpdated(@NonNull BillingResult billingResult, @Nullable List<Purchase> purchases) {
@@ -145,13 +150,14 @@ public class Pay implements PurchasesUpdatedListener {
                 amountDonate += thisSKU;
                 db.updateRecExitState(DB.AMOUNT_DONATE, amountDonate + "");
                 Log.i("myLogs", "Всего оплачено пользователем " + db.getValueByVariable(DB.AMOUNT_DONATE) + " (пока без подтверждения)");
+                String purchaseMotive = "";
                 // признаем покупку (иначе через 3 дня пользователю деньги вернуться обратно
                 if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
                     // 1001 - ответ пришел от Thanks
                     // если это первая покупка, то делаем невозобновляемую покупку, а если не первая, то возобновляемую через consume
                     if (reqCode == 1001 & oldAmountDonate > 0) {
                         consume(purchase.getSku(), purchase.getPurchaseToken());
-                        return;
+                        purchaseMotive = s(R.string.from_thanks);
                     } else if (reqCode == 1002) { // 1002 - открываем статистику после оплаты (3 - это код для статистики)
                         ((Learning) act).setAmountDonate(amountDonate);
                         LinearLayout llThanks = ((Learning) act).getLlThanks();
@@ -159,21 +165,34 @@ public class Pay implements PurchasesUpdatedListener {
                         params.height = 0;
                         llThanks.setLayoutParams(params);
                         act.startActivityForResult(new Intent(act, Statistics.class), 3);
+                        purchaseMotive = s(R.string.statistics);
                     } else if (reqCode == 1003) { // 1003 - ответ пришел от EditData (возможность загружать из файла не ограниченное число слов)
                         ((EditData) act).setAmountDonate(amountDonate);
                         LinearLayout llPayInformation = ((EditData) act).getLlPayInformation();
                         ViewGroup.LayoutParams params = (ViewGroup.LayoutParams) llPayInformation.getLayoutParams();
                         params.height = 0;
                         llPayInformation.setLayoutParams(params);
+                        purchaseMotive = s(R.string.data_from_file);
                     } else if (reqCode == 1004) { // 1004 - ответ пришел от фрагмента LearningSetting (меняется метод обучения)
                         ((Settings) act).getLearningSetting().setLearningType(1, true);
+                        purchaseMotive = s(R.string.learning_type);
                     } else if (reqCode == 1005) { // 1005 - ответ пришел от фрагмента LearningSetting (меняется язык обучения)
                         ((Settings) act).getLearningSetting().setEng(false);
+                        purchaseMotive = s(R.string.learning_lang);
                     } else if (reqCode == 1006) { // 1006 - ответ пришел от фрагмента LearningSetting (меняется кол-во слов для выбора)
                         ((Settings) act).getLearningSetting().setAmountWords();
+                        purchaseMotive = s(R.string.amount_words);
                     } else if (reqCode == 1007) { // 1007 - ответ пришел от фрагмента OtherSetting по смене цвета фона
                         ((Settings) act).getOtherSetting().changeColor(itemSKU);
+                        purchaseMotive = s(R.string.bg_color);
                     }
+                    // отправляем в Firebase инфу с настройками по словарю
+                    if (mFBAnalytics != null) {
+                        app.purchaseEvent(purchaseMotive, db.getValueByVariable(DB.DATE_TRIAL_STATS),
+                                db.getValueByVariable(DB.DATE_LEARNING_METHOD), db.getValueByVariable(DB.DATE_LANGUAGE),
+                                db.getValueByVariable(DB.DATE_LANG_WORD_AMOUNT), db.getValueByVariable(DB.DATE_BG_COLOR));
+                    }
+
                     if (!purchase.isAcknowledged()) {
                         AcknowledgePurchaseParams acknowledgePurchaseParams =
                                 AcknowledgePurchaseParams.newBuilder()
@@ -200,7 +219,7 @@ public class Pay implements PurchasesUpdatedListener {
             if (reqCode == 1004) { // 1004 - ответ пришел от фрагмента LearningSetting (меняется метод обучения)
                 ((Settings) act).getLearningSetting().setLearningType(0, true);
             } else if (reqCode == 1005) { // 1005 - ответ пришел от фрагмента LearningSetting (меняется язык обучения)
-                ((Settings) act).getLearningSetting().setEng(true,true);
+                ((Settings) act).getLearningSetting().setEng(true, true);
             } else if (reqCode == 1006) { // 1006 - ответ пришел от фрагмента LearningSetting (меняется кол-во слов для выбора)
                 int amountWords = db.getValueByVariable(DB.LEARNING_AMOUNT_WORDS) == null ? 8 :
                         Integer.parseInt(db.getValueByVariable(DB.LEARNING_AMOUNT_WORDS));
@@ -211,6 +230,7 @@ public class Pay implements PurchasesUpdatedListener {
 
     /**
      * есть ли сохраненная информация в Google Play о покупаках данного клиента
+     *
      * @return оплаченная сумма, сохраненная в Google Play. -1 означает сервисы не готовы
      */
     public int amountOfPurchased() {
@@ -238,7 +258,6 @@ public class Pay implements PurchasesUpdatedListener {
      *
      * @param itemSKU       - идентификатор продукта, который оплачен
      * @param purchaseToken - идентификатор покупки
-     * @throws RemoteException
      */
     public void consume(final String itemSKU, String purchaseToken) {
         ConsumeParams consumeParams = ConsumeParams.newBuilder().setPurchaseToken(purchaseToken).build();

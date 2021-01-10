@@ -4,30 +4,30 @@ import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import android.text.Html;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import ru.handy.android.wm.setting.Utils;
 
 public class Help extends AppCompatActivity {
 
+    private GlobApp app;
     private int idHelp; // id ActionBar, который выбран на момент вызова помощи
     private String linkWord;
     private TextView mTextView;
-    private Tracker mTracker; // трекер для Google analitics, чтобы отслеживать активности пользователей
+    private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
     public void onCreate(Bundle savedInstanceState) {
         Utils.onActivityCreateSetTheme(this);
@@ -37,8 +37,12 @@ public class Help extends AppCompatActivity {
         idHelp = intent.getIntExtra("idhelp", 0);
 
         // Obtain the shared Tracker instance.
-        GlobApp app = (GlobApp) getApplication();
-        mTracker = app.getDefaultTracker();
+        app = (GlobApp) getApplication();
+        mFBAnalytics = app.getFBAnalytics(); // получение экземпляра FirebaseAnalytics
+        if (mFBAnalytics != null) {
+            String[] arrClName = this.getClass().toString().split("\\.");
+            app.openActEvent(arrClName[arrClName.length - 1]);
+        }
 
         // устанавливаем toolbar и actionbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -72,7 +76,7 @@ public class Help extends AppCompatActivity {
         SpannableString[] link = new SpannableString[devFull.length - 1];
         // local vars:
         ClickableSpan[] cs = new ClickableSpan[devFull.length - 1];
-        String[] devDevFull = new String[2];
+        String[] devDevFull;
 
         for (int i = 1; i < devFull.length; i++) {
             // obtaining 'clear' link
@@ -118,18 +122,16 @@ public class Help extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Операции для выбранного пункта меню
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                if (mTextView.getText().toString().contains("На главную")) {
-                    mTextView.setText(Html.fromHtml(""));
-                    setTVText(R.string.helpForLearning);
-                } else {
-                    finish();
-                }
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == android.R.id.home) {
+            if (mTextView.getText().toString().contains("На главную")) {
+                mTextView.setText(Html.fromHtml(""));
+                setTVText(R.string.helpForLearning);
+            } else {
+                finish();
+            }
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     // обработка кнопки назад
@@ -149,11 +151,6 @@ public class Help extends AppCompatActivity {
 
     @Override
     public void onResume() {
-        if (mTracker != null) {
-            Log.i("myLogs", "Setting screen name: " + this.getLocalClassName());
-            mTracker.setScreenName("Activity " + this.getLocalClassName());
-            mTracker.send(new HitBuilders.ScreenViewBuilder().build());
-        }
         super.onResume();
     }
 }

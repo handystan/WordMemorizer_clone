@@ -1,12 +1,7 @@
 package ru.handy.android.wm.setting;
 
 import android.annotation.SuppressLint;
-import androidx.fragment.app.FragmentActivity;
-import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.Fragment;
-import android.content.DialogInterface;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,15 +10,16 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.RadioButton;
-import android.widget.Toast;
 
-import java.sql.Date;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+
 import java.util.ArrayList;
 
 import ru.handy.android.wm.DB;
 import ru.handy.android.wm.GlobApp;
 import ru.handy.android.wm.R;
-import ru.handy.android.wm.learning.Learning;
 
 /**
  * класс с прочими настройками в частности со сменой фона
@@ -37,7 +33,7 @@ public class OtherSetting extends Fragment implements OnClickListener {
     private View otherTab;
     private RadioButton rbUS;
     private RadioButton rbUK;
-    private ArrayList<Button> buttons = new ArrayList<Button>();
+    private ArrayList<Button> buttons = new ArrayList<>();
     private int bgColor = 1;
     private int pronunc = 0; // 0-американский, 1-британский
     private DB db;
@@ -55,7 +51,7 @@ public class OtherSetting extends Fragment implements OnClickListener {
         app = (GlobApp) act.getApplication(); // получаем доступ к приложению
         db = app.getDb(); // открываем подключение к БД
 
-        buttons = new ArrayList<Button>();
+        buttons = new ArrayList<>();
         buttons.add((Button) otherTab.findViewById(R.id.bBGColor1));
         buttons.add((Button) otherTab.findViewById(R.id.bBGColor2));
         buttons.add((Button) otherTab.findViewById(R.id.bBGColor3));

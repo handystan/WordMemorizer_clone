@@ -36,15 +36,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.analytics.GoogleAnalytics;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
 import ru.handy.android.wm.About;
+import ru.handy.android.wm.BuildConfig;
 import ru.handy.android.wm.DB;
 import ru.handy.android.wm.GlobApp;
 import ru.handy.android.wm.Help;
@@ -84,40 +83,30 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
     private Word wrongWord = null; // неверное выбранное слово
     private CountDownLatch latch = null;
     private String checkedEngWord = ""; //проверяемое аглийское слово
-    // тип обучения: 0-отгадывание из набора слов, 1-написание слова, 2-комлексное обучение
-    private int learningType = 0;
-    // озвучивать ли слова: true-озвучивать, false-не озвучивать
-    private boolean isSpeak = true;
-    // какие слова отгадываются в "закреплении": true-английские, false-русские
-    private boolean isEngFixing = true;
-    // показывать ли транскрипцию в "закреплении": true-да, false-нет
-    private boolean isShowTrancr = true;
-    private int amountWords = 6;
-    // показывать ли кнопку "Не знаю": true-показывать, false-не показывать
-    private boolean isShowDontKnow = true;
-    // показывает в каком состоянии находится обучалка: true-выбран неверный ответ, ждут прикосновения, false-обычный режим (нужно для сохранения состояния при повороте экрана)
-    private boolean isWaitTouch = false;
-    // только для комплексного обучения (для случая, когда learningType=2)
-    private int repeatsAmountCompl = 2; // кол-во повторений
+    private int learningType = 0; // тип обучения: 0-отгадывание из набора слов, 1-написание слова, 2-комлексное обучение
+    private boolean isSpeak = true; // озвучивать ли слова: true-озвучивать, false-не озвучивать
+    private boolean isEngFixing = true; // какие слова отгадываются в "закреплении": true-английские, false-русские
+    private boolean isShowTrancr = true; // показывать ли транскрипцию в "закреплении": true-да, false-нет
+    private int amountWords = 6; // кол-во слов для отгадывания
+    private boolean isShowDontKnow = true; // показывать ли кнопку "Не знаю": true-показывать, false-не показывать
+    private boolean isWaitTouch = false;// показывает в каком состоянии находится обучалка: true-выбран неверный ответ, ждут прикосновения, false-обычный режим (нужно для сохранения состояния при повороте экрана)
+    private int repeatsAmountCompl = 2; // кол-во повторений (только для комплексного обучения (для случая, когда learningType=2))
     //    private int curRepeatNumberCompl = 0; // номер текущего повторение данного слова
     private int curLearningTypeCompl = 0; // текущий тип обучения в комплексном обучении: 0-отгадывание из из русс. перевода, 1-отгадывание из англ. перевода, 2-написание англ. слова
-    // диалоговое окно с сообщением
-    private DialogLearning dl = null;
-    // сообщение либо о полном окончании урока, либо об окончании с ошибками
-    private Word message = null;
-    // показывает сумму, которую пользователь пожертвовал разработчику
-    private int amountDonate = 0;
+    private DialogLearning dl = null;// диалоговое окно с сообщением
+    private Word message = null; // сообщение либо о полном окончании урока, либо об окончании с ошибками
+    private boolean isFromOldDB = false; //показывает приложение было установлено еще до введения платных функций или нет
+    private int amountDonate = 0; // показывает сумму, которую пользователь пожертвовал разработчику
     private int lastBGColor = 100; // цвет фона для запоминания
     private Pay pay; // класс для обработки платежей
-    private Tracker mTracker; // трекер для Google analitics, чтобы отслеживать активности пользователей
+    private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
     @SuppressLint({"InflateParams", "ClickableViewAccessibility"})
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
-        GoogleAnalytics.getInstance(this).setDryRun(true); // отказ от GoogleAnalytics при тестировании (при выпуске в бой нужно закоментить)
         app = (GlobApp) getApplication(); // получаем доступ к приложению
-        mTracker = app.getDefaultTracker(); // Obtain the shared Tracker instance.
+        mFBAnalytics = app.getFBAnalytics(); // получение экземпляра FirebaseAnalytics
         db = app.getDb(); // открываем подключение к БД
         app.setLearning(this); // в application указываем экземпляр learning, чтобы с ним можно было работать из любых мест приложения
 
@@ -134,7 +123,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         setContentView(R.layout.learning_md);
         Log.d("myLogs", "onCreate Learning");
         String fromOldDB = db.getValueByVariable(DB.OLD_FREE_DB);
-        boolean isFromOldDB = !(fromOldDB == null || fromOldDB.equals("0"));
+        isFromOldDB = !(fromOldDB == null || fromOldDB.equals("0"));
         String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
         amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
 
@@ -390,6 +379,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                                     llThanks.setLayoutParams(params);
                                 }
                             });
+                            mFBAnalytics.setUserProperty("is_paid", amountDonate == 0 ? "N" : "Y"); // оплачено приложение пользователем или нет
                         }
                     }
                 }.start();
@@ -402,6 +392,27 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
             ViewGroup.LayoutParams params = (ViewGroup.LayoutParams) llThanks.getLayoutParams();
             params.height = 0;
             llThanks.setLayoutParams(params);
+        }
+        // отправляем в Firebase инфу с настройками по словарю
+        if (mFBAnalytics != null) {
+            // по открытию Activity
+            String[] arrClName = this.getClass().toString().split("\\.");
+            app.openActEvent(arrClName[arrClName.length - 1]);
+            // с прочими настройками приложения
+            String strColor = db.getValueByVariable(DB.BG_COLOR);
+            int bGColor = strColor == null ? 0 : Integer.parseInt(strColor);
+            String pronun = db.getValueByVariable(DB.PRONUNCIATION_USUK);
+            app.otherEvent(s(R.string.theme) + "_" + bGColor,
+                    pronun.equals("0") ? s(R.string.US_eng) : s(R.string.UK_eng));
+            // устанавливаем пользовательские свойства
+            mFBAnalytics.setUserProperty("from_free_old_db", isFromOldDB ? "Y" : "N"); // пользователь из старых бесплатных версий приложения или нет
+            mFBAnalytics.setUserProperty("is_paid", amountDonate == 0 ? "N" : "Y"); // оплачено приложение пользователем или нет
+            mFBAnalytics.setUserProperty("app_version", BuildConfig.VERSION_NAME + " (" + BuildConfig.VERSION_CODE + ")"); // наименование и номер версии приложения, установленное у пользователя
+            mFBAnalytics.setUserProperty("date_trial_stats", db.getValueByVariable(DB.DATE_TRIAL_STATS)); // дата начала пробного периода по статистике
+            mFBAnalytics.setUserProperty("date_trial_learning_type", db.getValueByVariable(DB.DATE_LEARNING_METHOD)); // дата начала пробного периода по другим методам обучения
+            mFBAnalytics.setUserProperty("date_trial_language", db.getValueByVariable(DB.DATE_LANGUAGE)); // дата начала пробного периода по смене языка обучения
+            mFBAnalytics.setUserProperty("date_trial_word_amount", db.getValueByVariable(DB.DATE_LANG_WORD_AMOUNT)); // дата начала пробного периода по кол-ву слов для выбора
+            mFBAnalytics.setUserProperty("date_trial_bgcolor", db.getValueByVariable(DB.DATE_BG_COLOR)); // дата начала пробного периода по цвету фона
         }
     }
 
@@ -682,6 +693,18 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                     db.updateStat(curWord, fixing.getCategories(), finalRightWord == null);
                 }
             }).start();
+            // отправляем в Firebase инфу с настройками по обучению
+            if (mFBAnalytics != null) {
+                app.learningEvent(amountDonate > 0 || isFromOldDB ? s(R.string.paid) : s(R.string.not_paid),
+                        fixing.getCategories(),
+                        learningType == 0 ? s(R.string.choice_learning) : (learningType == 1 ? s(R.string.write_learning) : s(R.string.complex_learning)),
+                        isSpeak ? s(R.string.learning_speak) : s(R.string.not_learning_speak),
+                        isShowTrancr ? s(R.string.show_transcr) : s(R.string.not_show_transcr),
+                        isShowDontKnow ? s(R.string.show_dont_know) : s(R.string.not_show_dont_know),
+                        isEngFixing ? s(R.string.learning_eng_words) : s(R.string.learning_rus_words),
+                        Integer.toString(amountWords), Integer.toString(repeatsAmountCompl),
+                        rightWord == null ? s(R.string.right_answer) : s(R.string.wrong_answer));
+            }
         } else {
             rightWord = curWord;
         }
@@ -980,12 +1003,6 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
             lastBGColor = bGColor;
             recreate();
             Log.d("myLogs", "onResume Learning recreate");
-        }
-        if (mTracker != null) {
-            Log.i("myLogs", "Setting screen name: " + this.getLocalClassName());
-            mTracker.setScreenName("Activity " + this.getLocalClassName() + (learningType == 0
-                    ? " - Choices" : (learningType == 1 ? " - Write" : " - Complex")));
-            mTracker.send(new HitBuilders.ScreenViewBuilder().build());
         }
         super.onResume();
     }

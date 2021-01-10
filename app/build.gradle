@@ -6,7 +6,7 @@ android {
         config {
             keyAlias 'keyforwm'
             keyPassword 'Zzz111'
-            storeFile file('D:/Android/mykeys.jks')
+            storeFile file('C:/Android/mykeys.jks')
             storePassword 'Zzz111'
         }
     }
@@ -16,8 +16,8 @@ android {
         applicationId "ru.handy.android.wm"
         minSdkVersion 16
         targetSdkVersion 30
-        versionCode 26
-        versionName "2.4"
+        versionCode 27
+        versionName "2.5"
     }
     buildTypes {
         release {
@@ -35,6 +35,6 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.2.1'
-    implementation 'com.google.android.gms:play-services-analytics:17.0.0'
-    //implementation 'com.google.firebase:firebase-analytics:18.0.0'
+    implementation platform('com.google.firebase:firebase-bom:26.2.0')
+    implementation 'com.google.firebase:firebase-analytics'
 }

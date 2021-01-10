@@ -6,10 +6,12 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,10 +23,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
-import ru.handy.android.wm.learning.Learning;
 import ru.handy.android.wm.setting.Pay;
 import ru.handy.android.wm.setting.Utils;
 
@@ -45,7 +45,7 @@ public class Thanks extends AppCompatActivity implements View.OnClickListener {
     // показывает сумму, которую пользователь пожертвовал разработчику
     private int amountDonate = 0;
     private DB db;
-    private Tracker mTracker; // трекер для Google analitics, чтобы отслеживать активности пользователей
+    private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +54,11 @@ public class Thanks extends AppCompatActivity implements View.OnClickListener {
         setContentView(R.layout.thanks);
 
         app = (GlobApp) getApplication(); // получаем доступ к приложению
-        mTracker = app.getDefaultTracker(); // Obtain the shared Tracker instance.
+        mFBAnalytics = app.getFBAnalytics(); // получение экземпляра FirebaseAnalytics
+        if (mFBAnalytics != null) {
+            String[] arrClName = this.getClass().toString().split("\\.");
+            app.openActEvent(arrClName[arrClName.length - 1]);
+        }
         db = app.getDb(); // открываем подключение к БД
 
         // устанавливаем toolbar и actionbar
@@ -82,7 +86,7 @@ public class Thanks extends AppCompatActivity implements View.OnClickListener {
         // адаптер для спиннера размера взноса
         String[] spinnerData = {(amountDonate == 0 ? "99 " : "100 ") + s(R.string.rub)
                 , "250 " + s(R.string.rub), "500 " + s(R.string.rub)};
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_item, spinnerData);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sDonate.setAdapter(adapter);
@@ -116,14 +120,12 @@ public class Thanks extends AppCompatActivity implements View.OnClickListener {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Операции для выбранного пункта меню
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                createIntent();
-                finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == android.R.id.home) {
+            createIntent();
+            finish();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     // обработка кнопки назад
@@ -180,45 +182,10 @@ public class Thanks extends AppCompatActivity implements View.OnClickListener {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        // 1001 - поддержка разработчика из этого Activity
-/*        if (requestCode == 1001) {
-            if (resultCode == RESULT_OK) {
-                Toast.makeText(getApplicationContext(), s(R.string.thank_you), Toast.LENGTH_LONG).show();
-                Log.d("myLogs", "Оплата произведена успешно!");
-                amountDonate += itemSKU.equals(Pay.ITEM_SKU_1dol) ? 50 :
-                        (itemSKU.equals(Pay.ITEM_SKU_2dol) ? 100 :
-                                (itemSKU.equals(Pay.ITEM_SKU_5dol) ? 250 :
-                                        (itemSKU.equals(Pay.ITEM_SKU_10dol) ? 500 :
-                                                (itemSKU.equals(Pay.ITEM_SKU_99rub) ? 99 : 0))));
-                db.updateRecExitState(DB.AMOUNT_DONATE, amountDonate + "");
-                Log.d("myLogs", "Всего оплачено пользователем " + db.getValueByVariable(DB.AMOUNT_DONATE));
-                // это нужно для того, что иметь возможность делать покупку несколько раз.
-                // Но я в итоге от этого отказался, так как в этом случае на сервере не сохраняется информация о покупке
-                String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
-                try {
-                    JSONObject jo = new JSONObject(purchaseData);
-                    String purchaseToken = jo.getString("purchaseToken");
-                    Toast.makeText(this.getApplicationContext(), "purchaseToken = " + purchaseToken, Toast.LENGTH_LONG).show();
-                    pay.consume(itemSKU, purchaseToken);
-                } catch (JSONException e) {
-                    Log.e("myLogs", "e: " + e);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                    Toast.makeText(getApplicationContext(), "consume " + itemSKU + " is failed: " + e, Toast.LENGTH_LONG).show();
-                }
-            }
-        } else {
-            super.onActivityResult(requestCode, resultCode, data);
-        }*/
     }
 
     @Override
     public void onResume() {
-        if (mTracker != null) {
-            Log.i("myLogs", "Setting screen name: " + this.getLocalClassName());
-            mTracker.setScreenName("Activity " + this.getLocalClassName());
-            mTracker.send(new HitBuilders.ScreenViewBuilder().build());
-        }
         super.onResume();
     }
 

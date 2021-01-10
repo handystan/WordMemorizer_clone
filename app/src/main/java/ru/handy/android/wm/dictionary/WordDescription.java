@@ -1,13 +1,16 @@
 package ru.handy.android.wm.dictionary;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -16,8 +19,7 @@ import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import ru.handy.android.wm.GlobApp;
 import ru.handy.android.wm.R;
@@ -31,8 +33,9 @@ public class WordDescription extends AppCompatActivity implements OnClickListene
     private TextView tvRusTrasclate;
     private TextView tvCategory;
     private ImageView ivSound;
-    private Tracker mTracker; // трекер для Google analitics, чтобы отслеживать активности пользователей
+    private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
+    @SuppressLint("ClickableViewAccessibility")
     public void onCreate(Bundle savedInstanceState) {
         Utils.onActivityCreateSetTheme(this);
         super.onCreate(savedInstanceState);
@@ -53,7 +56,11 @@ public class WordDescription extends AppCompatActivity implements OnClickListene
 
         // Obtain the shared Tracker instance.
         app = (GlobApp) getApplication();
-        mTracker = app.getDefaultTracker();
+        mFBAnalytics = app.getFBAnalytics(); // получение экземпляра FirebaseAnalytics
+        if (mFBAnalytics != null) {
+            String[] arrClName = this.getClass().toString().split("\\.");
+            app.openActEvent(arrClName[arrClName.length - 1]);
+        }
 
         tvDictEngWord = (TextView) findViewById(R.id.tvDictEngWord);
         tvTrascrip = (TextView) findViewById(R.id.tvTrascrip);
@@ -89,13 +96,11 @@ public class WordDescription extends AppCompatActivity implements OnClickListene
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Операции для выбранного пункта меню
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -107,11 +112,6 @@ public class WordDescription extends AppCompatActivity implements OnClickListene
 
     @Override
     public void onResume() {
-        if (mTracker != null) {
-            Log.i("myLogs", "Setting screen name: " + this.getLocalClassName());
-            mTracker.setScreenName("Activity " + this.getLocalClassName());
-            mTracker.send(new HitBuilders.ScreenViewBuilder().build());
-        }
         super.onResume();
     }
 

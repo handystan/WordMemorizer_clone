@@ -100,6 +100,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 updateDictFrom20(db);
                 updateDictFrom23(db);
                 updateDictFrom24(db);
+                updateDictFrom26(db);
             } else if (oldVersion == 16 && newVersion == 27) {
                 updateDictFrom16(db);
                 updateDictFrom17(db);
@@ -108,6 +109,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 updateDictFrom20(db);
                 updateDictFrom23(db);
                 updateDictFrom24(db);
+                updateDictFrom26(db);
             } else if (oldVersion == 17 && newVersion == 27) {
                 updateDictFrom17(db);
                 updateDictFrom18(db);
@@ -115,26 +117,32 @@ public class DBHelper extends SQLiteOpenHelper {
                 updateDictFrom20(db);
                 updateDictFrom23(db);
                 updateDictFrom24(db);
+                updateDictFrom26(db);
             } else if (oldVersion == 18 && newVersion == 27) {
                 updateDictFrom18(db);
                 updateDictFrom19(db);
                 updateDictFrom20(db);
                 updateDictFrom23(db);
                 updateDictFrom24(db);
+                updateDictFrom26(db);
             } else if (oldVersion == 19 && newVersion == 27) {
                 updateDictFrom19(db);
                 updateDictFrom20(db);
                 updateDictFrom23(db);
                 updateDictFrom24(db);
+                updateDictFrom26(db);
             } else if (oldVersion == 20 && newVersion == 27) { // версии 21, 22 не было, так как она запоролась в Google Console
                 updateDictFrom20(db);
                 updateDictFrom23(db);
                 updateDictFrom24(db);
+                updateDictFrom26(db);
             } else if (oldVersion == 23 && newVersion == 27) {
                 updateDictFrom23(db);
                 updateDictFrom24(db);
+                updateDictFrom26(db);
             }  else if (oldVersion == 24 && newVersion == 27) { // версия 25 была тестовой
                 updateDictFrom24(db);
+                updateDictFrom26(db);
             }  else if (oldVersion == 26 && newVersion == 27) {
                 updateDictFrom26(db);
             }
@@ -2073,13 +2081,13 @@ public class DBHelper extends SQLiteOpenHelper {
         insertDict(db, "ex-wife", "[eks-waɪf]", "бывшая жена", "семья");
         insertDict(db, "father", "[ˈfɑːðə]", "отец", "семья");
         insertDict(db, "father-in-law", "[ˈfɑːðə-ɪn-lɔː]", "свекор, тесть", "семья");
-        insertDict(db, "grandchild", "[ˈgrænʧaɪld]", "внук; внучка", "семья");
+        insertDict(db, "grandchild", "[ˈgrænʧaɪld]", "внук, внучка", "семья");
         insertDict(db, "granddaughter", "[ˈgrændɔːtə]", "внучка", "семья");
         insertDict(db, "grandfather", "[ˈgrændfɑːðə]", "дедушка", "семья");
         insertDict(db, "grandmother", "[ˈgrænmʌðə]", "бабушка", "семья");
         insertDict(db, "grandparent (s)", "[ˈgrænpeərənt]", "дед и бабка", "семья");
         insertDict(db, "grandson", "[ˈgrænsʌn]", "внук", "семья");
-        insertDict(db, "great-grandchild", "[greɪt-ˈgrænʧɪldrən]", "правнук; правнучка", "семья");
+        insertDict(db, "great-grandchild", "[greɪt-ˈgrænʧɪldrən]", "правнук, правнучка", "семья");
         insertDict(db, "husband", "[ˈhʌzbənd]", "муж", "семья");
         insertDict(db, "in-laws", "[ɪn lɔːz]", "родители жены/мужа", "семья");
         insertDict(db, "mother", "[ˈmʌðə]", "мать", "семья");
@@ -2504,7 +2512,7 @@ public class DBHelper extends SQLiteOpenHelper {
         insertDict(db, "walk out", "[wɔːk aʊt]", "выходить", "фразовые глаголы t-w");
         insertDict(db, "walk over", "[wɔːk ˈəʊvə]", "подойти, подходить", "фразовые глаголы t-w");
         insertDict(db, "watch out", "[wɔʧ aʊt]", "берегись!", "фразовые глаголы t-w");
-        insertDict(db, "wind up", "[wɪnd ʌp]", "оказаться; завершиться чем-либо", "фразовые глаголы t-w");
+        insertDict(db, "wind up", "[wɪnd ʌp]", "оказаться, завершиться чем-либо", "фразовые глаголы t-w");
         insertDict(db, "work out", "[wɜːk aʊt]", "разрабатывать, получиться", "фразовые глаголы t-w");
         insertDict(db, "work up", "[wɜːk ʌp]", "обрабатывать, создать", "фразовые глаголы t-w");
         insertDict(db, "write down", "[raɪt daʊn]", "записывать", "фразовые глаголы t-w");
@@ -3836,6 +3844,9 @@ public class DBHelper extends SQLiteOpenHelper {
     // заполняем основную таблицу-словарь при переходе из версии 26
     private void updateDictFrom26(SQLiteDatabase db) {
         ContentValues cv = new ContentValues();
+        cv.put(DB.C_ES_VARIABLE, "amount_donate");
+        db.update(DB.T_EXITSTATE, cv, DB.C_ES_VARIABLE + "='0'", null);
+        cv = new ContentValues();
         cv.put(DB.C_EW_TRANSCRIPTION, "[bloʊ, blu:, bloʊn]");
         db.update(DB.T_ENGWORDS, cv, DB.C_EW_ENGWORD + "='blow, blew, blown'", null);
         cv = new ContentValues();
@@ -3847,6 +3858,15 @@ public class DBHelper extends SQLiteOpenHelper {
         cv = new ContentValues();
         cv.put(DB.C_EW_ENGWORD, "Sorry I meant well");
         db.update(DB.T_ENGWORDS, cv, DB.C_EW_ENGWORD + "='Sorry, I meant well'", null);
+        cv = new ContentValues();
+        cv.put(DB.C_EW_RUSTRANSLATE, "внук, внучка");
+        db.update(DB.T_ENGWORDS, cv, DB.C_EW_ENGWORD + "='grandchild'", null);
+        cv = new ContentValues();
+        cv.put(DB.C_EW_RUSTRANSLATE, "правнук, правнучка");
+        db.update(DB.T_ENGWORDS, cv, DB.C_EW_ENGWORD + "='great-grandchild'", null);
+        cv = new ContentValues();
+        cv.put(DB.C_EW_RUSTRANSLATE, "оказаться, завершиться чем-либо");
+        db.update(DB.T_ENGWORDS, cv, DB.C_EW_ENGWORD + "='wind up'", null);
         cv = new ContentValues();
         cv.put(DB.C_EW_CATEGORY, "деревья лиственные");
         db.update(DB.T_ENGWORDS, cv, DB.C_EW_ENGWORD + "='alder'", null);

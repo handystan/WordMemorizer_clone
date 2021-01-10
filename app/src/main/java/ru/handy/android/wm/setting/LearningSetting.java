@@ -1,11 +1,6 @@
 package ru.handy.android.wm.setting;
 
 import android.annotation.SuppressLint;
-
-import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.Fragment;
-
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -22,14 +17,12 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.Spinner;
-import android.widget.Toast;
 
-import java.sql.Date;
+import androidx.fragment.app.Fragment;
 
 import ru.handy.android.wm.DB;
 import ru.handy.android.wm.GlobApp;
 import ru.handy.android.wm.R;
-import ru.handy.android.wm.learning.Learning;
 
 public class LearningSetting extends Fragment {
 
@@ -293,7 +286,7 @@ public class LearningSetting extends Fragment {
      * установление типа обучения
      *
      * @param learningType тип обучения
-     * @param isSetRB нужно ли устанавливать значения на самих radioButton
+     * @param isSetRB      нужно ли устанавливать значения на самих radioButton
      */
     public void setLearningType(int learningType, boolean isSetRB) {
         db.updateRecExitState(DB.LEARNING_TYPE, String.valueOf(learningType));
@@ -365,7 +358,7 @@ public class LearningSetting extends Fragment {
     }
 
     /**
-     *  установка языка для обучения: true-английские, false-русские
+     * установка языка для обучения: true-английские, false-русские
      *
      * @param isEngl  true-английские, false-русские
      * @param isSetRB нужно ли устанавливать значения на самих radioButton
@@ -380,7 +373,7 @@ public class LearningSetting extends Fragment {
     }
 
     /**
-     *  установка языка для обучения: true-английские, false-русские (перегруженный метод)
+     * установка языка для обучения: true-английские, false-русские (перегруженный метод)
      *
      * @param isEngl true-английские, false-русские
      */

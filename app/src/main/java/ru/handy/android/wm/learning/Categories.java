@@ -8,6 +8,7 @@ import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -19,6 +20,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
+
 import java.util.ArrayList;
 
 import ru.handy.android.wm.DB;
@@ -26,6 +29,9 @@ import ru.handy.android.wm.GlobApp;
 import ru.handy.android.wm.R;
 import ru.handy.android.wm.setting.Utils;
 
+/**
+ * класс позволяющий выбирать категорию(и) для обучения
+ */
 public class Categories extends AppCompatActivity implements OnClickListener {
 
     public static String NEW_CATEGORIES = "NEW_CATEGORIES";
@@ -35,6 +41,7 @@ public class Categories extends AppCompatActivity implements OnClickListener {
     private Button bChooseCat;
     private CategoryAdapter cAdapter;
     private DB db;
+    private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -43,6 +50,11 @@ public class Categories extends AppCompatActivity implements OnClickListener {
         setContentView(R.layout.categories);
 
         app = (GlobApp) getApplication(); // получаем доступ к приложению
+        mFBAnalytics = app.getFBAnalytics(); // получение экземпляра FirebaseAnalytics
+        if (mFBAnalytics != null) {
+            String[] arrClName = this.getClass().toString().split("\\.");
+            app.openActEvent(arrClName[arrClName.length - 1]);
+        }
         db = app.getDb(); // открываем подключение к БД
 
         // устанавливаем toolbar и actionbar
@@ -94,7 +106,7 @@ public class Categories extends AppCompatActivity implements OnClickListener {
             public void afterTextChanged(Editable s) {
                 for (int i = 0; i < categories.size(); i++) {
                     String catName = categories.get(i).getName();
-                    categories.get(i).setShow(s.equals("")
+                    categories.get(i).setShow(s.toString().equals("")
                             || catName.toLowerCase().contains(s.toString().toLowerCase()));
                 }
                 cAdapter.notifyDataSetChanged(); // обновляем адаптер
@@ -122,17 +134,17 @@ public class Categories extends AppCompatActivity implements OnClickListener {
 
     @Override
     public void onClick(View v) {
-        String s = "";
+        StringBuilder s = new StringBuilder();
         for (Category c : cAdapter.getCheckedCategories()) {
             if (c.isChecked())
-                s += c.getName() + ", ";
+                s.append(c.getName()).append(", ");
         }
-        if (s.equals("")) {
+        if (s.toString().equals("")) {
             Toast.makeText(getApplicationContext(), getResources().getString(R.string.need_category), Toast.LENGTH_SHORT).show();
             return;
         }
-        s = s.substring(0, s.length() - 2);
-        getIntent().putExtra(NEW_CATEGORIES, s);
+        s = new StringBuilder(s.substring(0, s.length() - 2));
+        getIntent().putExtra(NEW_CATEGORIES, s.toString());
         setResult(RESULT_OK, getIntent());
         finish();
     }
@@ -141,13 +153,16 @@ public class Categories extends AppCompatActivity implements OnClickListener {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Операции для выбранного пункта меню
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
     @Override

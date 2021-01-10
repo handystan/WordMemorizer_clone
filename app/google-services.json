@@ -1,35 +1,36 @@
 {
   "project_info": {
-    "project_number": "394240320850",
-    "project_id": "firebase-wordmemorizer"
+    "project_number": "1065784120068",
+    "project_id": "wm-analitics",
+    "storage_bucket": "wm-analitics.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:394240320850:android:ba2c5ce7ef81dd09",
+        "mobilesdk_app_id": "1:1065784120068:android:572f15f98325d37d71f651",
         "android_client_info": {
           "package_name": "ru.handy.android.wm"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1065784120068-cvl3dhvmb9eqbuhr0i6ahlt4hpisdqsd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyD0Z00qjMwGlHQ2smPzScFJIUVx4_NJmbM"
+          "current_key": "AIzaSyCKTSUeR6oPbLVVsWZe671G_kxujprQ9mQ"
         }
       ],
       "services": {
-        "analytics_service": {
-          "status": 2,
-          "analytics_property": {
-            "tracking_id": "UA-83704598-1"
-          }
-        },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
-        },
-        "ads_service": {
-          "status": 1
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1065784120068-cvl3dhvmb9eqbuhr0i6ahlt4hpisdqsd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

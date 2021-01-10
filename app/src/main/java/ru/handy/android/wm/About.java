@@ -3,11 +3,13 @@ package ru.handy.android.wm;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.graphics.drawable.DrawableWrapper;
 import androidx.appcompat.widget.Toolbar;
+
 import android.text.Html;
 import android.util.Log;
 import android.view.MenuItem;
@@ -16,10 +18,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
-
-import java.sql.Date;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import ru.handy.android.wm.learning.Learning;
 import ru.handy.android.wm.setting.Utils;
@@ -30,7 +29,7 @@ public class About extends AppCompatActivity implements View.OnClickListener {
     private TextView mTextView;
     private int amountClick = 0; // количество нажатий на текстовое поле
     private DB db;
-    private Tracker mTracker; // трекер для Google analitics, чтобы отслеживать активности пользователей
+    private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
 
     public void onCreate(Bundle savedInstanceState) {
@@ -39,7 +38,11 @@ public class About extends AppCompatActivity implements View.OnClickListener {
         setContentView(R.layout.about);
 
         app = (GlobApp) getApplication(); // получаем доступ к приложению
-        mTracker = app.getDefaultTracker(); // Obtain the shared Tracker instance
+        mFBAnalytics = app.getFBAnalytics(); // получение экземпляра FirebaseAnalytics
+        if (mFBAnalytics != null) {
+            String[] arrClName = this.getClass().toString().split("\\.");
+            app.openActEvent(arrClName[arrClName.length - 1]);
+        }
         db = app.getDb(); // открываем подключение к БД
 
         // устанавливаем toolbar и actionbar
@@ -64,13 +67,11 @@ public class About extends AppCompatActivity implements View.OnClickListener {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Операции для выбранного пункта меню
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     /**
@@ -111,11 +112,6 @@ public class About extends AppCompatActivity implements View.OnClickListener {
 
     @Override
     public void onResume() {
-        if (mTracker != null) {
-            Log.i("myLogs", "Setting screen name: " + this.getLocalClassName());
-            mTracker.setScreenName("Activity " + this.getLocalClassName());
-            mTracker.send(new HitBuilders.ScreenViewBuilder().build());
-        }
         super.onResume();
     }
 

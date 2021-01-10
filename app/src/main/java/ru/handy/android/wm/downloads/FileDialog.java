@@ -1,21 +1,10 @@
 package ru.handy.android.wm.downloads;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,6 +17,12 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -101,7 +96,7 @@ public class FileDialog extends AppCompatActivity {
     private boolean canSelectDir = false;
 
     private File selectedFile;
-    private HashMap<String, Integer> lastPositions = new HashMap<String, Integer>();
+    private HashMap<String, Integer> lastPositions = new HashMap<>();
 
     /**
      * Called when the activity is first created.
@@ -165,7 +160,7 @@ public class FileDialog extends AppCompatActivity {
 
         canSelectDir = getIntent().getBooleanExtra(CAN_SELECT_DIR, false);
 
-        if (canCreateFile == false) {
+        if (!canCreateFile) {
             newButton.setEnabled(false);
         }
 
@@ -199,8 +194,7 @@ public class FileDialog extends AppCompatActivity {
         String startPath = getIntent().getStringExtra(START_PATH);
         startPath = startPath != null ? startPath : ROOT;
         if (canSelectDir) {
-            File file = new File(startPath);
-            selectedFile = file;
+            selectedFile = new File(startPath);
             selectButton.setEnabled(true);
         }
         getDir(startPath);
@@ -229,9 +223,9 @@ public class FileDialog extends AppCompatActivity {
 
         currentPath = dirPath;
 
-        final List<String> item = new ArrayList<String>();
-        path = new ArrayList<String>();
-        mList = new ArrayList<HashMap<String, Object>>();
+        final List<String> item = new ArrayList<>();
+        path = new ArrayList<>();
+        mList = new ArrayList<>();
 
         File f = new File(currentPath);
         File[] files = f.listFiles();
@@ -240,7 +234,7 @@ public class FileDialog extends AppCompatActivity {
             f = new File(currentPath);
             files = f.listFiles();
         }
-        myPath.setText(getText(R.string.location) + ": " + currentPath);
+        myPath.setText(String.format("%s: %s", getText(R.string.location), currentPath));
 
         if (!currentPath.equals(ROOT)) {
             item.add(ROOT);
@@ -253,10 +247,10 @@ public class FileDialog extends AppCompatActivity {
             parentPath = f.getParent();
         }
 
-        TreeMap<String, String> dirsMap = new TreeMap<String, String>();
-        TreeMap<String, String> dirsPathMap = new TreeMap<String, String>();
-        TreeMap<String, String> filesMap = new TreeMap<String, String>();
-        TreeMap<String, String> filesPathMap = new TreeMap<String, String>();
+        TreeMap<String, String> dirsMap = new TreeMap<>();
+        TreeMap<String, String> dirsPathMap = new TreeMap<>();
+        TreeMap<String, String> filesMap = new TreeMap<>();
+        TreeMap<String, String> filesPathMap = new TreeMap<>();
         for (File file : files) {
             if (file.isDirectory()) {
                 String dirName = file.getName();
@@ -268,8 +262,8 @@ public class FileDialog extends AppCompatActivity {
                 // se ha um filtro de formatos, utiliza-o
                 if (formatFilter != null) {
                     boolean contains = false;
-                    for (int i = 0; i < formatFilter.length; i++) {
-                        final String formatLwr = formatFilter[i].toLowerCase();
+                    for (String s : formatFilter) {
+                        final String formatLwr = s.toLowerCase();
                         if (fileNameLwr.endsWith(formatLwr)) {
                             contains = true;
                             break;
@@ -308,11 +302,11 @@ public class FileDialog extends AppCompatActivity {
 
         list.setAdapter(fileList);
 
-        /**
-         * При выборе элемента списка необходимо: 1) Если в директории, открывает
-         * файлы детей; 2) Если можно выбрать каталог, определям его как выбранный
-         * путь 3) Если файл, устанавливам его как выбранный путь 4) Включить кнопку
-         * выбора.
+        /*
+          При выборе элемента списка необходимо: 1) Если в директории, открывает
+          файлы детей; 2) Если можно выбрать каталог, определям его как выбранный
+          путь 3) Если файл, устанавливам его как выбранный путь 4) Включить кнопку
+          выбора.
          */
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -358,15 +352,16 @@ public class FileDialog extends AppCompatActivity {
     }
 
     private void addItem(String fileName, int imageId) {
-        HashMap<String, Object> item = new HashMap<String, Object>();
+        HashMap<String, Object> item = new HashMap<>();
         item.put(ITEM_KEY, fileName);
         item.put(ITEM_IMAGE, imageId);
         mList.add(item);
     }
-/*
+    /*
 
-    */
-/**
+     */
+
+    /**
      * При выборе элемента списка необходимо: 1) Если в директории, открывает
      * файлы детей; 2) Если можно выбрать каталог, определям его как выбранный
      * путь 3) Если файл, устанавливам его как выбранный путь 4) Включить кнопку
@@ -413,7 +408,6 @@ public class FileDialog extends AppCompatActivity {
         }
     }
 */
-
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if ((keyCode == KeyEvent.KEYCODE_BACK)) {
@@ -439,7 +433,7 @@ public class FileDialog extends AppCompatActivity {
     /**
      * Устанавливаем кнопку CREATE видимой.
      *
-     * @param v
+     * @param v view
      */
     private void setCreateVisible(View v) {
         layoutCreate.setVisibility(View.VISIBLE);
@@ -452,7 +446,7 @@ public class FileDialog extends AppCompatActivity {
     /**
      * Устанавливаем кнопку SELECT видимой.
      *
-     * @param v
+     * @param v view
      */
     private void setSelectVisible(View v) {
         layoutCreate.setVisibility(View.GONE);
@@ -466,12 +460,10 @@ public class FileDialog extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Операции для выбранного пункта меню
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 }

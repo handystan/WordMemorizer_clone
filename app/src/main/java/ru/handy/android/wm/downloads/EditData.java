@@ -11,11 +11,13 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
+
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.util.Log;
@@ -36,11 +38,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -99,7 +97,7 @@ public class EditData extends AppCompatActivity {
     private Pay pay;
     private int amountDonate = 0;
     private boolean isFromOldDB = false;
-    private Tracker mTracker; // трекер для Google analitics, чтобы отслеживать активности пользователей
+    private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
     @SuppressLint("InflateParams")
     @Override
@@ -109,7 +107,11 @@ public class EditData extends AppCompatActivity {
         setContentView(R.layout.edit_data);
 
         app = (GlobApp) getApplication(); // получаем доступ к приложению
-        mTracker = app.getDefaultTracker(); // Obtain the shared Tracker instance.
+        mFBAnalytics = app.getFBAnalytics(); // получение экземпляра FirebaseAnalytics
+        if (mFBAnalytics != null) {
+            String[] arrClName = this.getClass().toString().split("\\.");
+            app.openActEvent(arrClName[arrClName.length - 1]);
+        }
         db = app.getDb(); // открываем подключение к БД
 
         // устанавливаем отдельную клавиатуру для поля с транскрипцией
@@ -145,7 +147,7 @@ public class EditData extends AppCompatActivity {
         String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
         amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
         String fromOldDB = db.getValueByVariable(DB.OLD_FREE_DB);
-        isFromOldDB = (fromOldDB == null || fromOldDB.equals("0")) ? false : true;
+        isFromOldDB = fromOldDB != null && !fromOldDB.equals("0");
         if (isFromOldDB || amountDonate > 0) { // если старая БД или приложение оплачено, то скрываем layout с предложением оплаты
             llPayInformation.getLayoutParams().height = 0;
         } else { // если новая БД и приложение не оплачено, то показываем layout с предложением оплаты
@@ -161,7 +163,7 @@ public class EditData extends AppCompatActivity {
         // адаптер для типа файла
         String[] spinnerData = {s(R.string.spinner_xls),
                 s(R.string.spinner_txt)};
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_item, spinnerData);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sFileType.setAdapter(adapter);
@@ -414,7 +416,7 @@ public class EditData extends AppCompatActivity {
             w = Workbook.getWorkbook(new File(fileName), wbs);
             Sheet sheet = w.getSheet(0);
             StringBuilder sb = new StringBuilder();
-            ArrayList<String> args = new ArrayList<String>();
+            ArrayList<String> args = new ArrayList<>();
             int r = 1;
             for (int j = 0; j < sheet.getRows(); j++) {
                 String engWord = sheet.getCell(0, j).getContents();
@@ -439,7 +441,7 @@ public class EditData extends AppCompatActivity {
                 if (r % 995 >= 0 && r % 995 <= 3 && sb.indexOf("INSERT") != -1) {
                     db.execSQL(sb.toString(), args.toArray());
                     sb = new StringBuilder();
-                    args = new ArrayList<String>();
+                    args = new ArrayList<>();
                 }
                 // если приложение не оплачено, то позволяем вставить только 10 строк
                 if (!isFromOldDB && amountDonate == 0 && j == 9 && sb.indexOf("INSERT") != -1) {
@@ -454,6 +456,10 @@ public class EditData extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(),
                         s(R.string.amount_load_rows) + ": " + (r / 4),
                         Toast.LENGTH_LONG).show();
+            }
+            // отправляем в Firebase инфу по чтению слов из файла
+            if (mFBAnalytics != null) {
+                app.readWriteFileEvent(GlobApp.READ_FILE, "xls", (r / 4) + "");
             }
             return r / 4;
         } catch (FileNotFoundException e) {
@@ -501,6 +507,10 @@ public class EditData extends AppCompatActivity {
                 wb.close();
                 Toast.makeText(getApplicationContext(), s(R.string.amount_save_rows) + ": " + i,
                         Toast.LENGTH_LONG).show();
+                // отправляем в Firebase инфу по записи слов в файл
+                if (mFBAnalytics != null) {
+                    app.readWriteFileEvent(GlobApp.WRITE_FILE, "xls", i + "");
+                }
             } else {
                 Toast.makeText(getApplicationContext(), s(R.string.no_data_for_download),
                         Toast.LENGTH_LONG).show();
@@ -532,7 +542,7 @@ public class EditData extends AppCompatActivity {
      * ,anotherValue union select moreValue,evenMoreValue union select...
      */
     private int readTxtFile(String fileName) {
-        String row = "";
+        String row;
         BufferedReader br = null;
         try {
             db.beginTransaction();
@@ -556,10 +566,10 @@ public class EditData extends AppCompatActivity {
             br = new BufferedReader(new InputStreamReader(new FileInputStream(
                     new File(fileName)), "UTF8"));
             StringBuilder sb = new StringBuilder();
-            ArrayList<String> args = new ArrayList<String>();
+            ArrayList<String> args = new ArrayList<>();
             patt = Pattern
                     .compile("^([^" + delimiter + "]*)([" + delimiter + "])([^" + delimiter + "]*)(\\2)([^" + delimiter + "]*)((\\2)([^" + delimiter + "]*))?$");
-            String wrongRow = "";
+            StringBuilder wrongRow = new StringBuilder();
             int intWrongRow = 0;
             int r = 1;
             while ((row = br.readLine()) != null) {
@@ -582,7 +592,7 @@ public class EditData extends AppCompatActivity {
                     args.add(match.group(5));
                     args.add(match.group(8));
                 } else {
-                    wrongRow = wrongRow + (wrongRow.equals("") ? "" : ", ") + r;
+                    wrongRow.append(wrongRow.toString().equals("") ? "" : ", ").append(r);
                     intWrongRow++;
                 }
                 r++;
@@ -591,7 +601,7 @@ public class EditData extends AppCompatActivity {
                 if ((r - intWrongRow) % 249 == 0 && sb.indexOf("INSERT") != -1) {
                     db.execSQL(sb.toString(), args.toArray());
                     sb = new StringBuilder();
-                    args = new ArrayList<String>();
+                    args = new ArrayList<>();
                 }
                 // если приложение не оплачено, то позволяем вставить только 10 строк
                 if (!isFromOldDB && amountDonate == 0 && (r - intWrongRow) == 11 && sb.indexOf("INSERT") != -1) {
@@ -602,18 +612,23 @@ public class EditData extends AppCompatActivity {
                 db.execSQL(sb.toString(), args.toArray());
             if (!delimiter.equals("")) {
                 db.setTransactionSuccessful();
-                if (wrongRow.equals(""))
+                if (wrongRow.toString().equals("")) {
                     Toast.makeText(getApplicationContext(),
                             s(R.string.amount_load_rows) + ": " + (r - intWrongRow - 1)
                                     + ".\r\n" + s(R.string.must_be_utf8),
                             Toast.LENGTH_LONG).show();
-                else
+                } else {
                     Toast.makeText(getApplicationContext(),
                             s(R.string.amount_load_rows) + ": " + (r - intWrongRow - 1)
                                     + "\r\n" + s(R.string.not_load_rows)
                                     + wrongRow + ".\r\n"
                                     + s(R.string.template_in_help),
                             Toast.LENGTH_LONG).show();
+                }
+                // отправляем в Firebase инфу по чтению слов из файла
+                if (mFBAnalytics != null) {
+                    app.readWriteFileEvent(GlobApp.READ_FILE, "txt", (r - intWrongRow - 1) + "");
+                }
             } else {
                 Toast.makeText(getApplicationContext(),
                         s(R.string.file_not_fit_template) + " "
@@ -676,6 +691,10 @@ public class EditData extends AppCompatActivity {
                 bw.close();
                 Toast.makeText(getApplicationContext(), s(R.string.amount_save_rows) + ": " + i,
                         Toast.LENGTH_LONG).show();
+                // отправляем в Firebase инфу по записи слов в файл
+                if (mFBAnalytics != null) {
+                    app.readWriteFileEvent(GlobApp.WRITE_FILE, "txt", i + "");
+                }
             } else {
                 Toast.makeText(getApplicationContext(), s(R.string.no_data_for_download),
                         Toast.LENGTH_LONG).show();
@@ -740,19 +759,17 @@ public class EditData extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Операции для выбранного пункта меню
-        switch (item.getItemId()) {
-            case android.R.id.home: // обрабатываем кнопку "назад" в ActionBar
-                Log.d("myLogs", "keyboard = " + keyboard);
-                if (keyboard != null && keyboard.isCustomKeyboardVisible()) {
-                    keyboard.hideCustomKeyboard();
-                    Log.d("myLogs", "keyboard.isCustomKeyboardVisible() = " + keyboard.isCustomKeyboardVisible());
-                } else {
-                    super.onBackPressed();
-                }
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == android.R.id.home) { // обрабатываем кнопку "назад" в ActionBar
+            Log.d("myLogs", "keyboard = " + keyboard);
+            if (keyboard != null && keyboard.isCustomKeyboardVisible()) {
+                keyboard.hideCustomKeyboard();
+                Log.d("myLogs", "keyboard.isCustomKeyboardVisible() = " + keyboard.isCustomKeyboardVisible());
+            } else {
+                super.onBackPressed();
+            }
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     /*
@@ -774,11 +791,6 @@ public class EditData extends AppCompatActivity {
 
     @Override
     public void onResume() {
-        if (mTracker != null) {
-            Log.i("myLogs", "Setting screen name: " + this.getLocalClassName());
-            mTracker.setScreenName("Activity " + this.getLocalClassName());
-            mTracker.send(new HitBuilders.ScreenViewBuilder().build());
-        }
         super.onResume();
     }
 

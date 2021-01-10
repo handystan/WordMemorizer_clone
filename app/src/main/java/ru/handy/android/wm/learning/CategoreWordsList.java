@@ -15,8 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,6 +26,9 @@ import ru.handy.android.wm.GlobApp;
 import ru.handy.android.wm.R;
 import ru.handy.android.wm.setting.Utils;
 
+/**
+ * класс с со словами категории из уровка (все, отгаданные и не отгаданные)
+ */
 public class CategoreWordsList extends AppCompatActivity implements View.OnClickListener {
 
     private GlobApp app;
@@ -39,7 +41,7 @@ public class CategoreWordsList extends AppCompatActivity implements View.OnClick
     private ArrayList<Word> wrongWords; // кол-во не отгаданных слов
     private WordsAdapter wAdapter;
     private DB db;
-    private Tracker mTracker; // трекер для Google analitics, чтобы отслеживать активности пользователей
+    private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
     /**
      * Called when the activity is first created.
@@ -52,7 +54,11 @@ public class CategoreWordsList extends AppCompatActivity implements View.OnClick
         setContentView(R.layout.category_words_list);
 
         app = (GlobApp) getApplication(); // получаем доступ к приложению
-        mTracker = app.getDefaultTracker(); // Obtain the shared Tracker instance.
+        mFBAnalytics = app.getFBAnalytics(); // получение экземпляра FirebaseAnalytics
+        if (mFBAnalytics != null) {
+            String[] arrClName = this.getClass().toString().split("\\.");
+            app.openActEvent(arrClName[arrClName.length - 1]);
+        }
         db = app.getDb(); // открываем подключение к БД
 
         // устанавливаем toolbar и actionbar
@@ -143,11 +149,7 @@ public class CategoreWordsList extends AppCompatActivity implements View.OnClick
 
     @Override
     public void onResume() {
-        if (mTracker != null) {
-            Log.i("myLogs", "Setting screen name: " + this.getLocalClassName());
-            mTracker.setScreenName("Activity " + this.getLocalClassName());
-            mTracker.send(new HitBuilders.ScreenViewBuilder().build());
-        }
+        super.onResume();
         super.onResume();
     }
 

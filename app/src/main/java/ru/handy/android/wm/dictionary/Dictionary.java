@@ -41,9 +41,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,7 +82,7 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
     private boolean isShowHistory = false; // показывать историю, когда строка поиска пустая: true-да, false-нет
     private int llLettersHeight = 0; // высота layout, в которой будут кнопки с буквами
     private int lastBGColor = 100; // цвет фона для запоминания
-    private Tracker mTracker; // трекер для Google analitics, чтобы отслеживать активности пользователей
+    private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
     /**
      * Called when the activity is first created.
@@ -96,7 +95,11 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
         Log.d("myLogs", "onCreate Dictionary");
 
         app = (GlobApp) getApplication(); // получаем доступ к приложению
-        mTracker = app.getDefaultTracker(); // Obtain the shared Tracker instance.
+        mFBAnalytics = app.getFBAnalytics(); // получение экземпляра FirebaseAnalytics
+        if (mFBAnalytics != null) {
+            String[] arrClName = this.getClass().toString().split("\\.");
+            app.openActEvent(arrClName[arrClName.length - 1]);
+        }
         db = app.getDb(); // открываем подключение к БД
 
         // устанавливаем toolbar и actionbar
@@ -252,6 +255,12 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
                 }
             }
         });
+        // отправляем в Firebase инфу с настройками по словарю
+        if (mFBAnalytics != null) {
+            app.dictEvent(isEnglSearch ? s(R.string.eng_rus) : s(R.string.rus_eng),
+                    isSearchRule1 ? s(R.string.by_start_letters) : s(R.string.by_any_letters),
+                    isShowHistory ? s(R.string.last_words) : s(R.string.all_words));
+        }
     }
 
     /**
@@ -470,7 +479,7 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
      * установление правила поиска isSearchRule1
      *
      * @param isSearchRule1 true-по начальным буквам
-     *      * слова, false-по буквам с любой части слова
+     *                      * слова, false-по буквам с любой части слова
      */
     public void setSearchRule1(boolean isSearchRule1) {
         this.isSearchRule1 = isSearchRule1;
@@ -573,11 +582,6 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
             lastBGColor = bGColor;
             recreate();
             Log.d("myLogs", "onResume Learning recreate");
-        }
-        if (mTracker != null) {
-            Log.i("myLogs", "Setting screen name: " + this.getLocalClassName());
-            mTracker.setScreenName("Activity " + this.getLocalClassName());
-            mTracker.send(new HitBuilders.ScreenViewBuilder().build());
         }
         super.onResume();
     }

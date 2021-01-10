@@ -1,35 +1,30 @@
 package ru.handy.android.wm.setting;
 
+import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.ActionBar.Tab;
-import androidx.fragment.app.Fragment;
-import android.content.Intent;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
-import android.widget.Toast;
 
-import com.google.android.material.tabs.TabLayout;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
+import com.google.android.material.tabs.TabLayout;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.handy.android.wm.GlobApp;
 import ru.handy.android.wm.DB;
+import ru.handy.android.wm.GlobApp;
 import ru.handy.android.wm.R;
 
 public class Settings extends AppCompatActivity {
@@ -46,7 +41,7 @@ public class Settings extends AppCompatActivity {
     private ActionBar bar;
     // что было выбрано при вызове настроек: 0-обучение, 1-словарь, 2- прочее
     private int idSetting;
-    private Tracker mTracker; // трекер для Google analitics, чтобы отслеживать активности пользователей
+    private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
     /**
      * Called when the activity is first created.
@@ -60,7 +55,11 @@ public class Settings extends AppCompatActivity {
         idSetting = intent.getIntExtra("idsetting", 0);
 
         app = (GlobApp) getApplication(); // получаем доступ к приложению
-        mTracker = app.getDefaultTracker(); // Obtain the shared Tracker instance.
+        mFBAnalytics = app.getFBAnalytics(); // получение экземпляра FirebaseAnalytics
+        if (mFBAnalytics != null) {
+            String[] arrClName = this.getClass().toString().split("\\.");
+            app.openActEvent(arrClName[arrClName.length - 1]);
+        }
         db = app.getDb(); // открываем подключение к БД
 
         // устанавливаем toolbar и actionbar
@@ -101,7 +100,7 @@ public class Settings extends AppCompatActivity {
     /**
      * метод для сохранения состояния при повороте экрана
      *
-     * @param outState
+     * @param outState ориентация экрана
      */
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -124,14 +123,12 @@ public class Settings extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Операции для выбранного пункта меню
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                createIntent();
-                finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == android.R.id.home) {
+            createIntent();
+            finish();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     // обработка кнопки назад
@@ -143,20 +140,6 @@ public class Settings extends AppCompatActivity {
 
     private void createIntent() {
         Intent intent = new Intent();
-        /*intent.putExtra("learningType", db.getValueByVariable(DB.LEARNING_TYPE) == null ? 0 :
-                Integer.parseInt(db.getValueByVariable(DB.LEARNING_TYPE)));
-        intent.putExtra("repeatsAmount", db.getValueByVariable(DB.LEARNING_REPEATS_AMOUNT) == null ? 2 :
-                Integer.parseInt(db.getValueByVariable(DB.LEARNING_REPEATS_AMOUNT)));
-        intent.putExtra("isSpeakLearning", db.getValueByVariable(DB.LEARNING_SPEAK) == null ? true :
-                Boolean.parseBoolean(db.getValueByVariable(DB.LEARNING_SPEAK)));
-        intent.putExtra("engOrRusLearning", db.getValueByVariable(DB.LEARNING_LANGUAGE) == null ? true :
-                !Boolean.parseBoolean(db.getValueByVariable(DB.LEARNING_LANGUAGE)));
-        intent.putExtra("isShowTranscr", db.getValueByVariable(DB.LEARNING_SHOW_TRANSCR) == null ? true :
-                Boolean.parseBoolean(db.getValueByVariable(DB.LEARNING_SHOW_TRANSCR)));
-        intent.putExtra("amountWords", db.getValueByVariable(DB.LEARNING_AMOUNT_WORDS) == null ? 8 :
-                Integer.parseInt(db.getValueByVariable(DB.LEARNING_AMOUNT_WORDS)));
-        intent.putExtra("isShowDontKnow", db.getValueByVariable(DB.LEARNING_SHOW_DONTKNOW) == null ? true :
-                Boolean.parseBoolean(db.getValueByVariable(DB.LEARNING_SHOW_DONTKNOW)));*/
         intent.putExtra("learningType", learningSetting.getLearningType());
         intent.putExtra("repeatsAmount", learningSetting.getRepeatsAmount());
         intent.putExtra("isSpeakLearning", learningSetting.isSpeakLearning());
@@ -193,11 +176,6 @@ public class Settings extends AppCompatActivity {
 
     @Override
     public void onResume() {
-        if (mTracker != null) {
-            Log.i("myLogs", "Setting screen name: " + this.getLocalClassName());
-            mTracker.setScreenName("Activity " + this.getLocalClassName());
-            mTracker.send(new HitBuilders.ScreenViewBuilder().build());
-        }
         super.onResume();
     }
 
