@@ -54,7 +54,7 @@ public class GlobApp extends Application {
             // To enable debug logging use: adb shell setprop log.tag.FA VERBOSE
         }
         // при разработке нужно ставить false, при выкате в бой - true
-        mFBAnalytics.setAnalyticsCollectionEnabled(true);
+        mFBAnalytics.setAnalyticsCollectionEnabled(false);
         return mFBAnalytics;
     }
 

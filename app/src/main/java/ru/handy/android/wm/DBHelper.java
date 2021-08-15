@@ -74,7 +74,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.beginTransaction();
         try {
-            if (oldVersion <= 12 && newVersion == 27) {
+            if (oldVersion <= 12 && newVersion == 28) {
                 insertExitState(db, DB.BG_COLOR, "1"); // белый фон
                 insertExitState(db, DB.OLD_FREE_DB, "1"); // клиенты из старой базы, которым автоматом все делается бесплатно
                 insertExitState(db, DB.LEARNING_TYPE, "0");
@@ -91,7 +91,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 db.delete(DB.T_ENGWORDS, null, null);
                 db.delete(DB.T_LESSON, null, null);
                 insertAllDict(db);
-            } else if (oldVersion == 13 && newVersion == 27) { // 14 и 15 версии были тестовыми
+            } else if (oldVersion == 13 && newVersion == 28) { // 14 и 15 версии были тестовыми
                 updateDictFrom13(db);
                 updateDictFrom16(db);
                 updateDictFrom17(db);
@@ -101,7 +101,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 updateDictFrom23(db);
                 updateDictFrom24(db);
                 updateDictFrom26(db);
-            } else if (oldVersion == 16 && newVersion == 27) {
+                updateDictFrom27(db);
+            } else if (oldVersion == 16 && newVersion == 28) {
                 updateDictFrom16(db);
                 updateDictFrom17(db);
                 updateDictFrom18(db);
@@ -110,7 +111,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 updateDictFrom23(db);
                 updateDictFrom24(db);
                 updateDictFrom26(db);
-            } else if (oldVersion == 17 && newVersion == 27) {
+                updateDictFrom27(db);
+            } else if (oldVersion == 17 && newVersion == 28) {
                 updateDictFrom17(db);
                 updateDictFrom18(db);
                 updateDictFrom19(db);
@@ -118,33 +120,42 @@ public class DBHelper extends SQLiteOpenHelper {
                 updateDictFrom23(db);
                 updateDictFrom24(db);
                 updateDictFrom26(db);
-            } else if (oldVersion == 18 && newVersion == 27) {
+                updateDictFrom27(db);
+            } else if (oldVersion == 18 && newVersion == 28) {
                 updateDictFrom18(db);
                 updateDictFrom19(db);
                 updateDictFrom20(db);
                 updateDictFrom23(db);
                 updateDictFrom24(db);
                 updateDictFrom26(db);
-            } else if (oldVersion == 19 && newVersion == 27) {
+                updateDictFrom27(db);
+            } else if (oldVersion == 19 && newVersion == 28) {
                 updateDictFrom19(db);
                 updateDictFrom20(db);
                 updateDictFrom23(db);
                 updateDictFrom24(db);
                 updateDictFrom26(db);
-            } else if (oldVersion == 20 && newVersion == 27) { // версии 21, 22 не было, так как она запоролась в Google Console
+                updateDictFrom27(db);
+            } else if (oldVersion == 20 && newVersion == 28) { // версии 21, 22 не было, так как она запоролась в Google Console
                 updateDictFrom20(db);
                 updateDictFrom23(db);
                 updateDictFrom24(db);
                 updateDictFrom26(db);
-            } else if (oldVersion == 23 && newVersion == 27) {
+                updateDictFrom27(db);
+            } else if (oldVersion == 23 && newVersion == 28) {
                 updateDictFrom23(db);
                 updateDictFrom24(db);
                 updateDictFrom26(db);
-            }  else if (oldVersion == 24 && newVersion == 27) { // версия 25 была тестовой
+                updateDictFrom27(db);
+            }  else if (oldVersion == 24 && newVersion == 28) { // версия 25 была тестовой
                 updateDictFrom24(db);
                 updateDictFrom26(db);
-            }  else if (oldVersion == 26 && newVersion == 27) {
+                updateDictFrom27(db);
+            }  else if (oldVersion == 26 && newVersion == 28) {
                 updateDictFrom26(db);
+                updateDictFrom27(db);
+            }  else if (oldVersion == 27 && newVersion == 28) {
+                updateDictFrom27(db);
             }
             db.setTransactionSuccessful();
         } finally {
@@ -320,7 +331,6 @@ public class DBHelper extends SQLiteOpenHelper {
         insertDict(db, "linden", "['lindən]", "липа", "деревья лиственные");
         insertDict(db, "maple", "['meipl]", "клён", "деревья лиственные");
         insertDict(db, "oak", "[əuk]", "дуб", "деревья лиственные");
-        insertDict(db, "palm", "[pa:m]", "пальма", "деревья лиственные");
         insertDict(db, "pear tree", "[pεə tri:]", "груша", "деревья лиственные");
         insertDict(db, "poplar", "['poplə]", "тополь", "деревья лиственные");
         insertDict(db, "walnut", "['wo:lnʌt]", "грецкий орех", "деревья лиственные");
@@ -2272,6 +2282,7 @@ public class DBHelper extends SQLiteOpenHelper {
         insertDict(db, "nail", "[neɪl]", "ноготь", "тело человека");
         insertDict(db, "neck", "[nek]", "шея", "тело человека");
         insertDict(db, "nose", "[nəʊz]", "нос", "тело человека");
+        insertDict(db, "palm", "[pa:m]", "ладонь, пальма", "тело человека, деревья лиственные");
         insertDict(db, "shoulder", "[ˈʃəʊldə]", "плечо", "тело человека");
         insertDict(db, "stomach", "[ˈstʌmək]", "живот", "тело человека");
         insertDict(db, "thumb", "[θʌm]", "большой палец", "тело человека");
@@ -4048,6 +4059,14 @@ public class DBHelper extends SQLiteOpenHelper {
         insertDict(db, "tulip", "[ˈtjuːlɪp]", "тюльпан", "цветы");
         insertDict(db, "violet", "[ˈvaɪəlɪt]", "фиалка", "цветы");
         insertDict(db, "mimosa", "[mɪˈməʊzə]", "мимоза", "цветы, кустарники");
+    }
+
+    // заполняем основную таблицу-словарь при переходе из версии 27
+    private void updateDictFrom27(SQLiteDatabase db) {
+        ContentValues cv = new ContentValues();
+        cv.put(DB.C_EW_RUSTRANSLATE, "ладонь, пальма");
+        cv.put(DB.C_EW_CATEGORY, "тело человека, деревья лиственные");
+        db.update(DB.T_ENGWORDS, cv, DB.C_EW_ENGWORD + "='palm'", null);
     }
 
     // вставка отдельно записи в таблице EW_ENGWORD

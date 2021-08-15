@@ -138,7 +138,7 @@ public class Pay implements PurchasesUpdatedListener {
     public void onPurchasesUpdated(@NonNull BillingResult billingResult, @Nullable List<Purchase> purchases) {
         if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases != null) {
             for (Purchase purchase : purchases) {
-                String itemSKU = purchase.getSku();
+                String itemSKU = purchase.getSkus().get(0);
                 Toast.makeText(act.getApplicationContext(), s(R.string.thank_you), Toast.LENGTH_LONG).show();
                 Log.i("myLogs", "Оплата произведена успешно!");
                 final int thisSKU = itemSKU.equals(ITEM_SKU_1dol) ? 50 :
@@ -156,12 +156,12 @@ public class Pay implements PurchasesUpdatedListener {
                     // 1001 - ответ пришел от Thanks
                     // если это первая покупка, то делаем невозобновляемую покупку, а если не первая, то возобновляемую через consume
                     if (reqCode == 1001 & oldAmountDonate > 0) {
-                        consume(purchase.getSku(), purchase.getPurchaseToken());
+                        consume(purchase.getSkus().get(0), purchase.getPurchaseToken());
                         purchaseMotive = s(R.string.from_thanks);
                     } else if (reqCode == 1002) { // 1002 - открываем статистику после оплаты (3 - это код для статистики)
                         ((Learning) act).setAmountDonate(amountDonate);
                         LinearLayout llThanks = ((Learning) act).getLlThanks();
-                        ViewGroup.LayoutParams params = (ViewGroup.LayoutParams) llThanks.getLayoutParams();
+                        ViewGroup.LayoutParams params = llThanks.getLayoutParams();
                         params.height = 0;
                         llThanks.setLayoutParams(params);
                         act.startActivityForResult(new Intent(act, Statistics.class), 3);
@@ -169,7 +169,7 @@ public class Pay implements PurchasesUpdatedListener {
                     } else if (reqCode == 1003) { // 1003 - ответ пришел от EditData (возможность загружать из файла не ограниченное число слов)
                         ((EditData) act).setAmountDonate(amountDonate);
                         LinearLayout llPayInformation = ((EditData) act).getLlPayInformation();
-                        ViewGroup.LayoutParams params = (ViewGroup.LayoutParams) llPayInformation.getLayoutParams();
+                        ViewGroup.LayoutParams params = llPayInformation.getLayoutParams();
                         params.height = 0;
                         llPayInformation.setLayoutParams(params);
                         purchaseMotive = s(R.string.data_from_file);
@@ -239,7 +239,7 @@ public class Pay implements PurchasesUpdatedListener {
         try {
             Purchase.PurchasesResult purchasesResult = billingClient.queryPurchases(BillingClient.SkuType.INAPP);
             for (Purchase purchase : purchasesResult.getPurchasesList()) {
-                String sku = purchase.getSku();
+                String sku = purchase.getSkus().get(0);
                 if (sku.equals(ITEM_SKU_1dol)) amountDonate += 50;
                 if (sku.equals(ITEM_SKU_2dol)) amountDonate += 100;
                 if (sku.equals(ITEM_SKU_5dol)) amountDonate += 250;

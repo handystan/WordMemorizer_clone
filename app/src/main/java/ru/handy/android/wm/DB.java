@@ -116,7 +116,7 @@ public class DB {
             + " text, " + C_ES_VALUE + " text);";
 
     private static final String DB_NAME = "ewdb";
-    private static final int DB_VERSION = 27; // 13 - первая версия с платными настройками
+    private static final int DB_VERSION = 28; // 13 - первая версия с платными настройками
     private final Context mCtx;
 
     private DBHelper mDBHelper;
