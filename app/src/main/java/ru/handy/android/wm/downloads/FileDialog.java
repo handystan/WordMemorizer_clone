@@ -1,16 +1,13 @@
 package ru.handy.android.wm.downloads;
 
 import android.annotation.SuppressLint;
-import android.content.DialogInterface;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -108,50 +105,47 @@ public class FileDialog extends AppCompatActivity {
         setResult(RESULT_CANCELED, getIntent());
 
         setContentView(R.layout.file_dialog_main);
-        myPath = (TextView) findViewById(R.id.path);
-        mFileName = (EditText) findViewById(R.id.fdEditTextFile);
-        list = (ListView) findViewById(R.id.list);
+        myPath = findViewById(R.id.path);
+        mFileName = findViewById(R.id.fdEditTextFile);
+        list = findViewById(R.id.list);
 
         inputManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 
 
         // устанавливаем toolbar и actionbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar bar = getSupportActionBar();
-        bar.setDisplayHomeAsUpEnabled(true);
-        bar.setDisplayShowHomeEnabled(true);
+        if (bar != null) {
+            bar.setDisplayHomeAsUpEnabled(true);
+            bar.setDisplayShowHomeEnabled(true);
+        }
         // устанавливаем цвет фона и шрифта для toolbar
         Utils.colorizeToolbar(this, toolbar);
         // устанавливаем цвет стрелки "назад" в toolbar
         final Drawable upArrow = ContextCompat.getDrawable(this, R.drawable.abc_ic_ab_back_material);
-        upArrow.setColorFilter(Utils.getFontColorToolbar(), PorterDuff.Mode.SRC_ATOP);
-        bar.setHomeAsUpIndicator(upArrow);
+        if (upArrow != null) {
+            upArrow.setColorFilter(Utils.getFontColorToolbar(), PorterDuff.Mode.SRC_ATOP);
+        }
+        if (bar != null) {
+            bar.setHomeAsUpIndicator(upArrow);
+        }
 
-        selectButton = (Button) findViewById(R.id.fdButtonSelect);
+        selectButton = findViewById(R.id.fdButtonSelect);
         selectButton.setEnabled(false);
-        selectButton.setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                if (selectedFile != null) {
-                    getIntent().putExtra(RESULT_PATH, selectedFile.getPath());
-                    setResult(RESULT_OK, getIntent());
-                    finish();
-                }
+        selectButton.setOnClickListener(v -> {
+            if (selectedFile != null) {
+                getIntent().putExtra(RESULT_PATH, selectedFile.getPath());
+                setResult(RESULT_OK, getIntent());
+                finish();
             }
         });
 
-        final Button newButton = (Button) findViewById(R.id.fdButtonNew);
-        newButton.setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                setCreateVisible(v);
-
-                mFileName.setText("");
-                mFileName.requestFocus();
-            }
+        final Button newButton = findViewById(R.id.fdButtonNew);
+        newButton.setOnClickListener(v -> {
+            mFileName.setText(selectedFile == null || !selectButton.isEnabled() ? "" : selectedFile.getName());
+            setCreateVisible(v);
+            mFileName.requestFocus();
         });
 
         canCreateFile = getIntent().getBooleanExtra(CAN_CREATE_FILE, true);
@@ -164,30 +158,19 @@ public class FileDialog extends AppCompatActivity {
             newButton.setEnabled(false);
         }
 
-        layoutSelect = (LinearLayout) findViewById(R.id.fdLinearLayoutSelect);
-        layoutCreate = (LinearLayout) findViewById(R.id.fdLinearLayoutCreate);
+        layoutSelect = findViewById(R.id.fdLinearLayoutSelect);
+        layoutCreate = findViewById(R.id.fdLinearLayoutCreate);
         layoutCreate.setVisibility(View.GONE);
 
-        final Button cancelButton = (Button) findViewById(R.id.fdButtonCancel);
-        cancelButton.setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                setSelectVisible(v);
-            }
-
-        });
-        final Button createButton = (Button) findViewById(R.id.fdButtonCreate);
-        createButton.setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                if (mFileName.getText().length() > 0) {
-                    getIntent().putExtra(RESULT_PATH,
-                            currentPath + "/" + mFileName.getText());
-                    setResult(RESULT_OK, getIntent());
-                    finish();
-                }
+        final Button cancelButton = findViewById(R.id.fdButtonCancel);
+        cancelButton.setOnClickListener(this::setSelectVisible);
+        final Button createButton = findViewById(R.id.fdButtonCreate);
+        createButton.setOnClickListener(v -> {
+            if (mFileName.getText().length() > 0) {
+                getIntent().putExtra(RESULT_PATH,
+                        currentPath + "/" + mFileName.getText());
+                setResult(RESULT_OK, getIntent());
+                finish();
             }
         });
 
@@ -233,6 +216,10 @@ public class FileDialog extends AppCompatActivity {
             currentPath = ROOT;
             f = new File(currentPath);
             files = f.listFiles();
+            if (files == null) {
+                finish();
+                return;
+            }
         }
         myPath.setText(String.format("%s: %s", getText(R.string.location), currentPath));
 
@@ -308,47 +295,40 @@ public class FileDialog extends AppCompatActivity {
           путь 3) Если файл, устанавливам его как выбранный путь 4) Включить кнопку
           выбора.
          */
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                File file = new File(path.get(position));
-
+        list.setOnItemClickListener((parent, v, position, id) -> {
+            File file = new File(path.get(position));
+            if (file.isDirectory()) {
                 setSelectVisible(v);
-
-                if (file.isDirectory()) {
-                    selectButton.setEnabled(false);
-                    if (file.canRead()) {
-                        lastPositions.put(currentPath, position);
-                        getDir(path.get(position));
-                        if (canSelectDir) {
-                            selectedFile = file;
-                            v.setSelected(true);
-                            selectButton.setEnabled(true);
-                        }
-                    } else {
-                        new AlertDialog.Builder(FileDialog.this)
-                                .setIcon(R.drawable.icon)
-                                .setTitle(
-                                        "[" + file.getName() + "] "
-                                                + getText(R.string.cant_read_folder))
-                                .setPositiveButton("OK",
-                                        new DialogInterface.OnClickListener() {
-
-                                            @Override
-                                            public void onClick(DialogInterface dialog,
-                                                                int which) {
-
-                                            }
-                                        }).show();
+                selectButton.setEnabled(false);
+                if (file.canRead()) {
+                    lastPositions.put(currentPath, position);
+                    getDir(path.get(position));
+                    if (canSelectDir) {
+                        selectedFile = file;
+                        v.setSelected(true);
+                        selectButton.setEnabled(true);
                     }
                 } else {
+                    new AlertDialog.Builder(FileDialog.this)
+                            .setIcon(R.drawable.icon)
+                            .setTitle(
+                                    "[" + file.getName() + "] "
+                                            + getText(R.string.cant_read_folder))
+                            .setPositiveButton("OK", (dialog, which) -> {
+                            }).show();
+                }
+            } else {
+                if (layoutCreate.getVisibility() == View.VISIBLE) {
+                    mFileName.setText(file.getName());
+                    mFileName.requestFocus();
+                } else {
+                    setSelectVisible(v);
                     selectedFile = file;
                     v.setSelected(true);
                     selectButton.setEnabled(true);
                 }
             }
         });
-
     }
 
     private void addItem(String fileName, int imageId) {
@@ -357,57 +337,7 @@ public class FileDialog extends AppCompatActivity {
         item.put(ITEM_IMAGE, imageId);
         mList.add(item);
     }
-    /*
 
-     */
-
-    /**
-     * При выборе элемента списка необходимо: 1) Если в директории, открывает
-     * файлы детей; 2) Если можно выбрать каталог, определям его как выбранный
-     * путь 3) Если файл, устанавливам его как выбранный путь 4) Включить кнопку
-     * выбора.
-     *//*
-
-    @Override
-    protected void onListItemClick(ListView l, View v, int position, long id) {
-
-        File file = new File(path.get(position));
-
-        setSelectVisible(v);
-
-        if (file.isDirectory()) {
-            selectButton.setEnabled(false);
-            if (file.canRead()) {
-                lastPositions.put(currentPath, position);
-                getDir(path.get(position));
-                if (canSelectDir) {
-                    selectedFile = file;
-                    v.setSelected(true);
-                    selectButton.setEnabled(true);
-                }
-            } else {
-                new AlertDialog.Builder(this)
-                        .setIcon(R.drawable.icon)
-                        .setTitle(
-                                "[" + file.getName() + "] "
-                                        + getText(R.string.cant_read_folder))
-                        .setPositiveButton("OK",
-                                new DialogInterface.OnClickListener() {
-
-                                    @Override
-                                    public void onClick(DialogInterface dialog,
-                                                        int which) {
-
-                                    }
-                                }).show();
-            }
-        } else {
-            selectedFile = file;
-            v.setSelected(true);
-            selectButton.setEnabled(true);
-        }
-    }
-*/
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if ((keyCode == KeyEvent.KEYCODE_BACK)) {
@@ -423,7 +353,6 @@ public class FileDialog extends AppCompatActivity {
                     return super.onKeyDown(keyCode, event);
                 }
             }
-
             return true;
         } else {
             return super.onKeyDown(keyCode, event);

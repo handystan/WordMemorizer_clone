@@ -53,7 +53,7 @@
             android:icon="@drawable/ic_menu_help"
             android:orderInCategory="6"
             android:title="@string/help"
-            app:showAsAction="never" />
+            app:showAsAction="ifRoom" />
     </group>
 
     <group android:id="@+id/group_idata">

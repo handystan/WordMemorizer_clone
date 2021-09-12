@@ -28,8 +28,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_above="@+id/llKeyboardVeiew"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentRight="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
             android:background="#00000000">
 
@@ -69,8 +69,8 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:background="#555555"
+                    android:layout_margin="3dp"
+                    android:background="#00000000"
                     android:measureWithLargestChild="false"
                     android:padding="1dp">
 
@@ -79,6 +79,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="5dp"
+                        android:background="@drawable/bord_layout"
                         android:theme="@style/AppThemeBase1">
 
                         <TextView
@@ -96,21 +97,33 @@
                             android:id="@+id/etFileUpload"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentLeft="true"
                             android:layout_below="@+id/tvUpload"
-                            android:layout_toLeftOf="@+id/bDialogUpload"
+                            android:layout_alignParentStart="true"
+                            android:layout_toStartOf="@+id/ivShare1"
                             android:ems="10"
                             android:enabled="false"
                             android:hint="@string/path_file"
                             android:textSize="13sp" />
+
+                        <ImageView
+                            android:id="@+id/ivShare1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignTop="@+id/bDialogUpload"
+                            android:layout_marginStart="0dp"
+                            android:layout_marginEnd="5dp"
+                            android:layout_toStartOf="@+id/bDialogUpload"
+                            android:background="@drawable/share"
+                            android:contentDescription="@string/share"
+                            android:visibility="gone" />
 
                         <Button
                             android:id="@+id/bDialogUpload"
                             style="?android:attr/buttonStyleSmall"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentRight="true"
                             android:layout_alignTop="@+id/etFileUpload"
+                            android:layout_alignParentEnd="true"
                             android:background="@drawable/bord_action_button"
                             android:minHeight="30dp"
                             android:text="@string/file" />
@@ -119,7 +132,7 @@
                             android:id="@+id/cbDelete"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
                             android:layout_below="@+id/etFileUpload"
                             android:background="#00000000"
                             android:checked="true"
@@ -142,14 +155,15 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:background="#555555"
+                    android:layout_margin="3dp"
+                    android:background="#00000000"
                     android:padding="1dp">
 
                     <RelativeLayout
                         android:id="@+id/rlDownload"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:background="@drawable/bord_layout"
                         android:padding="5dp"
                         android:theme="@style/AppThemeBase1">
 
@@ -168,29 +182,40 @@
                             android:id="@+id/sFileType"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentLeft="true"
                             android:layout_below="@+id/tvDownload"
-                            android:background="#00000000" />
+                            android:layout_alignParentStart="true" />
 
                         <EditText
                             android:id="@+id/etFileDownload"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentLeft="true"
                             android:layout_below="@+id/sFileType"
-                            android:layout_toLeftOf="@+id/bDialogDownload"
+                            android:layout_alignParentStart="true"
+                            android:layout_toStartOf="@+id/ivShare2"
                             android:ems="10"
                             android:enabled="false"
                             android:hint="@string/path_file"
                             android:textSize="13sp" />
+
+                        <ImageView
+                            android:id="@+id/ivShare2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignTop="@+id/bDialogDownload"
+                            android:layout_marginStart="0dp"
+                            android:layout_marginEnd="2dp"
+                            android:layout_toStartOf="@+id/bDialogDownload"
+                            android:background="@drawable/share"
+                            android:contentDescription="@string/share"
+                            android:visibility="gone" />
 
                         <Button
                             android:id="@+id/bDialogDownload"
                             style="?android:attr/buttonStyleSmall"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentRight="true"
                             android:layout_alignTop="@+id/etFileDownload"
+                            android:layout_alignParentEnd="true"
                             android:background="@drawable/bord_action_button"
                             android:minHeight="30dp"
                             android:text="@string/file" />
@@ -199,8 +224,8 @@
                             android:id="@+id/etSemicolon"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentLeft="true"
                             android:layout_below="@+id/etFileDownload"
+                            android:layout_alignParentStart="true"
                             android:width="35dp"
                             android:ems="10"
                             android:maxLength="1"
@@ -212,7 +237,8 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignBottom="@+id/etSemicolon"
-                            android:layout_toRightOf="@+id/etSemicolon"
+                            android:layout_toEndOf="@+id/etSemicolon"
+                            android:background="#00000000"
                             android:text="@string/semicolon_row"
                             android:visibility="invisible" />
 
@@ -236,8 +262,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentRight="true">
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true">
 
             <android.inputmethodservice.KeyboardView
                 android:id="@+id/specKeyboardView"

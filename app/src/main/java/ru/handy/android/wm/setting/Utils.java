@@ -230,8 +230,8 @@ public class Utils {
     /**
      * изменение цвета фона toolbar
      *
-     * @param act
-     * @param toolbarView
+     * @param act активити
+     * @param toolbarView бар
      */
     public static void colorizeToolbar(AppCompatActivity act, Toolbar toolbarView) {
         if (sTheme == 100) {
@@ -275,7 +275,7 @@ public class Utils {
      * It's important to set overflowDescription atribute in styles, so we can grab the reference
      * to the overflow icon. Check: res/values/styles.xml
      *
-     * @param act
+     * @param act активити
      */
     private static void setOverflowButtonColor(final AppCompatActivity act, final int toolbarIconsColor) {
         final String overflowDescription = act.getString(R.string.accessibility_overflow);
@@ -284,7 +284,7 @@ public class Utils {
         viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                final ArrayList<View> outViews = new ArrayList<View>();
+                final ArrayList<View> outViews = new ArrayList<>();
                 decorView.findViewsWithText(outViews, overflowDescription,
                         View.FIND_VIEWS_WITH_CONTENT_DESCRIPTION);
                 if (outViews.isEmpty()) {
@@ -307,7 +307,7 @@ public class Utils {
     /**
      * получение текущего цвета фона
      *
-     * @return
+     * @return возвращает текущий цвет
      */
     public static int getTheme() {
         return sTheme;
@@ -316,7 +316,7 @@ public class Utils {
     /**
      * получение цвета фона для приложения
      *
-     * @return
+     * @return цвет фона
      */
     public static int getMainColor() {
         return mainColor;
@@ -325,7 +325,7 @@ public class Utils {
     /**
      * получение цвета шрифта для toolbar
      *
-     * @return
+     * @return цвет шрифта для toolbar
      */
     public static int getFontColorToolbar() {
         return fontColorToolbar;
@@ -334,7 +334,7 @@ public class Utils {
     /**
      * получение цвета для иконки со Статистикой
      *
-     * @return
+     * @return цвет для иконки со Статистикой
      */
     public static int getColorForIcon() {
         return colorForIcon;
@@ -343,7 +343,7 @@ public class Utils {
     /**
      * получение цвета фона для FloatingActionButton
      *
-     * @return
+     * @return цвет фона для FloatingActionButton
      */
     public static int getFabColor() {
         return fabColor;
@@ -447,48 +447,42 @@ public class Utils {
         AlertDialog.Builder builder = new AlertDialog.Builder(fragAct);
         LayoutInflater inflater = fragAct.getLayoutInflater();
         builder.setView(inflater.inflate(R.layout.dialog_pay, null));
-        builder.setPositiveButton(R.string.buy, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                int purchaseRes = pay.purchase(Pay.ITEM_SKU_99rub, reqCode);
-                int i = 0;
-                while (purchaseRes != 0) {
-                    i++;
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+        builder.setPositiveButton(R.string.buy, (dialog, which) -> {
+            int purchaseRes = pay.purchase(Pay.ITEM_SKU_99rub, reqCode);
+            int i = 0;
+            while (purchaseRes != 0) {
+                i++;
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                purchaseRes = pay.purchase(Pay.ITEM_SKU_99rub, reqCode);
+                if (i == 10) {
+                    if (purchaseRes == 7) {
+                        Toast.makeText(fragAct, R.string.aready_purchased, Toast.LENGTH_LONG).show();
+                    } else if (purchaseRes == -1) {
+                        Toast.makeText(fragAct, R.string.pay_service_disconnected, Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(fragAct, R.string.purchase_error, Toast.LENGTH_LONG).show();
                     }
-                    purchaseRes = pay.purchase(Pay.ITEM_SKU_99rub, reqCode);
-                    if (i == 10) {
-                        if (purchaseRes == 7) {
-                            Toast.makeText(fragAct, R.string.aready_purchased, Toast.LENGTH_LONG).show();
-                        } else if (purchaseRes == -1) {
-                            Toast.makeText(fragAct, R.string.pay_service_disconnected, Toast.LENGTH_LONG).show();
-                        } else {
-                            Toast.makeText(fragAct, R.string.purchase_error, Toast.LENGTH_LONG).show();
-                        }
-                        break;
-                    }
+                    break;
                 }
             }
         });
         if (isButtonFreePeriod && !kindOfSetting.equals("")) {
-            builder.setNeutralButton(R.string.try_30day_free, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    db.updateRecExitState(kindOfSetting, new Date(System.currentTimeMillis()).toString());
-                    if (kindOfSetting.equals(DB.DATE_TRIAL_STATS)) {
-                        fragAct.startActivityForResult(new Intent(fragAct, Statistics.class), 3);
-                    } else if (kindOfSetting.equals(DB.DATE_BG_COLOR)) {
-                        ((OtherSetting) act).changeColor("");
-                    } else if (kindOfSetting.equals(DB.DATE_LEARNING_METHOD)) {
-                        ((LearningSetting) act).setLearningType(learningType);
-                    } else if (kindOfSetting.equals(DB.DATE_LANGUAGE)) {
-                        ((LearningSetting) act).setEng(false);
-                    } else if (kindOfSetting.equals(DB.DATE_LANG_WORD_AMOUNT)) {
-                        ((LearningSetting) act).setAmountWords();
-                    }
+            builder.setNeutralButton(R.string.try_30day_free, (dialog, which) -> {
+                db.updateRecExitState(kindOfSetting, new Date(System.currentTimeMillis()).toString());
+                if (kindOfSetting.equals(DB.DATE_TRIAL_STATS)) {
+                    fragAct.startActivityForResult(new Intent(fragAct, Statistics.class), 3);
+                } else if (kindOfSetting.equals(DB.DATE_BG_COLOR)) {
+                    ((OtherSetting) act).changeColor("");
+                } else if (kindOfSetting.equals(DB.DATE_LEARNING_METHOD)) {
+                    ((LearningSetting) act).setLearningType(learningType);
+                } else if (kindOfSetting.equals(DB.DATE_LANGUAGE)) {
+                    ((LearningSetting) act).setEng(false);
+                } else if (kindOfSetting.equals(DB.DATE_LANG_WORD_AMOUNT)) {
+                    ((LearningSetting) act).setAmountWords();
                 }
             });
         }

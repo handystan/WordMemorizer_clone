@@ -1,19 +1,17 @@
 package ru.handy.android.wm;
 
-import java.util.ArrayList;
-
 import android.app.Activity;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.inputmethodservice.KeyboardView.OnKeyboardActionListener;
 import android.text.Editable;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+
+import java.util.ArrayList;
 
 public class CustomKeyboard {
 
@@ -115,12 +113,7 @@ public class CustomKeyboard {
 		mKeyboardView.setKeyboard(new Keyboard(mHostActivity, layoutid));
 		mKeyboardView.setPreviewEnabled(false); // NOTE Do not show the
 		registerEditText(resid);
-//		edittext.setKeyListener(null);
-		// preview balloons
 		mKeyboardView.setOnKeyboardActionListener(mOnKeyboardActionListener);
-		// Hide the standard keyboard initially
-//		mHostActivity.getWindow().setSoftInputMode(
-//				WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 	}
 
 	/**
@@ -198,31 +191,24 @@ public class CustomKeyboard {
 		}
 		// Make the custom keyboard appear
 
-		edittext.setOnFocusChangeListener(new OnFocusChangeListener() {
+		// NOTE By setting the on focus listener, we can show the custom
+// keyboard when the edit box gets focus, but also hide it when
+// the edit box loses focus
+		edittext.setOnFocusChangeListener((v, hasFocus) -> {
+			if (hasFocus)
+				showCustomKeyboard(v);
+			else
+				hideCustomKeyboard();
 
-			// NOTE By setting the on focus listener, we can show the custom
-			// keyboard when the edit box gets focus, but also hide it when
-			// the edit box loses focus
-			@Override
-			public void onFocusChange(View v, boolean hasFocus) {
-				if (hasFocus)
+		});
+
+		for (View view : views) {
+			view.setOnClickListener(v -> {
+				if (v == edittext)
 					showCustomKeyboard(v);
 				else
 					hideCustomKeyboard();
 
-			}
-		});
-
-		for (View view : views) {
-			view.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					if (v == edittext)
-						showCustomKeyboard(v);
-					else
-						hideCustomKeyboard();
-
-				}
 			});
 		}
 	}
@@ -230,15 +216,15 @@ public class CustomKeyboard {
 	// получение всех элементов. находящихся в Activity или Fragment
 	private ArrayList<View> getAllChildren(View v) {
 		if (!(v instanceof ViewGroup)) {
-			ArrayList<View> viewArrayList = new ArrayList<View>();
+			ArrayList<View> viewArrayList = new ArrayList<>();
 			viewArrayList.add(v);
 			return viewArrayList;
 		}
-		ArrayList<View> result = new ArrayList<View>();
+		ArrayList<View> result = new ArrayList<>();
 		ViewGroup viewGroup = (ViewGroup) v;
 		for (int i = 0; i < viewGroup.getChildCount(); i++) {
 			View child = viewGroup.getChildAt(i);
-			ArrayList<View> viewArrayList = new ArrayList<View>();
+			ArrayList<View> viewArrayList = new ArrayList<>();
 			viewArrayList.add(v);
 			viewArrayList.addAll(getAllChildren(child));
 			result.addAll(viewArrayList);

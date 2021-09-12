@@ -45,19 +45,23 @@ public class Help extends AppCompatActivity {
         }
 
         // устанавливаем toolbar и actionbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar bar = getSupportActionBar();
-        bar.setDisplayHomeAsUpEnabled(true);
-        bar.setDisplayShowHomeEnabled(true);
+        if (bar != null) {
+            bar.setDisplayHomeAsUpEnabled(true);
+            bar.setDisplayShowHomeEnabled(true);
+        }
         // устанавливаем цвет фона и шрифта для toolbar
         Utils.colorizeToolbar(this, toolbar);
         // устанавливаем цвет стрелки "назад" в toolbar
         final Drawable upArrow = ContextCompat.getDrawable(this, R.drawable.abc_ic_ab_back_material);
-        upArrow.setColorFilter(Utils.getFontColorToolbar(), PorterDuff.Mode.SRC_ATOP);
-        bar.setHomeAsUpIndicator(upArrow);
+        if (upArrow != null && bar != null) {
+            upArrow.setColorFilter(Utils.getFontColorToolbar(), PorterDuff.Mode.SRC_ATOP);
+            bar.setHomeAsUpIndicator(upArrow);
+        }
 
-        mTextView = (TextView) findViewById(R.id.tvHelp);
+        mTextView = findViewById(R.id.tvHelp);
         int idTvHelp = idHelp == 0 ? R.string.helpForLearning
                 : (idHelp == 1 ? R.string.helpForDict : R.string.helpForData);
         setTVText(idTvHelp);
@@ -84,7 +88,7 @@ public class Help extends AppCompatActivity {
             link[i - 1] = new SpannableString(devDevFull[0]);
             linkWord = devDevFull[0];
             cs[i - 1] = new ClickableSpan() {
-                String w = linkWord;
+                final String w = linkWord;
 
                 @Override
                 public void onClick(View widget) {

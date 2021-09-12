@@ -1,13 +1,6 @@
 package ru.handy.android.wm.setting;
 
-import ru.handy.android.wm.DB;
-import ru.handy.android.wm.GlobApp;
-import ru.handy.android.wm.R;
-
 import android.annotation.SuppressLint;
-
-import androidx.fragment.app.Fragment;
-
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,11 +8,15 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.TextView;
+
+import androidx.fragment.app.Fragment;
+
+import ru.handy.android.wm.DB;
+import ru.handy.android.wm.GlobApp;
+import ru.handy.android.wm.R;
 
 public class DictSetting extends Fragment implements OnClickListener {
 
@@ -67,26 +64,18 @@ public class DictSetting extends Fragment implements OnClickListener {
         isSearchRule1 = (searchType == null || searchType.equals("0"));
         rbSearchRule1.setChecked(isSearchRule1);
         rbSearchRule2.setChecked(!isSearchRule1);
-        rbSearchRule1.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView,
-                                         boolean isChecked) {
-                isSearchRule1 = isChecked;
-                db.updateRecExitState(DB.DICT_SEARCH_TYPE, isSearchRule1 ? "0"
-                        : "1");
-            }
+        rbSearchRule1.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isSearchRule1 = isChecked;
+            db.updateRecExitState(DB.DICT_SEARCH_TYPE, isSearchRule1 ? "0"
+                    : "1");
         });
         String showHist = db.getValueByVariable(DB.DICT_SHOW_HISTORY);
         isShowHistory = !(showHist == null || showHist.equals("0"));
         cbShowHistory.setChecked(isShowHistory);
-        cbShowHistory.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView,
-                                         boolean isChecked) {
-                isShowHistory = isChecked;
-                db.updateRecExitState(DB.DICT_SHOW_HISTORY, isShowHistory ? "1"
-                        : "0");
-            }
+        cbShowHistory.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isShowHistory = isChecked;
+            db.updateRecExitState(DB.DICT_SHOW_HISTORY, isShowHistory ? "1"
+                    : "0");
         });
 
         return dictTab;

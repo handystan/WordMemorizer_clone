@@ -111,12 +111,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         app.setLearning(this); // в application указываем экземпляр learning, чтобы с ним можно было работать из любых мест приложения
 
         // в отдельном потоке инициализируем TTS
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                app.speak("");
-            }
-        }).start();
+        new Thread(() -> app.speak("")).start();
 
         Utils.onActivityCreateSetTheme(this);
         super.onCreate(savedInstanceState);
@@ -134,7 +129,9 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         Utils.colorizeToolbar(this, toolbar);
         // устанавливаем цвет иконки со статистикой и overflow
         Drawable stat = ContextCompat.getDrawable(this, R.drawable.statistics);
-        stat.setColorFilter(Utils.getColorForIcon(), PorterDuff.Mode.SRC_ATOP);
+        if (stat != null) {
+            stat.setColorFilter(Utils.getColorForIcon(), PorterDuff.Mode.SRC_ATOP);
+        }
 
         String lt = db.getValueByVariable(DB.LEARNING_TYPE);
         learningType = lt == null ? 0 : Integer.parseInt(lt);
@@ -203,21 +200,18 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         ivSound = (ImageView) findViewById(R.id.ivSound);
         ivSound.setOnClickListener(this);
         final Drawable defBackground = ivSound.getBackground(); // фон по умолчанию для кнопки с озвучки
-        ivSound.setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN
-                        || event.getAction() == MotionEvent.ACTION_MOVE) {
-                    ivSound.setBackgroundResource(R.color.bright_blue);
+        ivSound.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN
+                    || event.getAction() == MotionEvent.ACTION_MOVE) {
+                ivSound.setBackgroundResource(R.color.bright_blue);
+            } else {
+                if (android.os.Build.VERSION.SDK_INT >= 16) {
+                    ivSound.setBackground(defBackground);
                 } else {
-                    if (android.os.Build.VERSION.SDK_INT >= 16) {
-                        ivSound.setBackground(defBackground);
-                    } else {
-                        ivSound.setBackgroundDrawable(defBackground);
-                    }
+                    ivSound.setBackgroundDrawable(defBackground);
                 }
-                return false;
             }
+            return false;
         });
         etAnswerWord = (EditText) findViewById(R.id.etAnswerWord);
         etAnswerWord.addTextChangedListener(new TextWatcher() {
@@ -237,22 +231,19 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                 bDontKnow.setText(isWaitTouch ? R.string.further : (s.toString().equals("") ? R.string.dont_know : R.string.check));
             }
         });
-        etAnswerWord.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    if (bDontKnow.isClickable()) {
-                        if (fixing.getCategories().equals("")) {
-                            return false;
-                        }
-                        nextWord(new Word(0, etAnswerWord.getText().toString(), "", etAnswerWord.getText().toString()));
-                    } else {
-                        afterOnTouch();
+        etAnswerWord.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                if (bDontKnow.isClickable()) {
+                    if (fixing.getCategories().equals("")) {
+                        return false;
                     }
-                    return true;
+                    nextWord(new Word(0, etAnswerWord.getText().toString(), "", etAnswerWord.getText().toString()));
+                } else {
+                    afterOnTouch();
                 }
-                return false;
+                return true;
             }
+            return false;
         });
         tvMessage = (TextView) findViewById(R.id.tvMessage);
         tvRightAnswer = (TextView) findViewById(R.id.tvRightAnswer);
@@ -261,22 +252,16 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         bDontKnow = (Button) findViewById(R.id.bDontKnow);
         bDontKnow.setOnClickListener(this);
         bDontKnow.setOnTouchListener(this);
-        bDontKnow.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                Toast.makeText(getApplicationContext(), s(R.string.hint_dont_know), Toast.LENGTH_LONG).show();
-                return false;
-            }
+        bDontKnow.setOnLongClickListener(v -> {
+            Toast.makeText(getApplicationContext(), s(R.string.hint_dont_know), Toast.LENGTH_LONG).show();
+            return false;
         });
         bDontKnow.setVisibility(isShowDontKnow ? View.VISIBLE : View.GONE);
         bKnow = (Button) findViewById(R.id.bKnow);
         bKnow.setOnClickListener(this);
-        bKnow.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                Toast.makeText(getApplicationContext(), s(R.string.hint_know), Toast.LENGTH_LONG).show();
-                return false;
-            }
+        bKnow.setOnLongClickListener(v -> {
+            Toast.makeText(getApplicationContext(), s(R.string.hint_know), Toast.LENGTH_LONG).show();
+            return false;
         });
         bKnow.setVisibility(isShowDontKnow && learningType == 2 ? View.VISIBLE : View.GONE);
         etAnswerWord.setTextColor(Color.parseColor("black"));
@@ -370,14 +355,11 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                         if (amount != -1) {
                             amountDonate = amount;
                             db.updateRecExitState(DB.AMOUNT_DONATE, amountDonate + "");
-                            runOnUiThread(new Runnable() { //заморочиться с runOnUiThread пришлось из-за того Learning может обновляться из About
-
-                                @Override
-                                public void run() {
-                                    ViewGroup.LayoutParams params = (ViewGroup.LayoutParams) llThanks.getLayoutParams();
-                                    params.height = amountDonate == 0 ? LinearLayout.LayoutParams.WRAP_CONTENT : 0;
-                                    llThanks.setLayoutParams(params);
-                                }
+                            //заморочиться с runOnUiThread пришлось из-за того Learning может обновляться из About
+                            runOnUiThread(() -> {
+                                ViewGroup.LayoutParams params = (ViewGroup.LayoutParams) llThanks.getLayoutParams();
+                                params.height = amountDonate == 0 ? LinearLayout.LayoutParams.WRAP_CONTENT : 0;
+                                llThanks.setLayoutParams(params);
                             });
                             mFBAnalytics.setUserProperty("is_paid", amountDonate == 0 ? "N" : "Y"); // оплачено приложение пользователем или нет
                         }
@@ -549,32 +531,29 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
 
     public void showWordsSynchr() {
         if (latch != null) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        latch.await();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    Learning.this.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                latch.await();
-                                showWords();
-                                if (message != null) {
-                                    dl = null;
-                                    onActivityResult(GET_CATEGORIES, AppCompatActivity.RESULT_OK,
-                                            Learning.this.getIntent().putExtra(Categories.NEW_CATEGORIES, ""));
-                                    startActivityForResult(new Intent(Learning.this, Categories.class), GET_CATEGORIES);
-                                }
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
+            new Thread(() -> {
+                try {
+                    latch.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
+                Learning.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            latch.await();
+                            showWords();
+                            if (message != null) {
+                                dl = null;
+                                onActivityResult(GET_CATEGORIES, AppCompatActivity.RESULT_OK,
+                                        Learning.this.getIntent().putExtra(Categories.NEW_CATEGORIES, ""));
+                                startActivityForResult(new Intent(Learning.this, Categories.class), GET_CATEGORIES);
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
             }).start();
         } else {
             showWords();
@@ -687,12 +666,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
             message = result.get(2);
             // обновляем статистику по отгаданным / не отгаданным словам
             final Word finalRightWord = rightWord;
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    db.updateStat(curWord, fixing.getCategories(), finalRightWord == null);
-                }
-            }).start();
+            new Thread(() -> db.updateStat(curWord, fixing.getCategories(), finalRightWord == null)).start();
             // отправляем в Firebase инфу с настройками по обучению
             if (mFBAnalytics != null) {
                 app.learningEvent(amountDonate > 0 || isFromOldDB ? s(R.string.paid) : s(R.string.not_paid),

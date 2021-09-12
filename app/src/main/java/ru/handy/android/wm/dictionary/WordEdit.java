@@ -6,36 +6,30 @@ import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-
-import androidx.appcompat.widget.AppCompatMultiAutoCompleteTextView;
-
 import android.widget.Toast;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatMultiAutoCompleteTextView;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
-import ru.handy.android.wm.GlobApp;
 import ru.handy.android.wm.CustomKeyboard;
 import ru.handy.android.wm.DB;
+import ru.handy.android.wm.GlobApp;
 import ru.handy.android.wm.R;
 import ru.handy.android.wm.learning.Word;
 import ru.handy.android.wm.setting.Utils;
@@ -77,32 +71,33 @@ public class WordEdit extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar bar = getSupportActionBar();
-        bar.setDisplayHomeAsUpEnabled(true);
-        bar.setDisplayShowHomeEnabled(true);
+        if (bar != null) {
+            bar.setDisplayHomeAsUpEnabled(true);
+            bar.setDisplayShowHomeEnabled(true);
+        }
         // устанавливаем цвет фона и шрифта для toolbar
         Utils.colorizeToolbar(this, toolbar);
         // устанавливаем цвет стрелки "назад" в toolbar
         final Drawable upArrow = ContextCompat.getDrawable(this, R.drawable.abc_ic_ab_back_material);
-        upArrow.setColorFilter(Utils.getFontColorToolbar(), PorterDuff.Mode.SRC_ATOP);
-        bar.setHomeAsUpIndicator(upArrow);
+        if (upArrow != null && bar != null) {
+            upArrow.setColorFilter(Utils.getFontColorToolbar(), PorterDuff.Mode.SRC_ATOP);
+            bar.setHomeAsUpIndicator(upArrow);
+        }
 
         // получаем поля
         etEngWord = (EditText) findViewById(R.id.etEngWord);
         etTrascrip = (EditText) findViewById(R.id.etTrascrip);
         etTranslate = (EditText) findViewById(R.id.etTranslate);
         bSave = (Button) findViewById(R.id.bSave);
-        etTrascrip.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                InputMethodManager imm = (InputMethodManager) WordEdit.this.getSystemService(
-                        WordEdit.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-                return false;
-            }
+        etTrascrip.setOnTouchListener((v, event) -> {
+            InputMethodManager imm = (InputMethodManager) WordEdit.this.getSystemService(
+                    WordEdit.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+            return false;
         });
         Intent intent = getIntent();
         if (intent.getStringExtra("c_ew_id") != null)
-            id = Long.parseLong(intent.getStringExtra("c_ew_id"));
+            id = Long.parseLong(Objects.requireNonNull(intent.getStringExtra("c_ew_id")));
 
         // массив категорий и программно добавляем поле
         // MultiAutoCompleteTextView
@@ -123,25 +118,22 @@ public class WordEdit extends AppCompatActivity {
         mactvCategory.addTextChangedListener(new MyWatcher());
         mactvCategory.setHint(R.string.categories);
         llMACTV.addView(mactvCategory, lParams);
-        mactvCategory.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mactvCategory.setText(mactvCategory.getText());
-                mactvCategory.setSelection(mactvCategory.getText().length());
-            }
+        mactvCategory.setOnClickListener(v -> {
+            mactvCategory.setText(mactvCategory.getText());
+            mactvCategory.setSelection(mactvCategory.getText().length());
         });
 
         // устанавливаем начальные данные для полей
         if (id != 0) {
             etEngWord.setText(intent.getStringExtra("c_ew_engword"));
-            String transcr = intent.getStringExtra("c_ew_transcription").trim();
+            String transcr = Objects.requireNonNull(intent.getStringExtra("c_ew_transcription")).trim();
             if (!transcr.equals("") && transcr.endsWith("]"))
                 transcr = transcr.substring(0, transcr.length() - 1);
             if (!transcr.equals("") && transcr.startsWith("["))
                 transcr = transcr.substring(1);
             etTrascrip.setText(transcr);
             etTranslate.setText(intent.getStringExtra("c_ew_rustranslate"));
-            String mmactv = intent.getStringExtra("c_ew_category").trim();
+            String mmactv = Objects.requireNonNull(intent.getStringExtra("c_ew_category")).trim();
             if (!mmactv.equals("") && !mmactv.endsWith(","))
                 mmactv = mmactv.concat(", ");
             mactvCategory.setText(mmactv);
@@ -149,13 +141,9 @@ public class WordEdit extends AppCompatActivity {
         }
 
         // обработчик для кнопки сохранения
-        bSave.setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                onClickSave();
-                finish();
-            }
+        bSave.setOnClickListener(v -> {
+            onClickSave();
+            finish();
         });
     }
 
@@ -250,9 +238,7 @@ public class WordEdit extends AppCompatActivity {
         String[] arr = mactvCategory.getText().toString().split(",");
         for (String category : arr) {
             category = category.trim();
-            if (newCategories.contains(category)) {
-                newCategories.remove(newCategories.indexOf(category));
-            }
+            newCategories.remove(category);
         }
         if (lastCategories.size() != newCategories.size()) {
             ArrayAdapter<String> adapter = new ArrayAdapter<>(this,

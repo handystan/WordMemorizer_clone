@@ -24,9 +24,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
-import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -67,7 +65,7 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
     private EditText etInputWord;
     private TextView tvNoWords;
     private LinearLayout llLetters;
-    private ArrayList<Button> bLetters = new ArrayList<>();
+    private final ArrayList<Button> bLetters = new ArrayList<>();
     private FloatingActionButton fab;
     private DB db;
     private SimpleCursorAdapter scAdapter;
@@ -103,64 +101,62 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
         db = app.getDb(); // открываем подключение к БД
 
         // устанавливаем toolbar и actionbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar bar = getSupportActionBar();
-        bar.setDisplayHomeAsUpEnabled(true);
-        bar.setDisplayShowHomeEnabled(true);
+        if (bar != null) {
+            bar.setDisplayHomeAsUpEnabled(true);
+            bar.setDisplayShowHomeEnabled(true);
+        }
         // устанавливаем цвет фона и шрифта для toolbar
         Utils.colorizeToolbar(this, toolbar);
         // устанавливаем цвет стрелки "назад" в toolbar
         final Drawable upArrow = ContextCompat.getDrawable(this, R.drawable.abc_ic_ab_back_material);
-        upArrow.setColorFilter(Utils.getFontColorToolbar(), PorterDuff.Mode.SRC_ATOP);
-        bar.setHomeAsUpIndicator(upArrow);
+        if (upArrow != null && bar != null) {
+            upArrow.setColorFilter(Utils.getFontColorToolbar(), PorterDuff.Mode.SRC_ATOP);
+            bar.setHomeAsUpIndicator(upArrow);
+        }
         // устанавливаем плавающию кнопку с перечнем слов в категории
-        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = findViewById(R.id.fab);
         lvWords = findViewById(R.id.lvWords);
         llLetters = findViewById(R.id.llLetters);
         etInputWord = findViewById(R.id.inputWord);
         tvNoWords = findViewById(R.id.tvNoWords);
-        bLetters.add((Button) findViewById(R.id.bLetter0));
-        bLetters.add((Button) findViewById(R.id.bLetter1));
-        bLetters.add((Button) findViewById(R.id.bLetter2));
-        bLetters.add((Button) findViewById(R.id.bLetter3));
-        bLetters.add((Button) findViewById(R.id.bLetter4));
-        bLetters.add((Button) findViewById(R.id.bLetter5));
-        bLetters.add((Button) findViewById(R.id.bLetter6));
-        bLetters.add((Button) findViewById(R.id.bLetter7));
-        bLetters.add((Button) findViewById(R.id.bLetter8));
-        bLetters.add((Button) findViewById(R.id.bLetter9));
-        bLetters.add((Button) findViewById(R.id.bLetter10));
-        bLetters.add((Button) findViewById(R.id.bLetter11));
-        bLetters.add((Button) findViewById(R.id.bLetter12));
-        bLetters.add((Button) findViewById(R.id.bLetter13));
-        bLetters.add((Button) findViewById(R.id.bLetter14));
-        bLetters.add((Button) findViewById(R.id.bLetter15));
-        bLetters.add((Button) findViewById(R.id.bLetter16));
-        bLetters.add((Button) findViewById(R.id.bLetter17));
-        bLetters.add((Button) findViewById(R.id.bLetter18));
-        bLetters.add((Button) findViewById(R.id.bLetter19));
-        bLetters.add((Button) findViewById(R.id.bLetter20));
-        bLetters.add((Button) findViewById(R.id.bLetter21));
-        bLetters.add((Button) findViewById(R.id.bLetter22));
-        bLetters.add((Button) findViewById(R.id.bLetter23));
-        bLetters.add((Button) findViewById(R.id.bLetter24));
-        bLetters.add((Button) findViewById(R.id.bLetter25));
-        bLetters.add((Button) findViewById(R.id.bLetter26));
-        bLetters.add((Button) findViewById(R.id.bLetter27));
+        bLetters.add(findViewById(R.id.bLetter0));
+        bLetters.add(findViewById(R.id.bLetter1));
+        bLetters.add(findViewById(R.id.bLetter2));
+        bLetters.add(findViewById(R.id.bLetter3));
+        bLetters.add(findViewById(R.id.bLetter4));
+        bLetters.add(findViewById(R.id.bLetter5));
+        bLetters.add(findViewById(R.id.bLetter6));
+        bLetters.add(findViewById(R.id.bLetter7));
+        bLetters.add(findViewById(R.id.bLetter8));
+        bLetters.add(findViewById(R.id.bLetter9));
+        bLetters.add(findViewById(R.id.bLetter10));
+        bLetters.add(findViewById(R.id.bLetter11));
+        bLetters.add(findViewById(R.id.bLetter12));
+        bLetters.add(findViewById(R.id.bLetter13));
+        bLetters.add(findViewById(R.id.bLetter14));
+        bLetters.add(findViewById(R.id.bLetter15));
+        bLetters.add(findViewById(R.id.bLetter16));
+        bLetters.add(findViewById(R.id.bLetter17));
+        bLetters.add(findViewById(R.id.bLetter18));
+        bLetters.add(findViewById(R.id.bLetter19));
+        bLetters.add(findViewById(R.id.bLetter20));
+        bLetters.add(findViewById(R.id.bLetter21));
+        bLetters.add(findViewById(R.id.bLetter22));
+        bLetters.add(findViewById(R.id.bLetter23));
+        bLetters.add(findViewById(R.id.bLetter24));
+        bLetters.add(findViewById(R.id.bLetter25));
+        bLetters.add(findViewById(R.id.bLetter26));
+        bLetters.add(findViewById(R.id.bLetter27));
 
-        fab.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                Toast.makeText(getApplicationContext(), getResources().getString(R.string.add_new_word), Toast.LENGTH_LONG).show();
-                return false;
-            }
+        fab.setOnLongClickListener(v -> {
+            Toast.makeText(getApplicationContext(), getResources().getString(R.string.add_new_word), Toast.LENGTH_LONG).show();
+            return false;
         });
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                record(0, WordEdit.class); // добавление слова
-            }
+        fab.setOnClickListener(v -> {
+            record(0, WordEdit.class); // добавление слова
         });
         fab.setBackgroundTintList(ColorStateList.valueOf(Utils.getFabColor()));
 
@@ -205,13 +201,7 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
         String searchWord = db.getValueByVariable(DB.SEARCH_WORD);
         etInputWord.setText(searchWord == null ? "" : searchWord);
 
-        lvWords.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id) {
-                record(id, WordDescription.class);
-            }
-        });
+        lvWords.setOnItemClickListener((parent, view, position, id) -> record(id, WordDescription.class));
 
         // определяем высоту layout, в которой будут кнопки с буквами и показываем из только, если экран вертикально расположен и слова показываются не из истории
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT && !isShowHistory) {
@@ -225,7 +215,7 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
                         if (etInputWord.getText().length() == 0) {
                             llLetters.setVisibility(View.VISIBLE);
                             LayoutParams params = (LayoutParams) bLetters.get(0).getLayoutParams();
-                            params.height = (int) (llLettersHeight / (isEnglSearch ? 26 : 28));
+                            params.height = (llLettersHeight / (isEnglSearch ? 26 : 28));
                             for (int i = 0; i < bLetters.size(); i++) {
                                 bLetters.get(i).setLayoutParams(params);
                             }
@@ -267,7 +257,6 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
      * пишет на кнопка буквы в зависимости от того, русский или английский словарь
      */
     private void setLetters() {
-        int firstLetterInUnicode = isEnglSearch ? 0x0041 : 0x0410;
         for (int i = 0; i < bLetters.size(); i++) {
             if (isEnglSearch) {
                 if (i < 26) {
@@ -276,7 +265,7 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
                     bLetters.get(i).setText("");
                     bLetters.get(i).setVisibility(View.INVISIBLE);
                 }
-            } else if (!isEnglSearch) {
+            } else {
                 bLetters.get(i).setText(rusLetters[i]);
                 bLetters.get(i).setVisibility(View.VISIBLE);
             }
@@ -557,7 +546,7 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
                         if (etInputWord.getText().length() == 0) {
                             llLetters.setVisibility(View.VISIBLE);
                             LayoutParams params = (LayoutParams) bLetters.get(0).getLayoutParams();
-                            params.height = (int) (llLettersHeight / (isEnglSearch ? 26 : 28));
+                            params.height = (llLettersHeight / (isEnglSearch ? 26 : 28));
                             for (int i = 0; i < bLetters.size(); i++) {
                                 bLetters.get(i).setLayoutParams(params);
                             }
@@ -567,7 +556,7 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
             });
         } else if (llLettersHeight > 0 && getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT && !isShowHistory) {
             LayoutParams params = (LayoutParams) bLetters.get(0).getLayoutParams();
-            params.height = (int) (llLettersHeight / (isEnglSearch ? 26 : 28));
+            params.height = (llLettersHeight / (isEnglSearch ? 26 : 28));
             for (int i = 0; i < bLetters.size(); i++) {
                 bLetters.get(i).setLayoutParams(params);
             }
@@ -618,7 +607,7 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
                               boolean isStartWord, boolean isShowHistory) {
             super(context);
             this.db = db;
-            inputWord = (EditText) ((AppCompatActivity) context).findViewById(R.id.inputWord);
+            inputWord = ((AppCompatActivity) context).findViewById(R.id.inputWord);
             this.isEngl = isEngl;
             this.isStartWord = isStartWord;
             this.isShowHistory = isShowHistory;

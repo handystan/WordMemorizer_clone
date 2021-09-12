@@ -38,7 +38,6 @@
                 android:id="@+id/fdLinearLayoutSelect"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
                 android:background="#00000000"
                 android:orientation="vertical"
                 android:paddingBottom="5dp"
@@ -56,6 +55,7 @@
                         android:layout_width="0dip"
                         android:layout_height="wrap_content"
                         android:layout_weight=".3"
+                        android:background="@drawable/bord_action_button"
                         android:text="@string/nnew"/>
 
                     <Button
@@ -63,6 +63,7 @@
                         android:layout_width="0dip"
                         android:layout_height="wrap_content"
                         android:layout_weight=".7"
+                        android:background="@drawable/bord_action_button"
                         android:text="@string/select"/>
                 </LinearLayout>
             </LinearLayout>
@@ -71,7 +72,6 @@
                 android:id="@+id/fdLinearLayoutCreate"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
                 android:background="#00000000"
                 android:orientation="vertical"
                 android:paddingBottom="5dp"
@@ -102,6 +102,7 @@
                         android:layout_width="0dip"
                         android:layout_height="wrap_content"
                         android:layout_weight=".3"
+                        android:background="@drawable/bord_action_button"
                         android:text="@string/cancel"/>
 
                     <Button
@@ -109,6 +110,7 @@
                         android:layout_width="0dip"
                         android:layout_height="wrap_content"
                         android:layout_weight=".7"
+                        android:background="@drawable/bord_action_button"
                         android:text="@string/create"/>
                 </LinearLayout>
             </LinearLayout>

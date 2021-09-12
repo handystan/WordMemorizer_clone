@@ -19,7 +19,6 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 
 import ru.handy.android.wm.DB;
 import ru.handy.android.wm.GlobApp;
@@ -65,14 +64,18 @@ public class CategoreWordsList extends AppCompatActivity implements View.OnClick
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar bar = getSupportActionBar();
-        bar.setDisplayHomeAsUpEnabled(true);
-        bar.setDisplayShowHomeEnabled(true);
+        if (bar != null) {
+            bar.setDisplayHomeAsUpEnabled(true);
+            bar.setDisplayShowHomeEnabled(true);
+        }
         // устанавливаем цвет фона и шрифта для toolbar
         Utils.colorizeToolbar(this, toolbar);
         // устанавливаем цвет стрелки "назад" в toolbar
         final Drawable upArrow = ContextCompat.getDrawable(this, R.drawable.abc_ic_ab_back_material);
-        upArrow.setColorFilter(Utils.getFontColorToolbar(), PorterDuff.Mode.SRC_ATOP);
-        bar.setHomeAsUpIndicator(upArrow);
+        if (upArrow != null && bar != null) {
+            upArrow.setColorFilter(Utils.getFontColorToolbar(), PorterDuff.Mode.SRC_ATOP);
+            bar.setHomeAsUpIndicator(upArrow);
+        }
 
         lvCatWordsList = findViewById(R.id.lvCatWordsList);
         bAllWordsCWL = findViewById(R.id.bAllWordsCWL);
@@ -85,24 +88,9 @@ public class CategoreWordsList extends AppCompatActivity implements View.OnClick
         allWords = db.getAllWordsInLesson();
         rightWords = db.getRightWordsInLesson();
         wrongWords = db.getAllWrongWordsInLesson();
-        Collections.sort(allWords, new Comparator<Word>() {
-            @Override
-            public int compare(Word word1, Word word2) {
-                return word1.getEngWord().compareToIgnoreCase(word2.getEngWord());
-            }
-        });
-        Collections.sort(rightWords, new Comparator<Word>() {
-            @Override
-            public int compare(Word word1, Word word2) {
-                return word1.getEngWord().compareToIgnoreCase(word2.getEngWord());
-            }
-        });
-        Collections.sort(wrongWords, new Comparator<Word>() {
-            @Override
-            public int compare(Word word1, Word word2) {
-                return word1.getEngWord().compareToIgnoreCase(word2.getEngWord());
-            }
-        });
+        Collections.sort(allWords, (word1, word2) -> word1.getEngWord().compareToIgnoreCase(word2.getEngWord()));
+        Collections.sort(rightWords, (word1, word2) -> word1.getEngWord().compareToIgnoreCase(word2.getEngWord()));
+        Collections.sort(wrongWords, (word1, word2) -> word1.getEngWord().compareToIgnoreCase(word2.getEngWord()));
         wAdapter = new WordsAdapter(app, allWords);
         lvCatWordsList.setAdapter(wAdapter);
         bAllWordsCWL.setText(getResources().getString(R.string.ofWords) + " " + allWords.size());

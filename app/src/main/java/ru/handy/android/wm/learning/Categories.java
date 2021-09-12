@@ -61,14 +61,18 @@ public class Categories extends AppCompatActivity implements OnClickListener {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar bar = getSupportActionBar();
-        bar.setDisplayHomeAsUpEnabled(true);
-        bar.setDisplayShowHomeEnabled(true);
+        if (bar != null) {
+            bar.setDisplayHomeAsUpEnabled(true);
+            bar.setDisplayShowHomeEnabled(true);
+        }
         // устанавливаем цвет фона и шрифта для toolbar
         Utils.colorizeToolbar(this, toolbar);
         // устанавливаем цвет стрелки "назад" в toolbar
         final Drawable upArrow = ContextCompat.getDrawable(this, R.drawable.abc_ic_ab_back_material);
-        upArrow.setColorFilter(Utils.getFontColorToolbar(), PorterDuff.Mode.SRC_ATOP);
-        bar.setHomeAsUpIndicator(upArrow);
+        if (upArrow != null && bar != null) {
+            upArrow.setColorFilter(Utils.getFontColorToolbar(), PorterDuff.Mode.SRC_ATOP);
+            bar.setHomeAsUpIndicator(upArrow);
+        }
 
         lvCategories = (ListView) findViewById(R.id.lvCategories);
         bChooseCat = (Button) findViewById(R.id.bChooseCat);
@@ -113,21 +117,15 @@ public class Categories extends AppCompatActivity implements OnClickListener {
             }
         });
         // затем в отдельном потоке отображаем и кол-во слов в каждой категории
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final ArrayList<Category> newCategories = db.getClassCategories();
-                if (newCategories != null) {
-                    for (int i = 0; i < categories.size(); i++) {
-                        categories.get(i).setAmount(newCategories.get(i).getAmount());
-                    }
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            cAdapter.notifyDataSetChanged(); // обновляем адаптер
-                        }
-                    });
+        new Thread(() -> {
+            final ArrayList<Category> newCategories = db.getClassCategories();
+            if (newCategories != null) {
+                for (int i = 0; i < categories.size(); i++) {
+                    categories.get(i).setAmount(newCategories.get(i).getAmount());
                 }
+                runOnUiThread(() -> {
+                    cAdapter.notifyDataSetChanged(); // обновляем адаптер
+                });
             }
         }).start();
     }

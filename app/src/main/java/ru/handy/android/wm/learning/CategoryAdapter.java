@@ -3,7 +3,6 @@ package ru.handy.android.wm.learning;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -32,16 +31,13 @@ import ru.handy.android.wm.statistics.Statistics;
 public class CategoryAdapter extends BaseAdapter {
 
     public static String NEW_CATEGORIES = "NEW_CATEGORIES";
-    private Context ctx;
-    private LayoutInflater lInflater;
-    private ArrayList<Category> objects;
+    private final Context ctx;
+    private final LayoutInflater lInflater;
+    private final ArrayList<Category> objects;
     // обработчик для чекбоксов
-    OnCheckedChangeListener checkChangList = new OnCheckedChangeListener() {
-        public void onCheckedChanged(CompoundButton buttonView,
-                                     boolean isChecked) {
-            // меняем галочку в чек-боксе
-            ((Category) getItem((Integer) buttonView.getTag())).setChecked(isChecked);
-        }
+    OnCheckedChangeListener checkChangList = (buttonView, isChecked) -> {
+        // меняем галочку в чек-боксе
+        ((Category) getItem((Integer) buttonView.getTag())).setChecked(isChecked);
     };
     private boolean isStatistics; // true - статистика, false - все категории
 
@@ -107,27 +103,18 @@ public class CategoryAdapter extends BaseAdapter {
         final CheckBox cbCategory = (CheckBox) view.findViewById(R.id.cbCategory);
         cbCategory.setText(cat.getName());
         // присваиваем чекбоксу обработчик
-        tvAmount.setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                setBackground(cbCategory, tvAmount, event, defBackground);
-                return false;
-            }
+        tvAmount.setOnTouchListener((v, event) -> {
+            setBackground(cbCategory, tvAmount, event, defBackground);
+            return false;
         });
-        cbCategory.setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                setBackground(cbCategory, tvAmount, event, defBackground);
-                return false;
-            }
+        cbCategory.setOnTouchListener((v, event) -> {
+            setBackground(cbCategory, tvAmount, event, defBackground);
+            return false;
         });
-        tvAmount.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Category c = (Category) getItem((Integer) v.getTag());
-                    c.setChecked(!c.isChecked());
-                    cbCategory.setChecked(c.isChecked());
-            }
+        tvAmount.setOnClickListener(v -> {
+            Category c = (Category) getItem((Integer) v.getTag());
+                c.setChecked(!c.isChecked());
+                cbCategory.setChecked(c.isChecked());
         });
         // пишем позицию
         cbCategory.setTag(position);
@@ -169,7 +156,7 @@ public class CategoryAdapter extends BaseAdapter {
 
     // содержимое корзины
     public ArrayList<Category> getCheckedCategories() {
-        ArrayList<Category> cats = new ArrayList<Category>();
+        ArrayList<Category> cats = new ArrayList<>();
         for (Category c : objects) {
             // если выбрана
             if (c.isChecked())

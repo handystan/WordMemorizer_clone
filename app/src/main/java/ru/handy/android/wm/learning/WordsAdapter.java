@@ -5,18 +5,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -115,66 +112,30 @@ public class WordsAdapter extends BaseAdapter {
             act.registerForContextMenu(ivSound);
             act.unregisterForContextMenu(ivSound);
 
-            tvEngWord.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    record(word, WordDescription.class);
-                }
-            });
-            tvTransc.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    record(word, WordDescription.class);
-                }
-            });
-            tvRusWord.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    record(word, WordDescription.class);
-                }
-            });
+            tvEngWord.setOnClickListener(v -> record(word, WordDescription.class));
+            tvTransc.setOnClickListener(v -> record(word, WordDescription.class));
+            tvRusWord.setOnClickListener(v -> record(word, WordDescription.class));
         }
-        ivSound.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                app.speak(word.getEngWord());
-            }
+        ivSound.setOnClickListener(v -> app.speak(word.getEngWord()));
+        view.setOnTouchListener((v, event) -> {
+            WordsAdapter.this.setBackground(tvEngWord, tvTransc, tvRusWord, ivSound, event, defBackground);
+            return true;
         });
-        view.setOnTouchListener(new OnTouchListener() {
-            @SuppressLint("ClickableViewAccessibility")
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                WordsAdapter.this.setBackground(tvEngWord, tvTransc, tvRusWord, ivSound, event, defBackground);
-                return true;
-            }
+        tvEngWord.setOnTouchListener((v, event) -> {
+            WordsAdapter.this.setBackground(tvEngWord, tvTransc, tvRusWord, ivSound, event, defBackground);
+            return false;
         });
-        tvEngWord.setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                WordsAdapter.this.setBackground(tvEngWord, tvTransc, tvRusWord, ivSound, event, defBackground);
-                return false;
-            }
+        tvTransc.setOnTouchListener((v, event) -> {
+            WordsAdapter.this.setBackground(tvEngWord, tvTransc, tvRusWord, ivSound, event, defBackground);
+            return false;
         });
-        tvTransc.setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                WordsAdapter.this.setBackground(tvEngWord, tvTransc, tvRusWord, ivSound, event, defBackground);
-                return false;
-            }
+        tvRusWord.setOnTouchListener((v, event) -> {
+            WordsAdapter.this.setBackground(tvEngWord, tvTransc, tvRusWord, ivSound, event, defBackground);
+            return false;
         });
-        tvRusWord.setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                WordsAdapter.this.setBackground(tvEngWord, tvTransc, tvRusWord, ivSound, event, defBackground);
-                return false;
-            }
-        });
-        ivSound.setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                WordsAdapter.this.setBackground(tvEngWord, tvTransc, tvRusWord, ivSound, event, defBackground);
-                return false;
-            }
+        ivSound.setOnTouchListener((v, event) -> {
+            WordsAdapter.this.setBackground(tvEngWord, tvTransc, tvRusWord, ivSound, event, defBackground);
+            return false;
         });
         // пишем позицию
         tvEngWord.setTag(position);

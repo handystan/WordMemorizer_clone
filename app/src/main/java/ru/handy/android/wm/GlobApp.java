@@ -215,22 +215,19 @@ public class GlobApp extends Application {
      */
     synchronized public TextToSpeech speak(final String text) {
         if (tts == null || tts.speak(text, TextToSpeech.QUEUE_ADD, null) == TextToSpeech.ERROR) {
-            tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
-                @Override
-                public void onInit(int status) {
-                    if (status == TextToSpeech.SUCCESS) {
-                        String pronun = db.getValueByVariable(DB.PRONUNCIATION_USUK);
-                        int pronunc = (pronun == null || pronun.equals("0") ? 0 : 1);
-                        int result = tts.setLanguage(pronunc == 0 ? Locale.US : Locale.UK);
-                        if (result == TextToSpeech.LANG_MISSING_DATA ||
-                                result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                            Log.e("myLogs", "This Language Locale.US is not supported");
-                        } else
-                            tts.speak(text, TextToSpeech.QUEUE_ADD, null);
-                        Log.d("myLogs", "TextToSpeech initialization was successed!");
-                    } else {
-                        Log.e("myLogs", "TextToSpeech initialization was failed!");
-                    }
+            tts = new TextToSpeech(getApplicationContext(), status -> {
+                if (status == TextToSpeech.SUCCESS) {
+                    String pronun = db.getValueByVariable(DB.PRONUNCIATION_USUK);
+                    int pronunc = (pronun == null || pronun.equals("0") ? 0 : 1);
+                    int result = tts.setLanguage(pronunc == 0 ? Locale.US : Locale.UK);
+                    if (result == TextToSpeech.LANG_MISSING_DATA ||
+                            result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        Log.e("myLogs", "This Language Locale.US is not supported");
+                    } else
+                        tts.speak(text, TextToSpeech.QUEUE_ADD, null);
+                    Log.d("myLogs", "TextToSpeech initialization was successed!");
+                } else {
+                    Log.e("myLogs", "TextToSpeech initialization was failed!");
                 }
             });
         }

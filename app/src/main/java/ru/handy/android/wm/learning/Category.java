@@ -15,9 +15,9 @@ public class Category {
 
     /**
      * используется для вывода всех категорий
-     * @param name
-     * @param amount
-     * @param checked
+     * @param name имя категории
+     * @param amount кол-во слов в категории
+     * @param checked показывает выбрана категория в layout или нет
      */
     public Category(String name, int amount, boolean checked) {
         this.name = name;
@@ -27,8 +27,8 @@ public class Category {
 
     /**
      * используется для вывода всех категорий
-     * @param name
-     * @param amount
+     * @param name имя категории
+     * @param amount кол-во слов в категории
      */
     public Category(String name, int amount) {
         this(name, amount, false);
@@ -36,9 +36,9 @@ public class Category {
 
     /**
      * испоьзуется для получения статистики по категориям
-     * @param name
-     * @param amountRight
-     * @param amountWrong
+     * @param name имя категории
+     * @param amountRight кол-во правильных ответов
+     * @param amountWrong кол-во неправильных ответов
      */
     public Category(String name, int amountRight, int amountWrong) {
         this.name = name;

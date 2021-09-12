@@ -22,7 +22,7 @@ public class DialogLearning extends DialogFragment implements OnClickListener, R
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Utils.onActivityCreateSetTheme((AppCompatActivity) this.getActivity());
+        Utils.onActivityCreateSetTheme((AppCompatActivity) this.requireActivity());
         super.onCreate(savedInstanceState);
         setStyle(STYLE_NORMAL, 0);
     }
@@ -31,7 +31,7 @@ public class DialogLearning extends DialogFragment implements OnClickListener, R
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder adb = new AlertDialog.Builder(getActivity());
         Bundle bundle = getArguments();
-        adb.setTitle(bundle.getString("title"));
+        adb.setTitle(bundle.getString("title", ""));
         adb.setIcon(android.R.drawable.ic_dialog_alert);
         adb.setMessage(bundle.getString("message"));
         adb.setPositiveButton(R.string.ok, this);

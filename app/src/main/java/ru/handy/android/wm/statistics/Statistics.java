@@ -2,26 +2,22 @@ package ru.handy.android.wm.statistics;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 
@@ -70,14 +66,18 @@ public class Statistics extends AppCompatActivity implements View.OnClickListene
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar bar = getSupportActionBar();
-        bar.setDisplayHomeAsUpEnabled(true);
-        bar.setDisplayShowHomeEnabled(true);
+        if (bar != null) {
+            bar.setDisplayHomeAsUpEnabled(true);
+            bar.setDisplayShowHomeEnabled(true);
+        }
         // устанавливаем цвет фона и шрифта для toolbar
         Utils.colorizeToolbar(this, toolbar);
         // устанавливаем цвет стрелки "назад" в toolbar
         final Drawable upArrow = ContextCompat.getDrawable(this, R.drawable.abc_ic_ab_back_material);
-        upArrow.setColorFilter(Utils.getFontColorToolbar(), PorterDuff.Mode.SRC_ATOP);
-        bar.setHomeAsUpIndicator(upArrow);
+        if (upArrow != null && bar != null) {
+            upArrow.setColorFilter(Utils.getFontColorToolbar(), PorterDuff.Mode.SRC_ATOP);
+            bar.setHomeAsUpIndicator(upArrow);
+        }
 
         lvChooseCat = (ListView) findViewById(R.id.lvChooseCat);
         tvRightAnswers = (TextView) findViewById(R.id.tvRightAnswers);
@@ -106,12 +106,10 @@ public class Statistics extends AppCompatActivity implements View.OnClickListene
         cAdapter = new CategoryAdapter(this, categoryStats, true);
         lvChooseCat.setAdapter(cAdapter);
         lvChooseCat.setItemsCanFocus(false);
-        lvChooseCat.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                getIntent().putExtra(NEW_CATEGORIES, categoryStats.get(position).getName());
-                setResult(RESULT_OK, getIntent());
-                finish();
-            }
+        lvChooseCat.setOnItemClickListener((parent, view, position, id) -> {
+            getIntent().putExtra(NEW_CATEGORIES, categoryStats.get(position).getName());
+            setResult(RESULT_OK, getIntent());
+            finish();
         });
         bLearningMistakes.setOnClickListener(this);
         bLearningAll.setOnClickListener(this);
@@ -169,22 +167,14 @@ public class Statistics extends AppCompatActivity implements View.OnClickListene
             case R.id.resetStat: // сбрасываем всю статистику
                 new AlertDialog.Builder(this)
                         .setMessage(s(R.string.you_want_reset_stat))
-                        .setPositiveButton(s(R.string.yes), new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                //удаляем статистику из БД и обновляем интерфейс
-                                new Thread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        db.removeStats();
-                                    }
-                                }).start();
-                                tvRightAnswers.setText(String.format("%s0 (0%%)", s(R.string.right_answers)));
-                                tvWrongAnswers.setText(String.format("%s0 (0%%)", s(R.string.wrong_answers)));
-                                bLearningMistakes.setText(s(R.string.no_wrong_answers));
-                                lvChooseCat.setVisibility(View.GONE);
-                                bLearningAll.setVisibility(View.GONE);
-                            }
+                        .setPositiveButton(s(R.string.yes), (dialog, which) -> {
+                            //удаляем статистику из БД и обновляем интерфейс
+                            new Thread(() -> db.removeStats()).start();
+                            tvRightAnswers.setText(String.format("%s0 (0%%)", s(R.string.right_answers)));
+                            tvWrongAnswers.setText(String.format("%s0 (0%%)", s(R.string.wrong_answers)));
+                            bLearningMistakes.setText(s(R.string.no_wrong_answers));
+                            lvChooseCat.setVisibility(View.GONE);
+                            bLearningAll.setVisibility(View.GONE);
                         })
                         .setNegativeButton(R.string.no, null)
                         .create()

@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 import ru.handy.android.wm.DB;
 import ru.handy.android.wm.GlobApp;
@@ -84,20 +85,12 @@ public class OtherSetting extends Fragment implements OnClickListener {
         pronunc = (pronun == null || pronun.equals("0") ? 0 : 1);
         rbUS.setChecked(pronunc == 0);
         rbUK.setChecked(pronunc != 0);
-        rbUS.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                pronunc = isChecked ? 0 : 1;
-                db.updateRecExitState(DB.PRONUNCIATION_USUK, pronunc + "");
-                app.shutdownTTS();
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        app.speak("");
-                    }
-                }).start();
+        rbUS.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            pronunc = isChecked ? 0 : 1;
+            db.updateRecExitState(DB.PRONUNCIATION_USUK, pronunc + "");
+            app.shutdownTTS();
+            new Thread(() -> app.speak("")).start();
 
-            }
         });
         Log.d("myLogs", "onCreateView OtherSetting");
 
@@ -184,7 +177,7 @@ public class OtherSetting extends Fragment implements OnClickListener {
                 Log.d("myLogs", "Всего оплачено пользователем " + db.getValueByVariable(DB.AMOUNT_DONATE));
             }
         } catch (Exception e) {
-            Log.e("myLogs", e.getMessage());
+            Log.e("myLogs", Objects.requireNonNull(e.getMessage()));
         }
     }
 

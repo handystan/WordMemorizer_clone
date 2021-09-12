@@ -2,30 +2,25 @@ package ru.handy.android.wm.setting;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.RemoteException;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.google.firebase.analytics.FirebaseAnalytics;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.billingclient.api.AcknowledgePurchaseParams;
-import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.ConsumeParams;
-import com.android.billingclient.api.ConsumeResponseListener;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
-import com.android.billingclient.api.SkuDetailsResponseListener;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,13 +81,7 @@ public class Pay implements PurchasesUpdatedListener {
                     SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
                     params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP);
                     billingClient.querySkuDetailsAsync(params.build(),
-                            new SkuDetailsResponseListener() {
-                                @Override
-                                public void onSkuDetailsResponse(BillingResult billingResult,
-                                                                 List<SkuDetails> skuDetailsList) {
-                                    skuDetList = skuDetailsList;
-                                }
-                            });
+                            (billingResult1, skuDetailsList) -> skuDetList = skuDetailsList);
                 } else {
                     Log.i("myLogs", "Billing client set up with responseCode = " + billingResult.getResponseCode());
                 }
@@ -198,17 +187,14 @@ public class Pay implements PurchasesUpdatedListener {
                                 AcknowledgePurchaseParams.newBuilder()
                                         .setPurchaseToken(purchase.getPurchaseToken())
                                         .build();
-                        billingClient.acknowledgePurchase(acknowledgePurchaseParams, new AcknowledgePurchaseResponseListener() {
-                            @Override
-                            public void onAcknowledgePurchaseResponse(@NonNull BillingResult billingResult) {
-                                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                                    Log.i("myLogs", "Покупка подтверждена");
-                                } else {
-                                    amountDonate = Math.max(0, amountDonate - thisSKU);
-                                    db.updateRecExitState(DB.AMOUNT_DONATE, amountDonate + "");
-                                    Log.w("myLogs", "Внимание! Покупка не подтверждена!");
-                                    Log.w("myLogs", "Всего оплачено пользователем " + db.getValueByVariable(DB.AMOUNT_DONATE) + " (после не подтверждения)");
-                                }
+                        billingClient.acknowledgePurchase(acknowledgePurchaseParams, billingResult1 -> {
+                            if (billingResult1.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                                Log.i("myLogs", "Покупка подтверждена");
+                            } else {
+                                amountDonate = Math.max(0, amountDonate - thisSKU);
+                                db.updateRecExitState(DB.AMOUNT_DONATE, amountDonate + "");
+                                Log.w("myLogs", "Внимание! Покупка не подтверждена!");
+                                Log.w("myLogs", "Всего оплачено пользователем " + db.getValueByVariable(DB.AMOUNT_DONATE) + " (после не подтверждения)");
                             }
                         });
                     }
@@ -261,23 +247,19 @@ public class Pay implements PurchasesUpdatedListener {
      */
     public void consume(final String itemSKU, String purchaseToken) {
         ConsumeParams consumeParams = ConsumeParams.newBuilder().setPurchaseToken(purchaseToken).build();
-        billingClient.consumeAsync(consumeParams, new ConsumeResponseListener() {
-
-            @Override
-            public void onConsumeResponse(@NonNull BillingResult billingResult, @NonNull String purchaseToken) {
-                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                    Log.i("myLogs", "Продукт " + itemSKU + " оплачен и снова доступен для покупки");
-                } else {
-                    int thisSKU = itemSKU.equals(ITEM_SKU_1dol) ? 50 :
-                            (itemSKU.equals(ITEM_SKU_2dol) ? 100 :
-                                    (itemSKU.equals(ITEM_SKU_5dol) ? 250 :
-                                            (itemSKU.equals(ITEM_SKU_10dol) ? 500 :
-                                                    (itemSKU.equals(ITEM_SKU_99rub) ? 99 : 0))));
-                    amountDonate = Math.max(0, amountDonate - thisSKU);
-                    db.updateRecExitState(DB.AMOUNT_DONATE, amountDonate + "");
-                    Log.w("myLogs", "Внимание! Не сработал метод Consume (подтвеждение и возможность повторного перевода)!");
-                    Log.w("myLogs", "Всего оплачено пользователем " + db.getValueByVariable(DB.AMOUNT_DONATE) + " (после не подтверждения)");
-                }
+        billingClient.consumeAsync(consumeParams, (billingResult, purchaseToken1) -> {
+            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                Log.i("myLogs", "Продукт " + itemSKU + " оплачен и снова доступен для покупки");
+            } else {
+                int thisSKU = itemSKU.equals(ITEM_SKU_1dol) ? 50 :
+                        (itemSKU.equals(ITEM_SKU_2dol) ? 100 :
+                                (itemSKU.equals(ITEM_SKU_5dol) ? 250 :
+                                        (itemSKU.equals(ITEM_SKU_10dol) ? 500 :
+                                                (itemSKU.equals(ITEM_SKU_99rub) ? 99 : 0))));
+                amountDonate = Math.max(0, amountDonate - thisSKU);
+                db.updateRecExitState(DB.AMOUNT_DONATE, amountDonate + "");
+                Log.w("myLogs", "Внимание! Не сработал метод Consume (подтвеждение и возможность повторного перевода)!");
+                Log.w("myLogs", "Всего оплачено пользователем " + db.getValueByVariable(DB.AMOUNT_DONATE) + " (после не подтверждения)");
             }
         });
     }

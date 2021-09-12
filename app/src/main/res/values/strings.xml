@@ -38,10 +38,10 @@
     <string name="download_data">выгрузить слова</string>
     <string name="amount_load_rows">Количество загруженных из файла строк</string>
     <string name="not_load_rows">Не загрузились строки № </string>
-    <string name="must_be_utf8">Для правильного отображения символов у текстового файла кодировка должна UTF-8.</string>
+    <string name="must_be_utf8">Для правильного отображения символов у текстового файла кодировка желательна UTF-8.</string>
     <string name="template_in_help">Описание шаблона текстового файла см. в справке.</string>
     <string name="file_not_fit_template">Файл не соответствует шаблону.</string>
-    <string name="spinner_xls">файл-excel 2003 (xls)</string>
+    <string name="spinner_xls">файл-excel (xls)</string>
     <string name="spinner_txt">текстовый файл</string>
     <string name="spinner_title">текстовый файл</string>
     <string name="choose_file">Нужно выбрать файл.</string>
@@ -54,10 +54,11 @@
     <string name="empty_delimiter">Поле с разделителем должно быть заполнено.</string>
     <string name="amount_save_rows">Количество сохраненных в файле строк</string>
     <string name="failed_download">Данные не выгружены в файл</string>
-    <string name="android_version_rescription">Текущая версия Android не позволяет сохранить файл на внешнюю SD Card (sdcard1). Файл нужно сохранить на внутренней памяти телефона (sdcard0).</string>
+    <string name="android_version23_rescription">Внимание! Текущая версия Android не позволяет сохранить файл на внешнюю SD Card (sdcard1). Файл нужно сохранить на внутренней памяти телефона (sdcard0).</string>
+    <string name="android_version30_rescription">Внимание! Текущая версия Android позволяет сохранить файл. Обратитесь к разработчику handy@list.ru</string>
     <string name="no_data_for_download">Нет данных для выгрузки в файл</string>
-    <string name="should_be_xls">Экселевский файл должен быть с раширением \'xls\'</string>
-    <string name="shouldnt_be_xls">Текстовый файл не должен быть с раширением \'xls\'</string>
+    <string name="should_be_xls">Экселевский файл должен быть с расширением \'xls\'</string>
+    <string name="shouldnt_be_xls">Текстовый файл не должен быть с расширением \'xls\', \'xlsx\'</string>
     <string name="choose_category">Выбрать категорию</string>
     <string name="category">категория:</string>
     <string name="ofWords">Слов</string>
@@ -172,6 +173,8 @@
     <string name="data_from_file">Данные из файла</string>
     <string name="learning_lang">Язык обучения</string>
     <string name="bg_color">Цвет фона</string>
+    <string name="share">Отправить</string>
+    <string name="not_exist_file">Нет доступа к файлу или указан не верный путь к файлу. </string>
     <string name="helpForLearning">
 <![CDATA[
 <p><b><big>WordMemorizer</big></b> - программа-помощник в запоминании английских слов.
@@ -227,13 +230,15 @@
 <![CDATA[
 <p><b>Данные</b>
 <br>Данный раздел позволяет загружать словарь из Excel-файла (расширение xls) или текстового файла определенного формата:
+<br>Данный раздел позволяет загружать словарь из Excel-файла (расширение xls) или текстового файла определенного формата:
 <br>&nbsp;&nbsp;- 1 столбец: английское слово
 <br>&nbsp;&nbsp;- 2 столбец: транскрипция
 <br>&nbsp;&nbsp;- 3 столбец: русский перевод
 <br>&nbsp;&nbsp;- 4 столбец: категория.
 <br>Для текстового формата разделитель слов по умолчанию - \";\". Текстовые файлы нужно загружать с кодировкой UTF-8.
-<p>По умолчанию из файла можно загрузить не более 10 слов. Для безлимитной загрузки слов нужно внести небольшую плату.
+<p>По умолчанию из файла можно загрузить не более 10 слов. Для безлимитной загрузки слов нужно внести единоразовую небольшую плату 99 руб.
 <p>Также он позволяет выгружать словарь в Excel-файл или текстовый файл такого же формата.
+<p>Здесь же файл сразу можно отправить любому пользователю через любой установенный мессенджер или почтовую программу.
 <p><b>Совет:</b> для правильного отображения транскрипции рекомендуется пользоваться
 выгрузкой/загрузкой в Excel-файл.
 <p><b><a href=\'#\'>На главную</a></b><p>
@@ -253,7 +258,7 @@
     <string name="about_desc">
 <![CDATA[
 <p><big><b>WordMemorizer</b></big>
-<br>Версия 2.5.1 для Google Android 4.1 и выше.
+<br>Версия 2.6 для версии Android 4.4 и выше.
 <p><b>Производитель</b>
 <br>Handy Systems
 <p><b>e-mail</b>

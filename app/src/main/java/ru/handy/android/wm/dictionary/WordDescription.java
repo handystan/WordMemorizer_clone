@@ -45,14 +45,18 @@ public class WordDescription extends AppCompatActivity implements OnClickListene
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar bar = getSupportActionBar();
-        bar.setDisplayHomeAsUpEnabled(true);
-        bar.setDisplayShowHomeEnabled(true);
+        if (bar != null) {
+            bar.setDisplayHomeAsUpEnabled(true);
+            bar.setDisplayShowHomeEnabled(true);
+        }
         // устанавливаем цвет фона и шрифта для toolbar
         Utils.colorizeToolbar(this, toolbar);
         // устанавливаем цвет стрелки "назад" в toolbar
         final Drawable upArrow = ContextCompat.getDrawable(this, R.drawable.abc_ic_ab_back_material);
-        upArrow.setColorFilter(Utils.getFontColorToolbar(), PorterDuff.Mode.SRC_ATOP);
-        bar.setHomeAsUpIndicator(upArrow);
+        if (upArrow != null && bar != null) {
+            upArrow.setColorFilter(Utils.getFontColorToolbar(), PorterDuff.Mode.SRC_ATOP);
+            bar.setHomeAsUpIndicator(upArrow);
+        }
 
         // Obtain the shared Tracker instance.
         app = (GlobApp) getApplication();
@@ -69,21 +73,18 @@ public class WordDescription extends AppCompatActivity implements OnClickListene
         ivSound = (ImageView) findViewById(R.id.ivSound);
         ivSound.setOnClickListener(this);
         final Drawable defBackground = ivSound.getBackground(); // фон по умолчанию для кнопки с озвучки
-        ivSound.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN
-                        || event.getAction() == MotionEvent.ACTION_MOVE) {
-                    ivSound.setBackgroundResource(R.color.bright_blue);
+        ivSound.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN
+                    || event.getAction() == MotionEvent.ACTION_MOVE) {
+                ivSound.setBackgroundResource(R.color.bright_blue);
+            } else {
+                if (android.os.Build.VERSION.SDK_INT >= 16) {
+                    ivSound.setBackground(defBackground);
                 } else {
-                    if (android.os.Build.VERSION.SDK_INT >= 16) {
-                        ivSound.setBackground(defBackground);
-                    } else {
-                        ivSound.setBackgroundDrawable(defBackground);
-                    }
+                    ivSound.setBackgroundDrawable(defBackground);
                 }
-                return false;
             }
+            return false;
         });
         Intent intent = getIntent();
         tvDictEngWord.setText(intent.getStringExtra("c_ew_engword"));

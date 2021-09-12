@@ -107,34 +107,19 @@ public class LearningSetting extends Fragment {
                 , span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         rbComplexLearning.setText(span);
 
-        rbChoiceLearning.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView,
-                                         boolean isChecked) {
-                if (isChecked) {
-                    setLearningType(0);
-                }
+        rbChoiceLearning.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                setLearningType(0);
             }
         });
-        rbWritingLearning.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView,
-                                         boolean isChecked) {
-                if (isChecked) {
-                    Utils.mainAlertForPay(DB.DATE_LEARNING_METHOD, LearningSetting.this, pay, db, 1);
-                }
+        rbWritingLearning.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                Utils.mainAlertForPay(DB.DATE_LEARNING_METHOD, LearningSetting.this, pay, db, 1);
             }
         });
-        rbComplexLearning.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView,
-                                         boolean isChecked) {
-                if (isChecked) {
-                    Utils.mainAlertForPay(DB.DATE_LEARNING_METHOD, LearningSetting.this, pay, db, 2);
-                }
+        rbComplexLearning.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                Utils.mainAlertForPay(DB.DATE_LEARNING_METHOD, LearningSetting.this, pay, db, 2);
             }
         });
         // раскрывающийся список для кол-ва повторений в комплексном обучении
@@ -165,15 +150,10 @@ public class LearningSetting extends Fragment {
             cbSpeak.setChecked(false);
             isSpeak = false;
         }
-        cbSpeak.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView,
-                                         boolean isChecked) {
-                isSpeak = isChecked;
-                db.updateRecExitState(DB.LEARNING_SPEAK,
-                        isSpeak ? "1" : "0");
-            }
+        cbSpeak.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isSpeak = isChecked;
+            db.updateRecExitState(DB.LEARNING_SPEAK,
+                    isSpeak ? "1" : "0");
         });
         // установка языка для заучивания
         if (db.getValueByVariable(DB.LEARNING_LANGUAGE) == null
@@ -186,24 +166,14 @@ public class LearningSetting extends Fragment {
             rbRus.setChecked(true);
             isEngl = false;
         }
-        rbEng.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView,
-                                         boolean isChecked) {
-                if (isChecked) {
-                    setEng(true);
-                }
+        rbEng.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                setEng(true);
             }
         });
-        rbRus.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView,
-                                         boolean isChecked) {
-                if (isChecked) {
-                    Utils.mainAlertForPay(DB.DATE_LANGUAGE, LearningSetting.this, pay, db);
-                }
+        rbRus.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                Utils.mainAlertForPay(DB.DATE_LANGUAGE, LearningSetting.this, pay, db);
             }
         });
         // показывать транскрипцию или нет
@@ -215,15 +185,10 @@ public class LearningSetting extends Fragment {
             cbShowTranscr.setChecked(false);
             isShowTranscr = false;
         }
-        cbShowTranscr.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView,
-                                         boolean isChecked) {
-                isShowTranscr = isChecked;
-                db.updateRecExitState(DB.LEARNING_SHOW_TRANSCR,
-                        isShowTranscr ? "1" : "0");
-            }
+        cbShowTranscr.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isShowTranscr = isChecked;
+            db.updateRecExitState(DB.LEARNING_SHOW_TRANSCR,
+                    isShowTranscr ? "1" : "0");
         });
         // раскрывающийся список для кол-ва слов для выбора
         Integer[] data2 = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
@@ -254,15 +219,10 @@ public class LearningSetting extends Fragment {
             cbShowDontKnow.setChecked(false);
             isShowDontKnow = false;
         }
-        cbShowDontKnow.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView,
-                                         boolean isChecked) {
-                isShowDontKnow = isChecked;
-                db.updateRecExitState(DB.LEARNING_SHOW_DONTKNOW,
-                        isShowDontKnow ? "1" : "0");
-            }
+        cbShowDontKnow.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isShowDontKnow = isChecked;
+            db.updateRecExitState(DB.LEARNING_SHOW_DONTKNOW,
+                    isShowDontKnow ? "1" : "0");
         });
 
         String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);

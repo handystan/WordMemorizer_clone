@@ -2,7 +2,7 @@ package ru.handy.android.wm.dictionary;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.View;
+
 import androidx.appcompat.widget.AppCompatMultiAutoCompleteTextView;
 
 public class MyMultiAutoCompleteTextView extends AppCompatMultiAutoCompleteTextView {
@@ -24,13 +24,9 @@ public class MyMultiAutoCompleteTextView extends AppCompatMultiAutoCompleteTextV
 	}
 
 	private void start() {
-		setOnFocusChangeListener(new OnFocusChangeListener() {
-
-			@Override
-			public void onFocusChange(View v, boolean hasFocus) {
-				if (hasFocus) {
-					showDropDown();
-				}
+		setOnFocusChangeListener((v, hasFocus) -> {
+			if (hasFocus) {
+				showDropDown();
 			}
 		});
 	}

@@ -8,7 +8,6 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Locale;
 import java.util.Random;
 
@@ -116,7 +115,7 @@ public class DB {
             + " text, " + C_ES_VALUE + " text);";
 
     private static final String DB_NAME = "ewdb";
-    private static final int DB_VERSION = 28; // 13 - первая версия с платными настройками
+    private static final int DB_VERSION = 29; // 13 - первая версия с платными настройками
     private final Context mCtx;
 
     private DBHelper mDBHelper;
@@ -186,43 +185,40 @@ public class DB {
                     }
                 } while (cursor.moveToNext());
                 cursor.close();
-                Collections.sort(list, new Comparator<String>() {
-                    @Override
-                    public int compare(String str1, String str2) {
-                        String s1 = str1.toLowerCase(new Locale("ru"));
-                        String s2 = str2.toLowerCase(new Locale("ru"));
-                        String s1p = s1;
-                        String s2p = s2;
-                        int n1 = 0;
-                        for (int i = 1; i < s1.length(); i++) {
-                            try {
-                                n1 = Integer.parseInt(s1.substring(s1.length()
-                                        - i));
-                                s1p = s1.substring(0, s1.length() - i);
-                            } catch (Exception e) {
-                                break;
-                            }
+                Collections.sort(list, (str1, str2) -> {
+                    String s1 = str1.toLowerCase(new Locale("ru"));
+                    String s2 = str2.toLowerCase(new Locale("ru"));
+                    String s1p = s1;
+                    String s2p = s2;
+                    int n1 = 0;
+                    for (int i = 1; i < s1.length(); i++) {
+                        try {
+                            n1 = Integer.parseInt(s1.substring(s1.length()
+                                    - i));
+                            s1p = s1.substring(0, s1.length() - i);
+                        } catch (Exception e) {
+                            break;
                         }
-                        int n2 = 0;
-                        for (int i = 1; i < s2.length(); i++) {
-                            try {
-                                n2 = Integer.parseInt(s2.substring(s2.length()
-                                        - i));
-                                s2p = s2.substring(0, s2.length() - i);
-                            } catch (Exception e) {
-                                break;
-                            }
-                        }
-                        if (!s1.startsWith("прочее") && s2.startsWith("прочее")) {
-                            return -1;
-                        } else if (s1.startsWith("прочее")
-                                && !s2.startsWith("прочее")) {
-                            return 1;
-                        } else if (n1 != 0 && n2 != 0 && s1p.equals(s2p)) {
-                            return n1 - n2;
-                        }
-                        return s1.compareToIgnoreCase(s2);
                     }
+                    int n2 = 0;
+                    for (int i = 1; i < s2.length(); i++) {
+                        try {
+                            n2 = Integer.parseInt(s2.substring(s2.length()
+                                    - i));
+                            s2p = s2.substring(0, s2.length() - i);
+                        } catch (Exception e) {
+                            break;
+                        }
+                    }
+                    if (!s1.startsWith("прочее") && s2.startsWith("прочее")) {
+                        return -1;
+                    } else if (s1.startsWith("прочее")
+                            && !s2.startsWith("прочее")) {
+                        return 1;
+                    } else if (n1 != 0 && n2 != 0 && s1p.equals(s2p)) {
+                        return n1 - n2;
+                    }
+                    return s1.compareToIgnoreCase(s2);
                 });
                 return list;
             }

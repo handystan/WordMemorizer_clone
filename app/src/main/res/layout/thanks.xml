@@ -58,8 +58,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentTop="true"
-                        android:layout_marginRight="10dp"
-                        android:layout_toLeftOf="@+id/bDonate"
+                        android:layout_marginEnd="10dp"
+                        android:layout_toStartOf="@+id/bDonate"
                         android:background="#00000000" />
 
                     <Button
@@ -67,8 +67,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
-                        android:layout_alignParentRight="true"
                         android:layout_centerVertical="true"
+                        android:background="@drawable/bord_action_button"
+                        android:paddingLeft="10dp"
+                        android:paddingRight="10dp"
                         android:text="@string/donate" />
                 </RelativeLayout>
             </LinearLayout>
