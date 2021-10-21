@@ -1,19 +1,18 @@
 package ru.handy.android.wm.downloads;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.Settings;
+import android.provider.DocumentsContract;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
@@ -36,20 +35,19 @@ import android.widget.Toast;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
+import androidx.documentfile.provider.DocumentFile;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,13 +57,13 @@ import java.util.regex.Pattern;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.WorkbookSettings;
-import jxl.read.biff.BiffException;
 import jxl.write.Label;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 
+import org.mozilla.universalchardet.UniversalDetector;
+
 import ru.handy.android.wm.About;
-import ru.handy.android.wm.BuildConfig;
 import ru.handy.android.wm.CustomKeyboard;
 import ru.handy.android.wm.DB;
 import ru.handy.android.wm.GlobApp;
@@ -80,18 +78,12 @@ public class EditData extends AppCompatActivity {
 
     private static final int REQUEST_LOAD = 0;
     private static final int REQUEST_SAVE = 1;
-    final private int PERMISSION_READ = 11; // разрешение для чтения файла
-    final private int PERMISSION_WRITE = 12; // разрешение для записи файла
-    final private int PERMISSION_READ2 = 13; // указание на то, что должно открываться окно с чтением файла
-    final private int PERMISSION_WRITE2 = 14; // указание на то, что должно открываться окно с записью в файл
-    final private int PERMISSION_MANAGE_READ = 15; // указание на то, что должно открываться окно с чтением файла в 30 Android после глобального разрешения
-    final private int PERMISSION_MANAGE_WRITE = 16; // указание на то, что должно открываться окно с записью в файл в 30 Android после глобального разрешения
     LinearLayout llPayInformation;
     Button bPay;
     Button bOpenDialog;
     Button bSaveDialog;
-    Button bUpload;
     Button bDownload;
+    Button bUpload;
     EditText etOpenFileName;
     EditText etSaveFileName;
     CheckBox cbDelete;
@@ -103,8 +95,9 @@ public class EditData extends AppCompatActivity {
     CustomKeyboard keyboard;
     DB db;
     Learning learning = null;
+    private Uri uriDownloadFile; // uri загружаемого файла
+    private Uri uriUploadFile; // uri выгружаемого файла
     private GlobApp app;
-    private String fileName; // имя файла, который будет считываться или записываться
     private Pay pay;
     private int amountDonate = 0;
     private boolean isFromOldDB = false;
@@ -148,12 +141,12 @@ public class EditData extends AppCompatActivity {
 
         llPayInformation = findViewById(R.id.llPayInformation);
         bPay = findViewById(R.id.bPay);
-        bOpenDialog = findViewById(R.id.bDialogUpload);
-        bSaveDialog = findViewById(R.id.bDialogDownload);
-        bUpload = findViewById(R.id.bUpload);
+        bOpenDialog = findViewById(R.id.bDialogDownload);
+        bSaveDialog = findViewById(R.id.bDialogUpload);
         bDownload = findViewById(R.id.bDownload);
-        etOpenFileName = findViewById(R.id.etFileUpload);
-        etSaveFileName = findViewById(R.id.etFileDownload);
+        bUpload = findViewById(R.id.bUpload);
+        etOpenFileName = findViewById(R.id.etFileDownload);
+        etSaveFileName = findViewById(R.id.etFileUpload);
         cbDelete = findViewById(R.id.cbDelete);
         sFileType = findViewById(R.id.sFileType);
         etSemicolon = findViewById(R.id.etSemicolon);
@@ -217,93 +210,73 @@ public class EditData extends AppCompatActivity {
         );
 
         bOpenDialog.setOnClickListener(v -> {
-            // если версия Android >= 30
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                if (!Environment.isExternalStorageManager()) { //если еще нет прав на работу с файлами
-                    // Intent для глобального разрешения на работу с файлами;
-                    Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-                            Uri.parse("package:" + BuildConfig.APPLICATION_ID));
-                    startActivityForResult(intent, PERMISSION_MANAGE_READ);
-                } else {
-                    startFileDialog(REQUEST_LOAD);
-                }
-            } else { // если версия Android ниже 30
-                // проверка на наличие разрешения на чтение из файла
-                if (isGrantedPermission(Manifest.permission.READ_EXTERNAL_STORAGE
-                        , s(R.string.attention), s(R.string.rationale_for_file_system), PERMISSION_READ2)) {
-                    startFileDialog(REQUEST_LOAD);
-                }
-            }
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("*/*");
+            String[] mimetypes = {"application/vnd.ms-excel", "text/*"};
+            intent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
+            startActivityForResult(intent, REQUEST_LOAD);
         });
 
         bSaveDialog.setOnClickListener(v -> {
-            // если версия Android >= 30
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                if (!Environment.isExternalStorageManager()) { //если еще нет прав на работу с файлами
-                    // Intent для глобального разрешения на работу с файлами;
-                    Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-                            Uri.parse("package:" + BuildConfig.APPLICATION_ID));
-                    startActivityForResult(intent, PERMISSION_MANAGE_WRITE);
-                } else {
-                    startFileDialog(REQUEST_SAVE);
-                }
-            } else { // если версия Android ниже 30
-                // проверка на наличие разрешения на запись в файл
-                if (isGrantedPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE
-                        , s(R.string.attention), s(R.string.rationale_for_file_system), PERMISSION_WRITE2)) {
-                    startFileDialog(REQUEST_SAVE);
-                }
+            Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            if (sFileType.getSelectedItemPosition() == 0) {
+                intent.setType("application/vnd.ms-excel");
+                intent.putExtra(Intent.EXTRA_TITLE, "Dictionary.xls");
+            } else {
+                intent.setType("text/plain");
+                intent.putExtra(Intent.EXTRA_TITLE, "Dictionary.txt");
+            }
+            startActivityForResult(intent, REQUEST_SAVE);
+        });
+
+        bDownload.setOnClickListener(v -> {
+            String fileName = etOpenFileName.getText().toString();
+            if (fileName.equals("") || uriDownloadFile == null) {
+                Toast.makeText(getApplicationContext(), s(R.string.choose_file), Toast.LENGTH_LONG).show();
+                return;
+            }
+            if (fileName.endsWith(".xls")) {
+                readXlsFile(uriDownloadFile);
+            } else if (fileName.endsWith(".xlsx") || fileName.endsWith(".xlsm") || fileName.endsWith(".xlsb")) {
+                Toast.makeText(getApplicationContext(), s(R.string.should_be_xls), Toast.LENGTH_LONG).show();
+            } else {
+                readTxtFile(uriDownloadFile);
             }
         });
 
         bUpload.setOnClickListener(v -> {
-            fileName = etOpenFileName.getText().toString();
-            if (fileName.equals("")) {
-                Toast.makeText(getApplicationContext(), s(R.string.choose_file), Toast.LENGTH_LONG).show();
-                return;
-            }
-            // проверка на наличие разрешения на чтение из файла
-            if (isGrantedPermission(Manifest.permission.READ_EXTERNAL_STORAGE
-                    , s(R.string.attention), s(R.string.rationale_for_read), PERMISSION_READ)) {
-                if (fileName.endsWith(".xls")) {
-                    readXlsFile(fileName);
-                } else if (fileName.endsWith(".xlsx") || fileName.endsWith(".xlsm") || fileName.endsWith(".xlsb")) {
-                    Toast.makeText(getApplicationContext(), s(R.string.should_be_xls), Toast.LENGTH_LONG).show();
-                } else {
-                    readTxtFile(fileName);
-                }
-            }
-        });
-
-        bDownload.setOnClickListener(v -> {
-            fileName = etSaveFileName.getText().toString();
+            String fileName = etSaveFileName.getText().toString();
             String delimiter = etSemicolon.getText().toString();
-            if (fileName == null || fileName.equals("")) {
+            if (fileName.equals("") || uriUploadFile == null) {
                 Toast.makeText(getApplicationContext(), s(R.string.choose_file), Toast.LENGTH_LONG).show();
                 return;
             }
-            // проверка на наличие разрешения на запись в файл
-            if (isGrantedPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE
-                    , s(R.string.attention), s(R.string.rationale_for_write), PERMISSION_WRITE)) {
-                if (sFileType.getSelectedItemPosition() == 0) {
-                    if (!fileName.endsWith(".xls")) {
-                        Toast.makeText(getApplicationContext(), s(R.string.should_be_xls),
-                                Toast.LENGTH_LONG).show();
-                        return;
+            try {
+                //boolean isAllRight = true; // если что-то пошло не так, то это запишется в эту переменную
+                if (sFileType.getSelectedItemPosition() == 0) { // выгружается xls-файл
+                    if (!fileName.endsWith(".xls")) { // если пользователь выбрал не то расширение файла
+                        Toast.makeText(getApplicationContext(), s(R.string.should_be_xls), Toast.LENGTH_LONG).show();
+                    } else {
+                        writeXlsFile(uriUploadFile);
                     }
-                    writeXlsFile(fileName);
-                } else {
-                    if (fileName.endsWith(".xls") || fileName.endsWith(".xlsx")) {
-                        Toast.makeText(getApplicationContext(), s(R.string.shouldnt_be_xls),
-                                Toast.LENGTH_LONG).show();
-                        return;
+                } else if (sFileType.getSelectedItemPosition() == 1) { // выгружается txt-файл
+                    if (fileName.endsWith(".xls")) { // если пользователь выбрал не то расширение файла
+                        Toast.makeText(getApplicationContext(), s(R.string.shouldnt_be_xls), Toast.LENGTH_LONG).show();
                     } else if (delimiter.equals("")) {
                         Toast.makeText(getApplicationContext(), s(R.string.empty_delimiter),
                                 Toast.LENGTH_LONG).show();
-                        return;
+                    } else {
+                        writeTxtFile(uriUploadFile);
                     }
-                    writeTxtFile(fileName);
                 }
+                // в зависимости от того новый это файл или нет, устанавливаем доступность кнопки по отправке файла
+                AssetFileDescriptor fileDescriptor = getApplicationContext().getContentResolver().
+                        openAssetFileDescriptor(uriUploadFile, "r");
+                ivShare2.setVisibility(fileDescriptor.getLength() > 0 ? View.VISIBLE : View.GONE);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
 
@@ -311,36 +284,18 @@ public class EditData extends AppCompatActivity {
         addTextChangedListener(etOpenFileName, 0);
         addTextChangedListener(etSaveFileName, 1);
         // отправляем файл с телефона в другое приложение
-        ivShare1.setOnClickListener(v -> shareFile(etOpenFileName.getText().toString()));
+        ivShare1.setOnClickListener(v -> shareFile(uriDownloadFile));
         // отправляем файл, созданный приложением в другое приложение
-        ivShare2.setOnClickListener(v -> shareFile(etSaveFileName.getText().toString()));
-    }
-
-    /**
-     * вызов Intent FileDialog по выбору файла
-     *
-     * @param fdType - тип вызываемого Intent  (0 (REQUEST_LOAD) - выгрузка в файл, 1 (REQUEST_SAVE) - загрузка из файла)
-     */
-    private void startFileDialog(int fdType) {
-        Intent intent = new Intent(EditData.this, FileDialog.class);
-        File docDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-        intent.putExtra(FileDialog.START_PATH, docDir.isDirectory() ? docDir.getPath() :
-                Environment.getExternalStorageDirectory().getPath());
-        intent.putExtra(FileDialog.CAN_SELECT_DIR, false);
-        intent.putExtra(FileDialog.CAN_CREATE_FILE, fdType == REQUEST_SAVE);
-        startActivityForResult(intent, fdType);
+        ivShare2.setOnClickListener(v -> shareFile(uriUploadFile));
     }
 
     /**
      * отправка файла-словаря через другие программы
      *
-     * @param path путь к файлу
+     * @param uriFile uri оптравляемого файла
      */
-    private void shareFile(String path) {
-        File f = new File(path);
-        if (f.exists() && f.isFile()) {
-            Uri uriFile = FileProvider.getUriForFile(EditData.this,
-                    "ru.handy.android.wm.provider", new File(path));
+    private void shareFile(Uri uriFile) {
+        if (uriFile != null) {
             Intent sendIntent = new Intent();
             sendIntent.setAction(Intent.ACTION_SEND);
             sendIntent.putExtra(Intent.EXTRA_STREAM, uriFile);
@@ -355,100 +310,6 @@ public class EditData extends AppCompatActivity {
                                 Intent.FLAG_GRANT_READ_URI_PERMISSION);
             }
             startActivity(chooser);
-        } else {
-            Toast.makeText(this, s(R.string.not_exist_file), Toast.LENGTH_LONG).show();
-        }
-    }
-
-    /**
-     * проверка на наличие разрешения на определенное действие
-     *
-     * @param permission     - разрешение, наличие которого проверяется
-     * @param title          - надпись в тексте сообщения
-     * @param message        - текст самого сообщения
-     * @param codePermission - индентификатор, сообщающий дальнейшие действия
-     * @return true - разрешние уже есть, false - разрешения нет
-     */
-    private boolean isGrantedPermission(final String permission, String title, String message, final int codePermission) {
-        if (ActivityCompat.checkSelfPermission(EditData.this, permission)
-                != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(EditData.this, permission)) {
-                new AlertDialog.Builder(EditData.this)
-                        .setTitle(title)
-                        .setMessage(message)
-                        .setPositiveButton(s(R.string.ok), (dialog, which) -> ActivityCompat.requestPermissions(EditData.this
-                                , new String[]{permission}, codePermission))
-                        .setNegativeButton(s(R.string.cancel), null)
-                        .create()
-                        .show();
-            } else {
-                ActivityCompat.requestPermissions(EditData.this
-                        , new String[]{permission}, codePermission);
-            }
-            return false;
-        }
-        return true;
-    }
-
-    // метод, который выполняется при предоставлении / не предоставлении разрешния (permission)
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_READ:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if (fileName.endsWith(".xls")) {
-                        readXlsFile(fileName);
-                    } else if (fileName.endsWith(".xlsx") || fileName.endsWith(".xlsm") || fileName.endsWith(".xlsb")) {
-                        Toast.makeText(getApplicationContext(), s(R.string.should_be_xls), Toast.LENGTH_LONG).show();
-                    } else {
-                        readTxtFile(fileName);
-                    }
-                } else {
-                    Toast.makeText(getApplicationContext(), s(R.string.unabled_permissions), Toast.LENGTH_LONG).show();
-                }
-                break;
-            case PERMISSION_READ2:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startFileDialog(REQUEST_LOAD);
-                } else {
-                    Toast.makeText(getApplicationContext(), s(R.string.unabled_permissions), Toast.LENGTH_LONG).show();
-                }
-                break;
-            case PERMISSION_WRITE:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    String delimiter = etSemicolon.getText().toString();
-                    if (sFileType.getSelectedItemPosition() == 0) {
-                        if (!fileName.endsWith(".xls")) {
-                            Toast.makeText(getApplicationContext(), s(R.string.should_be_xls),
-                                    Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                        writeXlsFile(fileName);
-                    } else {
-                        if (fileName.endsWith(".xls") || fileName.endsWith(".xlsx")) {
-                            Toast.makeText(getApplicationContext(), s(R.string.shouldnt_be_xls),
-                                    Toast.LENGTH_LONG).show();
-                            return;
-                        } else if (delimiter.equals("")) {
-                            Toast.makeText(getApplicationContext(), s(R.string.empty_delimiter),
-                                    Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                        writeTxtFile(fileName);
-                    }
-                } else {
-                    Toast.makeText(getApplicationContext(), s(R.string.unabled_permissions), Toast.LENGTH_LONG).show();
-                }
-                break;
-            case PERMISSION_WRITE2:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startFileDialog(REQUEST_SAVE);
-                } else {
-                    Toast.makeText(getApplicationContext(), s(R.string.unabled_permissions), Toast.LENGTH_LONG).show();
-                }
-                break;
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 
@@ -475,13 +336,18 @@ public class EditData extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 if (type == 0) {
-                    ivShare1.setVisibility(s == null || s.toString().equals("") ? View.GONE : View.VISIBLE);
+                    ivShare1.setVisibility(s != null && !s.toString().equals("") ? View.VISIBLE : View.GONE);
                 } else if (type == 1) {
-                    File f = new File(s.toString());
-                    if (!s.toString().equals("") && f.exists() && f.isFile()) {
-                        ivShare2.setVisibility(View.VISIBLE);
-                    } else {
+                    if (s == null || s.toString().equals("") || uriUploadFile == null) {
                         ivShare2.setVisibility(View.GONE);
+                    } else {
+                        try {
+                            AssetFileDescriptor fileDescriptor = getApplicationContext().
+                                    getContentResolver().openAssetFileDescriptor(uriUploadFile, "r");
+                            ivShare2.setVisibility(fileDescriptor.getLength() > 0 ? View.VISIBLE : View.GONE);
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
@@ -497,10 +363,10 @@ public class EditData extends AppCompatActivity {
      * вставки строки типа такой: insert into myTable (col1,col2) select aValue
      * ,anotherValue union select moreValue,evenMoreValue union select...
      *
-     * @param fileName имя файла
+     * @param fileUri uri файла
      * @return количество загруженных строк
      */
-    private int readXlsFile(String fileName) {
+    private int readXlsFile(Uri fileUri) {
         Workbook w = null;
         try {
             db.beginTransaction();
@@ -508,7 +374,7 @@ public class EditData extends AppCompatActivity {
                 db.delAll(DB.T_ENGWORDS);
             WorkbookSettings wbs = new WorkbookSettings();
             wbs.setEncoding("ISO-8859-1");
-            w = Workbook.getWorkbook(new File(fileName), wbs);
+            w = Workbook.getWorkbook(getContentResolver().openInputStream(fileUri), wbs);
             Sheet sheet = w.getSheet(0);
             StringBuilder sb = new StringBuilder();
             ArrayList<String> args = new ArrayList<>();
@@ -558,7 +424,8 @@ public class EditData extends AppCompatActivity {
             }
             return r / 4;
         } catch (Exception e) {
-            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), s(R.string.file_read_error) + "\n" +
+                    e.getMessage(), Toast.LENGTH_LONG).show();
             e.printStackTrace();
         } finally {
             db.endTransaction();
@@ -571,17 +438,17 @@ public class EditData extends AppCompatActivity {
     /**
      * Выгрузка словаря в экселевский файл с расширением xls
      *
-     * @param fileName имя файла
+     * @param fileUri uri файла
      * @return количество выгруженных строк
      */
-    private int writeXlsFile(String fileName) {
+    private int writeXlsFile(Uri fileUri) {
         Cursor c = null;
         WritableWorkbook wb = null;
         int i = 0;
         try {
             c = db.getAllWords();
             if (c.moveToFirst()) {
-                wb = Workbook.createWorkbook(new File(fileName));
+                wb = Workbook.createWorkbook(getContentResolver().openOutputStream(fileUri));
                 WritableSheet sheet = wb.createSheet("WM", 0);
                 do {
                     sheet.addCell(new Label(0, i, c.getString(c.getColumnIndex(DB.C_EW_ENGWORD))));
@@ -602,8 +469,6 @@ public class EditData extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), s(R.string.no_data_for_download),
                         Toast.LENGTH_LONG).show();
             }
-            // устанавливаем видимым кнопку с возмоностью отправки файла
-            ivShare2.setVisibility(View.VISIBLE);
             return i;
         } catch (IOException e) {
             // сообщение о то, что в текущей версии Android нельзя созранить файл
@@ -634,10 +499,10 @@ public class EditData extends AppCompatActivity {
      * вставки строки типа такой: insert into myTable (col1,col2) select aValue
      * ,anotherValue union select moreValue,evenMoreValue union select...
      *
-     * @param fileName имя файла
+     * @param fileUri uri файла
      * @return количество загруженных строк
      */
-    private int readTxtFile(String fileName) {
+    private int readTxtFile(Uri fileUri) {
         String row;
         BufferedReader br = null;
         try {
@@ -645,8 +510,30 @@ public class EditData extends AppCompatActivity {
             if (cbDelete.isChecked()) {
                 db.delAll(DB.T_ENGWORDS);
             }
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(
-                    fileName), StandardCharsets.UTF_8));
+            //определяем кодировку текстового файла
+            String encoding = UniversalDetector.detectCharset(getContentResolver().openInputStream(fileUri));
+            String adviceEncoding = "";
+            Charset charset = StandardCharsets.UTF_8;
+            if (encoding != null) {
+                switch (encoding) {
+                    case "UTF-8":
+                        charset = StandardCharsets.UTF_8;
+                        break;
+                    case "US-ASCII":
+                        charset = StandardCharsets.US_ASCII;
+                        break;
+                    case "UTF-16BE":
+                        charset = StandardCharsets.UTF_16BE;
+                        break;
+                    case "UTF-16LE":
+                        charset = StandardCharsets.UTF_16LE;
+                        break;
+                    default:
+                        adviceEncoding = ".\r\n" + s(R.string.must_be_utf8);
+                }
+            }
+            br = new BufferedReader(new InputStreamReader(
+                    getContentResolver().openInputStream(fileUri), charset));
             // сначала определяем какой разделитель используется для столбцов
             String delimiter = "";
             Pattern patt = Pattern
@@ -658,83 +545,87 @@ public class EditData extends AppCompatActivity {
                     break;
                 }
             }
-            // после определения разделителя получаем данные
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(
-                    fileName), StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder();
-            ArrayList<String> args = new ArrayList<>();
-            StringBuilder sbRegex = new StringBuilder();
-            sbRegex.append("^([^").append(delimiter).append("]*)([").append(delimiter).append("])([^").append(delimiter).
-                    append("]*)(\\2)([^").append(delimiter).append("]*)((\\2)([^").append(delimiter).append("]*))?$");
-            patt = Pattern
-                    .compile(sbRegex.toString());
-            StringBuilder wrongRow = new StringBuilder();
-            int intWrongRow = 0;
-            int r = 1;
-            while ((row = br.readLine()) != null) {
-                Matcher match = patt.matcher(row);
-                if (match.find()) {
-                    if (delimiter != null && delimiter.equals(""))
-                        delimiter = match.group(2);
-                    if (sb.indexOf("INSERT") == -1) {
-                        sb.append("INSERT INTO ").append(DB.T_ENGWORDS)
-                                .append(" (").append(DB.C_EW_ENGWORD)
-                                .append(", ").append(DB.C_EW_TRANSCRIPTION)
-                                .append(", ").append(DB.C_EW_RUSTRANSLATE)
-                                .append(", ").append(DB.C_EW_CATEGORY)
-                                .append(") SELECT ?, ?, ?, ? ");
+            Log.d("myLogs", "delimiter = " + delimiter);
+            if (delimiter != null && !delimiter.equals("")) {
+                // после определения разделителя получаем данные
+                br = new BufferedReader(new InputStreamReader(
+                        getContentResolver().openInputStream(fileUri), charset));
+                StringBuilder sb = new StringBuilder();
+                ArrayList<String> args = new ArrayList<>();
+                StringBuilder sbRegex = new StringBuilder();
+                sbRegex.append("^([^").append(delimiter).append("]*)([").append(delimiter).append("])([^").append(delimiter).
+                        append("]*)(\\2)([^").append(delimiter).append("]*)((\\2)([^").append(delimiter).append("]*))?$");
+                patt = Pattern
+                        .compile(sbRegex.toString());
+                StringBuilder wrongRow = new StringBuilder();
+                int intWrongRow = 0;
+                int r = 1;
+                while ((row = br.readLine()) != null) {
+                    Matcher match = patt.matcher(row);
+                    if (match.find()) {
+                        if (sb.indexOf("INSERT") == -1) {
+                            sb.append("INSERT INTO ").append(DB.T_ENGWORDS)
+                                    .append(" (").append(DB.C_EW_ENGWORD)
+                                    .append(", ").append(DB.C_EW_TRANSCRIPTION)
+                                    .append(", ").append(DB.C_EW_RUSTRANSLATE)
+                                    .append(", ").append(DB.C_EW_CATEGORY)
+                                    .append(") SELECT ?, ?, ?, ? ");
+                        } else {
+                            sb.append(" UNION SELECT ?, ?, ?, ? ");
+                        }
+                        args.add(match.group(1));
+                        args.add(match.group(3));
+                        args.add(match.group(5));
+                        args.add(match.group(8));
                     } else {
-                        sb.append(" UNION SELECT ?, ?, ?, ? ");
+                        wrongRow.append(wrongRow.toString().equals("") ? "" : ", ").append(r);
+                        intWrongRow++;
                     }
-                    args.add(match.group(1));
-                    args.add(match.group(3));
-                    args.add(match.group(5));
-                    args.add(match.group(8));
-                } else {
-                    wrongRow.append(wrongRow.toString().equals("") ? "" : ", ").append(r);
-                    intWrongRow++;
+                    r++;
+                    // такая порционность вставки строк нужна из-за того, что кол-во
+                    // вставляемых параметров не должно быть больше 999
+                    if ((r - intWrongRow) % 249 == 0 && sb.indexOf("INSERT") != -1) {
+                        db.execSQL(sb.toString(), args.toArray());
+                        sb = new StringBuilder();
+                        args = new ArrayList<>();
+                    }
+                    // если приложение не оплачено, то позволяем вставить только 10 строк
+                    if (!isFromOldDB && amountDonate == 0 && (r - intWrongRow) == 11 && sb.indexOf("INSERT") != -1) {
+                        break;
+                    }
                 }
-                r++;
-                // такая порционность вставки строк нужна из-за того, что кол-во
-                // вставляемых параметров не должно быть больше 999
-                if ((r - intWrongRow) % 249 == 0 && sb.indexOf("INSERT") != -1) {
+                if (sb.indexOf("INSERT") != -1)
                     db.execSQL(sb.toString(), args.toArray());
-                    sb = new StringBuilder();
-                    args = new ArrayList<>();
-                }
-                // если приложение не оплачено, то позволяем вставить только 10 строк
-                if (!isFromOldDB && amountDonate == 0 && (r - intWrongRow) == 11 && sb.indexOf("INSERT") != -1) {
-                    break;
-                }
-            }
-            if (sb.indexOf("INSERT") != -1)
-                db.execSQL(sb.toString(), args.toArray());
-            if (delimiter != null && !delimiter.equals("") && intWrongRow < r - intWrongRow) {
-                db.setTransactionSuccessful();
-                if (wrongRow.toString().equals("")) {
-                    Toast.makeText(getApplicationContext(),
-                            s(R.string.amount_load_rows) + ": " + (r - intWrongRow - 1)
-                                    + ".\r\n" + s(R.string.must_be_utf8),
-                            Toast.LENGTH_LONG).show();
+                if (intWrongRow < r - intWrongRow) {
+                    db.setTransactionSuccessful();
+                    if (wrongRow.toString().equals("")) {
+                        Toast.makeText(getApplicationContext(),
+                                s(R.string.amount_load_rows) + ": " + (r - intWrongRow - 1)
+                                        + adviceEncoding,
+                                Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(getApplicationContext(),
+                                s(R.string.amount_load_rows) + ": " + (r - intWrongRow - 1)
+                                        + "\r\n" + s(R.string.not_load_rows)
+                                        + wrongRow + ".\r\n"
+                                        + s(R.string.template_in_help),
+                                Toast.LENGTH_LONG).show();
+                    }
+                    // отправляем в Firebase инфу по чтению слов из файла
+                    if (mFBAnalytics != null) {
+                        app.readWriteFileEvent(GlobApp.READ_FILE, "txt", (r - intWrongRow - 1) + "");
+                    }
+                    return r - 1;
                 } else {
                     Toast.makeText(getApplicationContext(),
-                            s(R.string.amount_load_rows) + ": " + (r - intWrongRow - 1)
-                                    + "\r\n" + s(R.string.not_load_rows)
-                                    + wrongRow + ".\r\n"
-                                    + s(R.string.template_in_help),
-                            Toast.LENGTH_LONG).show();
-                }
-                // отправляем в Firebase инфу по чтению слов из файла
-                if (mFBAnalytics != null) {
-                    app.readWriteFileEvent(GlobApp.READ_FILE, "txt", (r - intWrongRow - 1) + "");
+                            s(R.string.file_not_fit_template) + " " + "\r\n"
+                                    + s(R.string.template_in_help), Toast.LENGTH_LONG).show();
                 }
             } else {
                 Toast.makeText(getApplicationContext(),
                         s(R.string.file_not_fit_template) + " " + "\r\n"
-                                + s(R.string.template_in_help),
-                        Toast.LENGTH_LONG).show();
+                                + s(R.string.template_in_help), Toast.LENGTH_LONG).show();
             }
-            return r - 1;
         } catch (Exception e) {
             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
             e.printStackTrace();
@@ -753,10 +644,10 @@ public class EditData extends AppCompatActivity {
     /**
      * Выгрузка словаря в экселевский текстовый файл
      *
-     * @param fileName имя файла
+     * @param fileUri uri файла
      * @return количество выгруженных строк
      */
-    private int writeTxtFile(String fileName) {
+    private int writeTxtFile(Uri fileUri) {
         Cursor c = null;
         BufferedWriter bw = null;
         // разделитель строк
@@ -785,7 +676,7 @@ public class EditData extends AppCompatActivity {
                         break;
                 } while (c.moveToNext());
                 bw = new BufferedWriter(new OutputStreamWriter(
-                        new FileOutputStream(fileName), StandardCharsets.UTF_8));
+                        getContentResolver().openOutputStream(fileUri), StandardCharsets.UTF_8));
                 bw.write(sb.toString());
                 bw.close();
                 Toast.makeText(getApplicationContext(), s(R.string.amount_save_rows) + ": " + i,
@@ -798,8 +689,6 @@ public class EditData extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), s(R.string.no_data_for_download),
                         Toast.LENGTH_LONG).show();
             }
-            // устанавливаем видимым кнопку с возмоностью отправки файла
-            ivShare2.setVisibility(View.VISIBLE);
             return i;
         } catch (IOException e) {
             // сообщение о то, что в текущей версии Android нельзя созранить файл
@@ -849,25 +738,22 @@ public class EditData extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        // если вернулся Intent с всеобщим доступом к файлам (в версии Android >= 30)
-        if (requestCode == PERMISSION_MANAGE_READ || requestCode == PERMISSION_MANAGE_WRITE) {
-            // если версия Android >= 30
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                if (!Environment.isExternalStorageManager()) {
-                    //если все таки пользователь не дал прав на работу с файлами
-                    Toast.makeText(getApplicationContext(), s(R.string.unabled_permissions), Toast.LENGTH_LONG).show();
-                } else {
-                    startFileDialog(requestCode == PERMISSION_MANAGE_READ ? REQUEST_LOAD : REQUEST_SAVE);
-                }
-            }
-        }
         if (resultCode == AppCompatActivity.RESULT_OK) {
+            // если выгружаем данные в файл
             if (requestCode == REQUEST_LOAD) {
-                etOpenFileName.setText(data
-                        .getStringExtra(FileDialog.RESULT_PATH));
-            } else if (requestCode == REQUEST_SAVE) {
-                etSaveFileName.setText(data
-                        .getStringExtra(FileDialog.RESULT_PATH));
+                uriDownloadFile = data.getData();
+                String fileName = DocumentFile.fromSingleUri(this, uriDownloadFile).getName(); //имя файла без пути
+                String[] pathArr = uriDownloadFile.getPath().split(":");
+                String path = pathArr[pathArr.length - 1];
+                fileName = path.endsWith(fileName) ? path : fileName; // а теперь имя файла с путем
+                etOpenFileName.setText(fileName);
+            } else if (requestCode == REQUEST_SAVE) { // если загружаем данные в файл
+                uriUploadFile = data.getData();
+                String fileName = DocumentFile.fromSingleUri(this, uriUploadFile).getName(); //имя файла без пути
+                String[] pathArr = uriUploadFile.getPath().split(":");
+                String path = pathArr[pathArr.length - 1];
+                fileName = path.endsWith(fileName) ? path : fileName; // а теперь имя файла с путем
+                etSaveFileName.setText(fileName);
             }
         } else if (resultCode == AppCompatActivity.RESULT_CANCELED) {
             // do nothing
@@ -937,6 +823,17 @@ public class EditData extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        try {
+            if (uriUploadFile != null) {
+                AssetFileDescriptor fileDescriptor = getApplicationContext().getContentResolver().
+                        openAssetFileDescriptor(uriUploadFile, "r");
+                if (fileDescriptor.getLength() == 0) {
+                    DocumentsContract.deleteDocument(getApplicationContext().getContentResolver(), uriUploadFile);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         Log.d("myLogs", "onDestroy EditData");
         super.onDestroy();
         if (pay != null) pay.close();

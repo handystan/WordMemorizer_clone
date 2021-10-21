@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.Spannable;
@@ -14,7 +15,6 @@ import android.text.TextWatcher;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -32,13 +32,25 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
@@ -61,11 +73,10 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
     private GlobApp app;
     private LinearLayout llDownLearning;
     private LinearLayout llCenterLearning;
-    private LinearLayout llThanks;
+    private LinearLayout llAdMob;
     private Button bCategory;
     private TextView tvAmountWords;
     private TextView tvCheckedWord;
-    private TextView tvThanks;
     private ImageView ivSound;
     private ScrollView svChoice;
     private ScrollView svWriteWord;
@@ -75,6 +86,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
     private Button bDontKnow;
     private Button bKnow;
     private Menu menu;
+    private AdView avBottomBannerLearning;
     private ArrayList<Button> buttons = new ArrayList<>();
     private DB db;
     private Fixing fixing; // класс, в котором хранится информация по текущему уроку с данной категорией
@@ -98,6 +110,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
     private boolean isFromOldDB = false; //показывает приложение было установлено еще до введения платных функций или нет
     private int amountDonate = 0; // показывает сумму, которую пользователь пожертвовал разработчику
     private int lastBGColor = 100; // цвет фона для запоминания
+    private InterstitialAd interstitialAd; // местраничная плолноэкранная реклама (у меня после полностью сделанного урока)
     private Pay pay; // класс для обработки платежей
     private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
@@ -122,8 +135,15 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
         amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
 
+        // инициализация AdMob для рекламы
+        MobileAds.initialize(this, initializationStatus -> Log.d("myLogs", "AdMob is initialized"));
+        AdRequest adRequest = new AdRequest.Builder().build();
+        // загружаем баннерную рекламу
+        avBottomBannerLearning = findViewById(R.id.avBottomBannerLearning);
+        avBottomBannerLearning.loadAd(adRequest);
+
         // устанавливаем toolbar и actionbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         // устанавливаем цвет фона и шрифта для toolbar
         Utils.colorizeToolbar(this, toolbar);
@@ -167,37 +187,37 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         String showTrancr = db.getValueByVariable(DB.LEARNING_SHOW_DONTKNOW);
         isShowDontKnow = (showTrancr == null || showTrancr.equals("1"));
 
-        svChoice = (ScrollView) findViewById(R.id.svChoice);
-        svWriteWord = (ScrollView) findViewById(R.id.svWriteWord);
+        svChoice = findViewById(R.id.svChoice);
+        svWriteWord = findViewById(R.id.svWriteWord);
         svChoice.setVisibility(learningType == 0 ? View.VISIBLE : View.GONE);
         svWriteWord.setVisibility(learningType == 0 ? View.GONE : View.VISIBLE);
 
-        llCenterLearning = (LinearLayout) findViewById(R.id.llCenterLearning);
+        llCenterLearning = findViewById(R.id.llCenterLearning);
         llCenterLearning.setOnTouchListener(this);
-        tvCheckedWord = (TextView) findViewById(R.id.tvCheckedWord);
-        buttons.add((Button) findViewById(R.id.bChoice1));
-        buttons.add((Button) findViewById(R.id.bChoice2));
-        buttons.add((Button) findViewById(R.id.bChoice3));
-        buttons.add((Button) findViewById(R.id.bChoice4));
-        buttons.add((Button) findViewById(R.id.bChoice5));
-        buttons.add((Button) findViewById(R.id.bChoice6));
-        buttons.add((Button) findViewById(R.id.bChoice7));
-        buttons.add((Button) findViewById(R.id.bChoice8));
-        buttons.add((Button) findViewById(R.id.bChoice9));
-        buttons.add((Button) findViewById(R.id.bChoice10));
-        buttons.add((Button) findViewById(R.id.bChoice11));
-        buttons.add((Button) findViewById(R.id.bChoice12));
+        tvCheckedWord = findViewById(R.id.tvCheckedWord);
+        buttons.add(findViewById(R.id.bChoice1));
+        buttons.add(findViewById(R.id.bChoice2));
+        buttons.add(findViewById(R.id.bChoice3));
+        buttons.add(findViewById(R.id.bChoice4));
+        buttons.add(findViewById(R.id.bChoice5));
+        buttons.add(findViewById(R.id.bChoice6));
+        buttons.add(findViewById(R.id.bChoice7));
+        buttons.add(findViewById(R.id.bChoice8));
+        buttons.add(findViewById(R.id.bChoice9));
+        buttons.add(findViewById(R.id.bChoice10));
+        buttons.add(findViewById(R.id.bChoice11));
+        buttons.add(findViewById(R.id.bChoice12));
         for (int i = 0; i < buttons.size(); i++) {
             buttons.get(i).setOnClickListener(this);
             buttons.get(i).setOnTouchListener(this);
             buttons.get(i).setTextColor(Color.parseColor("black"));
         }
         setAmountWords(amountWords);
-        bCategory = (Button) findViewById(R.id.bCategory);
-        llDownLearning = (LinearLayout) findViewById(R.id.llDownLearning);
-        tvAmountWords = (TextView) findViewById(R.id.tvAmountWords);
+        bCategory = findViewById(R.id.bCategory);
+        llDownLearning = findViewById(R.id.llDownLearning);
+        tvAmountWords = findViewById(R.id.tvAmountWords);
 
-        ivSound = (ImageView) findViewById(R.id.ivSound);
+        ivSound = findViewById(R.id.ivSound);
         ivSound.setOnClickListener(this);
         final Drawable defBackground = ivSound.getBackground(); // фон по умолчанию для кнопки с озвучки
         ivSound.setOnTouchListener((v, event) -> {
@@ -205,15 +225,11 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                     || event.getAction() == MotionEvent.ACTION_MOVE) {
                 ivSound.setBackgroundResource(R.color.bright_blue);
             } else {
-                if (android.os.Build.VERSION.SDK_INT >= 16) {
-                    ivSound.setBackground(defBackground);
-                } else {
-                    ivSound.setBackgroundDrawable(defBackground);
-                }
+                ivSound.setBackground(defBackground);
             }
             return false;
         });
-        etAnswerWord = (EditText) findViewById(R.id.etAnswerWord);
+        etAnswerWord = findViewById(R.id.etAnswerWord);
         etAnswerWord.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count,
@@ -245,11 +261,11 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
             }
             return false;
         });
-        tvMessage = (TextView) findViewById(R.id.tvMessage);
-        tvRightAnswer = (TextView) findViewById(R.id.tvRightAnswer);
+        tvMessage = findViewById(R.id.tvMessage);
+        tvRightAnswer = findViewById(R.id.tvRightAnswer);
         tvMessage.setVisibility(View.GONE);
         tvRightAnswer.setVisibility(View.GONE);
-        bDontKnow = (Button) findViewById(R.id.bDontKnow);
+        bDontKnow = findViewById(R.id.bDontKnow);
         bDontKnow.setOnClickListener(this);
         bDontKnow.setOnTouchListener(this);
         bDontKnow.setOnLongClickListener(v -> {
@@ -257,7 +273,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
             return false;
         });
         bDontKnow.setVisibility(isShowDontKnow ? View.VISIBLE : View.GONE);
-        bKnow = (Button) findViewById(R.id.bKnow);
+        bKnow = findViewById(R.id.bKnow);
         bKnow.setOnClickListener(this);
         bKnow.setOnLongClickListener(v -> {
             Toast.makeText(getApplicationContext(), s(R.string.hint_know), Toast.LENGTH_LONG).show();
@@ -328,11 +344,8 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         }
         setTextAmountWords();
 
-        // показываем или скрываем строку с предложением поддержки разработчика
-        llThanks = (LinearLayout) findViewById(R.id.llThanks);
-        tvThanks = (TextView) findViewById(R.id.tvThanks);
-        llThanks.setOnClickListener(this);
-        tvThanks.setOnClickListener(this);
+        // показываем или скрываем строку с баннерной рекламой
+        llAdMob = findViewById(R.id.llAdMob);
         pay = new Pay(this);
         if (amountDonate == 0) { //если в БД нет инфы о покупках, на всякий случай смотрим в Google play
             try {
@@ -357,9 +370,10 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                             db.updateRecExitState(DB.AMOUNT_DONATE, amountDonate + "");
                             //заморочиться с runOnUiThread пришлось из-за того Learning может обновляться из About
                             runOnUiThread(() -> {
-                                ViewGroup.LayoutParams params = (ViewGroup.LayoutParams) llThanks.getLayoutParams();
+                                ViewGroup.LayoutParams params = llAdMob.getLayoutParams();
                                 params.height = amountDonate == 0 ? LinearLayout.LayoutParams.WRAP_CONTENT : 0;
-                                llThanks.setLayoutParams(params);
+                                llAdMob.setLayoutParams(params);
+                                interstitialAd = null;
                             });
                             mFBAnalytics.setUserProperty("is_paid", amountDonate == 0 ? "N" : "Y"); // оплачено приложение пользователем или нет
                         }
@@ -370,10 +384,14 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
             }
         }
         Log.i("myLogs", "amountDonate = " + amountDonate);
-        if (!isFromOldDB || amountDonate > 0) {
-            ViewGroup.LayoutParams params = (ViewGroup.LayoutParams) llThanks.getLayoutParams();
+        if (isFromOldDB || amountDonate > 0) {
+            ViewGroup.LayoutParams params = llAdMob.getLayoutParams();
             params.height = 0;
-            llThanks.setLayoutParams(params);
+            llAdMob.setLayoutParams(params);
+        } else {
+            // загружаем AdMob
+            Log.i("myLogs", "loadAdMob");
+            loadAdMob();
         }
         // отправляем в Firebase инфу с настройками по словарю
         if (mFBAnalytics != null) {
@@ -464,6 +482,69 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
     }
 
     /**
+     * инициализируем AdMob и загружаем баннерную и межстраничную рекламу
+     */
+    public void loadAdMob() {
+        // по умолчанию загружаем весь AdMob
+        loadAdMob(false);
+    }
+
+    /**
+     * инициализируем AdMob и загружаем баннерную и межстраничную рекламу
+     *
+     * @param onlyInterstitialAd выполнять загрузку только InterstitialAd или всего AdMob
+     *
+     */
+    private void loadAdMob(boolean onlyInterstitialAd) {
+        AdRequest adRequest = new AdRequest.Builder().build();
+        if (!onlyInterstitialAd) {
+            // инициализация AdMob для рекламы
+            MobileAds.initialize(this, initializationStatus -> Log.d("myLogs", "AdMob is initialized"));
+            // загружаем баннерную рекламу
+            avBottomBannerLearning = findViewById(R.id.avBottomBannerLearning);
+            avBottomBannerLearning.loadAd(adRequest);
+        }
+
+        InterstitialAd.load(this, s(R.string.id_interstitial_lesson_end_test), adRequest,
+                new InterstitialAdLoadCallback() {
+                    @Override
+                    public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                        Learning.this.interstitialAd = interstitialAd;
+                        Log.i("myLogs", "interstitial Ad is loaded");
+                        Learning.this.interstitialAd.setFullScreenContentCallback(
+                                new FullScreenContentCallback() {
+                                    @Override
+                                    public void onAdDismissedFullScreenContent() {
+                                        // если показ межстраничной пропущен, рекламы открываем окно с выбором категории
+                                        startActivityForResult(new Intent(Learning.this, Categories.class), GET_CATEGORIES);
+                                        loadAdMob(true);
+                                        Log.d("myLogs", "interstitial ad was dismissed.");
+                                    }
+
+                                    @Override
+                                    public void onAdFailedToShowFullScreenContent(AdError adError) {
+                                        // и после ошибки показа межстраничной рекламы открываем окно с выбором категории
+                                        startActivityForResult(new Intent(Learning.this, Categories.class), GET_CATEGORIES);
+                                        loadAdMob(true);
+                                        Log.d("myLogs", "interstitial ad failed to show.");
+                                    }
+
+                                    @Override
+                                    public void onAdShowedFullScreenContent() {
+                                        Log.d("myLogs", "interstitial ad was shown.");
+                                    }
+                                });
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                        Log.i("myLogs", loadAdError.getMessage());
+                        Learning.this.interstitialAd = null;
+                    }
+                });
+    }
+
+    /**
      * отображает загадываемое слово и варианты ответов
      */
     public void showWords() {
@@ -537,21 +618,28 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                Learning.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            latch.await();
-                            showWords();
-                            if (message != null) {
-                                dl = null;
-                                onActivityResult(GET_CATEGORIES, AppCompatActivity.RESULT_OK,
-                                        Learning.this.getIntent().putExtra(Categories.NEW_CATEGORIES, ""));
+                Learning.this.runOnUiThread(() -> {
+                    try {
+                        latch.await();
+                        showWords();
+                        if (message != null) {
+                            dl = null;
+                            onActivityResult(GET_CATEGORIES, AppCompatActivity.RESULT_OK,
+                                    Learning.this.getIntent().putExtra(Categories.NEW_CATEGORIES, ""));
+                            // отправляем в Firebase инфу о том, что полностью пройден урок
+                            if (mFBAnalytics != null) {
+                                app.finishedLessonsEvent(amountDonate > 0 || isFromOldDB ?
+                                        s(R.string.paid) : s(R.string.not_paid));
+                            }
+                            // показываем межстраничную рекламу после окончания урока
+                            if (interstitialAd != null) {
+                                interstitialAd.show(Learning.this);
+                            } else {
                                 startActivityForResult(new Intent(Learning.this, Categories.class), GET_CATEGORIES);
                             }
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
                         }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 });
             }).start();
@@ -566,12 +654,6 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         // обработка нажатия строки с количеством слов
         if (v.getId() == tvAmountWords.getId() || v.getId() == llDownLearning.getId()) {
             startActivity(new Intent(this, CategoreWordsList.class));
-            return;
-        }
-        // обработка нажатия нижней строки с предложением поддержать разработчика
-        if (v.getId() == tvThanks.getId() || v.getId() == llThanks.getId()) {
-            // 2 означает класс Thanks
-            startActivityForResult(new Intent(this, Thanks.class), 2);
             return;
         }
         // обработка нажатия кнопки с категориями
@@ -849,9 +931,10 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
             } else if (requestCode == 2) { // если вернулся результат с оплатой из Thanks
                 amountDonate = data.getIntExtra("amountDonate", 0);
                 if (amountDonate > 0) {
-                    ViewGroup.LayoutParams params = llThanks.getLayoutParams();
+                    ViewGroup.LayoutParams params = llAdMob.getLayoutParams();
                     params.height = 0;
-                    llThanks.setLayoutParams(params);
+                    llAdMob.setLayoutParams(params);
+                    interstitialAd = null;
                 }
             }
         } else if (resultCode == AppCompatActivity.RESULT_CANCELED) {
@@ -962,11 +1045,18 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         this.amountDonate = amountDonate;
     }
 
-    /*
-     * делаем возможность получать llThanks извне, чтобы из Pay иметь возможность его скрывать
+    /**
+     * установление экземпляра местраничной плолноэкранной рекламы
      */
-    public LinearLayout getLlThanks() {
-        return llThanks;
+    public void setInterstitialAd(InterstitialAd interstitialAd) {
+        this.interstitialAd = interstitialAd;
+    }
+
+    /*
+     * делаем возможность получать llAdMob извне, чтобы из Pay иметь возможность его скрывать
+     */
+    public LinearLayout getLlAdMob() {
+        return llAdMob;
     }
 
     @Override

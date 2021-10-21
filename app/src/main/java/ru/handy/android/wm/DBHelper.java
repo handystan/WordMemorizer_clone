@@ -73,7 +73,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.beginTransaction();
         try {
-            if (oldVersion <= 22 && newVersion == 29) {
+            if (oldVersion <= 22 && newVersion == 30) {
                 insertExitState(db, DB.BG_COLOR, "1"); // белый фон
                 insertExitState(db, DB.OLD_FREE_DB, "1"); // клиенты из старой базы, которым автоматом все делается бесплатно
                 insertExitState(db, DB.LEARNING_TYPE, "0");
@@ -90,25 +90,25 @@ public class DBHelper extends SQLiteOpenHelper {
                 db.delete(DB.T_ENGWORDS, null, null);
                 db.delete(DB.T_LESSON, null, null);
                 insertAllDict(db);
-            } else if (oldVersion == 23 && newVersion == 29) {
+            } else if (oldVersion == 23 && newVersion == 30) {
                 updateDictFrom23(db);
                 updateDictFrom24(db);
                 updateDictFrom26(db);
                 updateDictFrom27(db);
                 updateDictFrom28(db);
-            }  else if (oldVersion == 24 && newVersion == 29) { // версия 25 была тестовой
+            }  else if (oldVersion == 24 && newVersion == 30) { // версия 25 была тестовой
                 updateDictFrom24(db);
                 updateDictFrom26(db);
                 updateDictFrom27(db);
                 updateDictFrom28(db);
-            }  else if (oldVersion == 26 && newVersion == 29) {
+            }  else if (oldVersion == 26 && newVersion == 30) {
                 updateDictFrom26(db);
                 updateDictFrom27(db);
                 updateDictFrom28(db);
-            }  else if (oldVersion == 27 && newVersion == 29) {
+            }  else if (oldVersion == 27 && newVersion == 30) {
                 updateDictFrom27(db);
                 updateDictFrom28(db);
-            }  else if (oldVersion == 28 && newVersion == 29) {
+            }  else if (oldVersion == 28 && newVersion == 30) { // версия 29 не прошла цензуру Google
                 updateDictFrom28(db);
             }
             db.setTransactionSuccessful();

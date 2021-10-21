@@ -44,7 +44,7 @@ public class About extends AppCompatActivity implements View.OnClickListener {
         db = app.getDb(); // открываем подключение к БД
 
         // устанавливаем toolbar и actionbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar bar = getSupportActionBar();
         if (bar != null) {
@@ -60,7 +60,7 @@ public class About extends AppCompatActivity implements View.OnClickListener {
             bar.setHomeAsUpIndicator(upArrow);
         }
 
-        mTextView = (TextView) findViewById(R.id.tvAbout);
+        mTextView = findViewById(R.id.tvAbout);
         mTextView.setText(Html.fromHtml(s(R.string.about_desc)));
         mTextView.setOnClickListener(this);
     }
@@ -99,11 +99,17 @@ public class About extends AppCompatActivity implements View.OnClickListener {
                 }
                 Learning learning = app.getLearning();
                 learning.setAmountDonate(amountDonate);
-                LinearLayout llThanks = learning.getLlThanks();
-                ViewGroup.LayoutParams params = (ViewGroup.LayoutParams) llThanks.getLayoutParams();
+                LinearLayout llAdMob = learning.getLlAdMob();
+                ViewGroup.LayoutParams params = llAdMob.getLayoutParams();
                 params.height = amountDonate == 0 ? LinearLayout.LayoutParams.WRAP_CONTENT : 0;
-                llThanks.setLayoutParams(params);
+                llAdMob.setLayoutParams(params);
+                if (amountDonate > 0) {
+                    learning.setInterstitialAd(null);
+                } else {
+                    learning.loadAdMob(); // загружаем AdMob
+                }
                 amountClick = 0;
+
             }
         }
     }

@@ -353,7 +353,7 @@
         android:id="@+id/llDownLearning"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/llThanks"
+        android:layout_above="@+id/llAdMob"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:background="#99BBBBBB"
@@ -368,23 +368,24 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/llThanks"
+        android:id="@+id/llAdMob"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:background="#8899ccff"
-        android:clickable="true"
-        android:padding="5dp">
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true">
 
-        <TextView
-            android:id="@+id/tvThanks"
+        <com.google.android.gms.ads.AdView
+            xmlns:ads="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/avBottomBannerLearning"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#00000000"
-            android:gravity="center"
-            android:text="@string/donate_developer" />
+            ads:adSize="SMART_BANNER"
+            ads:adUnitId="@string/id_bottom_banner_test" />
+        <!-- этот adUnitId нужно вставить перед тем, как публиковать приложение
+        ads:adUnitId="@string/id_bottom_banner_real"
+        вот это тестовый adUnitId
+        ads:adUnitId="@string/id_bottom_banner_test"-->
     </LinearLayout>
 
 </RelativeLayout>

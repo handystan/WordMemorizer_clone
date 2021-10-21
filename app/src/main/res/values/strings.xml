@@ -14,6 +14,7 @@
     <string name="english_word">английское слово</string>
     <string name="transcription">транскрипция</string>
     <string name="translate">русский перевод</string>
+    <string name="success">Урок успешно пройден. Можно выбрать другую категорию.</string>
     <string name="save">сохранить</string>
     <string name="dictionary">Словарь</string>
     <string name="data">Данные</string>
@@ -27,15 +28,15 @@
     <string name="create">Сохранить</string>
     <string name="no_data">Нет данных</string>
     <string name="help">Помощь</string>
-    <string name="upload_file">Загрузка слов из файла</string>
-    <string name="download_file">Выгрузка слов в файл</string>
+    <string name="download_file">Загрузка слов из файла</string>
+    <string name="upload_file">Выгрузка слов в файл</string>
     <string name="path_file">Путь к файлу</string>
     <string name="file">файл</string>
     <string name="delete_data">удалить существующие слова</string>
     <string name="semicolon_row">- разделитель для столбцов</string>
     <string name="semicolon">;</string>
-    <string name="upload_data">загрузить слова</string>
-    <string name="download_data">выгрузить слова</string>
+    <string name="download_data">загрузить слова</string>
+    <string name="upload_data">выгрузить слова</string>
     <string name="amount_load_rows">Количество загруженных из файла строк</string>
     <string name="not_load_rows">Не загрузились строки № </string>
     <string name="must_be_utf8">Для правильного отображения символов у текстового файла кодировка желательна UTF-8.</string>
@@ -55,7 +56,7 @@
     <string name="amount_save_rows">Количество сохраненных в файле строк</string>
     <string name="failed_download">Данные не выгружены в файл</string>
     <string name="android_version23_rescription">Внимание! Текущая версия Android не позволяет сохранить файл на внешнюю SD Card (sdcard1). Файл нужно сохранить на внутренней памяти телефона (sdcard0).</string>
-    <string name="android_version30_rescription">Внимание! Текущая версия Android позволяет сохранить файл. Обратитесь к разработчику handy@list.ru</string>
+    <string name="android_version30_rescription">Внимание! Текущая версия Android не позволяет сохранить файл. Обратитесь к разработчику handy@list.ru</string>
     <string name="no_data_for_download">Нет данных для выгрузки в файл</string>
     <string name="should_be_xls">Экселевский файл должен быть с расширением \'xls\'</string>
     <string name="shouldnt_be_xls">Текстовый файл не должен быть с расширением \'xls\', \'xlsx\'</string>
@@ -103,14 +104,11 @@
     <string name="text_for_evaluate2">Оцените, пожалуйста, приложение в Google Play:</string>
     <string name="donate_developer">Поддержите разработчика!</string>
     <string name="attention">Внимание</string>
-    <string name="rationale_for_read">Для чтения из файла необходимо разрешение</string>
-    <string name="rationale_for_write">Для записи в файл необходимо разрешение</string>
-    <string name="rationale_for_file_system">Для работы с файловой системой необходимо разрешение</string>
-    <string name="unabled_permissions">Для выполнения операции не установлены разрешения</string>
     <string name="other">прочее</string>
     <string name="change_background">Поменять фон</string>
     <string name="buy_paid_features">Купить платные функции?</string>
     <string name="buying_is_allowed">Приобретение платного контента за 99 руб. позволяет:</string>
+    <string name="no_advertisement">- убрать рекламу;</string>
     <string name="see_statistics">- посмотреть статистику и запускать уроки со словами с ранее сделанными ошибками;</string>
     <string name="unlimited_downloads">- загружать неограниченное количество слов из файлов;</string>
     <string name="change_background2">- изменять цвет фона приложения;</string>
@@ -174,7 +172,11 @@
     <string name="learning_lang">Язык обучения</string>
     <string name="bg_color">Цвет фона</string>
     <string name="share">Отправить</string>
-    <string name="not_exist_file">Нет доступа к файлу или указан не верный путь к файлу. </string>
+    <string name="file_read_error">Ошибка чтения файла</string>
+    <string name="id_bottom_banner_real">ca-app-pub-8509841932044551/6071495540</string>
+    <string name="id_bottom_banner_test">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="id_interstitial_lesson_end_real">ca-app-pub-8509841932044551/9583755757</string>
+    <string name="id_interstitial_lesson_end_test">ca-app-pub-3940256099942544/1033173712</string>
     <string name="helpForLearning">
 <![CDATA[
 <p><b><big>WordMemorizer</big></b> - программа-помощник в запоминании английских слов.
@@ -258,7 +260,7 @@
     <string name="about_desc">
 <![CDATA[
 <p><big><b>WordMemorizer</b></big>
-<br>Версия 2.6 для версии Android 4.4 и выше.
+<br>Версия 2.7 для версии Android 5.0 и выше.
 <p><b>Производитель</b>
 <br>Handy Systems
 <p><b>e-mail</b>

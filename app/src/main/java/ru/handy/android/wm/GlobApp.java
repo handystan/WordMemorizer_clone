@@ -38,6 +38,7 @@ public class GlobApp extends Application {
     public static final String READ_FILE = "read_file"; // событие по чтению и загрузке файла со словами
     public static final String WRITE_FILE = "write_file"; // событие по записи в файл слова
     public static final String PURCHASE_MOTIVES = "purchase_motives"; // событие по покупке приложения и мотивам этой покупки
+    public static final String FINISHED_LESSONS = "finished_lessons"; // событие по полному окончанию урока
     private DB db;
     private TextToSpeech tts;
     private FirebaseAnalytics mFBAnalytics;
@@ -165,7 +166,7 @@ public class GlobApp extends Application {
     }
 
     /**
-     * Регистрирует событие покупки с сопутствуюей инфой, откуда сделана покука и какие пробные периоды были открыты
+     * Регистрирует событие покупки с сопутствуюей инфой, откуда сделана покупка и какие пробные периоды были открыты
      *
      * @param motiveOfPurchase      что послужило мотивом покупки: 'Из Thanks', 'Статистика', 'Данные из файла', 'Тип обучения', 'Язык обучения', 'Количество слов для выбора', 'Цвет фона'
      * @param dateTrialStats        дата начала пробного периода по статистике
@@ -185,6 +186,17 @@ public class GlobApp extends Application {
         bundle.putString("date_trial_word_amount", dateTrialWordAmount);
         bundle.putString("date_trial_bgcolor", dateTrialBgColor);
         getFBAnalytics().logEvent(PURCHASE_MOTIVES, bundle);
+    }
+
+    /**
+     * Регистрирует событие о том, что урок полностью закончен (FINISHED_LESSONS)
+     *
+     * @param paidApp  оплачено ли приложение ('Оплачено', т.е. DB.AMOUNT_DONATE > 0 или DB.OLD_FREE_DB == 1, 'Не оплачено')
+     */
+    synchronized public void finishedLessonsEvent(String paidApp) {
+        Bundle bundle = new Bundle();
+        bundle.putString("paid_app", paidApp);
+        getFBAnalytics().logEvent(FINISHED_LESSONS, bundle);
     }
 
     /**

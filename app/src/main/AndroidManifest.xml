@@ -3,16 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="ru.handy.android.wm">
 
-    <uses-permission android:name="android.permission.WAKE_LOCK" /> <!-- разрешене на  -->
-    <uses-permission
-        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission
-        android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
-        tools:ignore="ScopedStorage" />
 
     <application
         android:name=".GlobApp"
@@ -20,7 +12,6 @@
         android:fullBackupContent="@xml/wm_backup_rules"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:requestLegacyExternalStorage="true"
         android:theme="@style/AppThemeBase1">
         <!-- необходимо для того, чтобы можно было посылать файлы в другие приложения -->
         <provider
@@ -33,6 +24,10 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+        <!-- необходимо для показа рекламы в AdMod -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-8509841932044551~4673479939" />
 
         <activity
             android:name=".learning.Learning"
@@ -58,9 +53,6 @@
         <activity
             android:name=".downloads.EditData"
             android:label="@string/data" />
-        <activity
-            android:name=".downloads.FileDialog"
-            android:label="@string/file_dialog" />
         <activity
             android:name=".Help"
             android:label="@string/help" />

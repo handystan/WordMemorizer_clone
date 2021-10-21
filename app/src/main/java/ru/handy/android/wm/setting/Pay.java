@@ -149,10 +149,10 @@ public class Pay implements PurchasesUpdatedListener {
                         purchaseMotive = s(R.string.from_thanks);
                     } else if (reqCode == 1002) { // 1002 - открываем статистику после оплаты (3 - это код для статистики)
                         ((Learning) act).setAmountDonate(amountDonate);
-                        LinearLayout llThanks = ((Learning) act).getLlThanks();
-                        ViewGroup.LayoutParams params = llThanks.getLayoutParams();
+                        LinearLayout llAdMob = ((Learning) act).getLlAdMob();
+                        ViewGroup.LayoutParams params = llAdMob.getLayoutParams();
                         params.height = 0;
-                        llThanks.setLayoutParams(params);
+                        llAdMob.setLayoutParams(params);
                         act.startActivityForResult(new Intent(act, Statistics.class), 3);
                         purchaseMotive = s(R.string.statistics);
                     } else if (reqCode == 1003) { // 1003 - ответ пришел от EditData (возможность загружать из файла не ограниченное число слов)
