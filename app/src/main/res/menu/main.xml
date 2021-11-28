@@ -2,25 +2,31 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <group android:id="@+id/group_addrec">
+    <group
+        android:id="@+id/group_addrec"
+        android:visible="false">
         <item
-            android:id="@+id/iaddrec"
+            android:id="@+id/addrec"
             android:icon="@drawable/ic_menu_add"
             android:orderInCategory="1"
             android:title="@string/add_record"
             app:showAsAction="ifRoom" />
     </group>
 
-    <group android:id="@+id/group_dictionary">
+    <group
+        android:id="@+id/group_dictionary"
+        android:visible="false">
         <item
-            android:id="@+id/idictionary"
+            android:id="@+id/dictionary"
             android:icon="@drawable/ic_menu_search"
             android:orderInCategory="2"
             android:title="@string/dictionary"
             app:showAsAction="ifRoom" />
     </group>
 
-    <group android:id="@+id/group_statistics">
+    <group
+        android:id="@+id/group_statistics"
+        android:visible="false">
         <item
             android:id="@+id/statistics"
             android:icon="@drawable/statistics"
@@ -29,75 +35,102 @@
             app:showAsAction="always" />
     </group>
 
-    <group android:id="@+id/group_action_settings">
+    <group
+        android:id="@+id/group_delete_category"
+        android:visible="false">
+        <item
+            android:id="@+id/delete_category"
+            android:icon="@drawable/ic_menu_delete_cat"
+            android:orderInCategory="4"
+            android:title="@string/delete_category"
+            app:showAsAction="always" />
+    </group>
+
+    <group
+        android:id="@+id/group_action_settings"
+        android:visible="false">
         <item
             android:id="@+id/action_settings"
             android:icon="@drawable/ic_menu_preferences"
-            android:orderInCategory="4"
+            android:orderInCategory="5"
             android:title="@string/action_settings"
             app:showAsAction="ifRoom" />
     </group>
 
-    <group android:id="@+id/group_resetStat">
+    <group
+        android:id="@+id/group_resetStat"
+        android:visible="false">
         <item
             android:id="@+id/resetStat"
             android:icon="@drawable/ic_menu_delete"
-            android:orderInCategory="5"
+            android:orderInCategory="6"
             android:title="@string/reset_statistics"
             app:showAsAction="ifRoom" />
     </group>
 
-    <group android:id="@+id/group_ihelp">
+    <group
+        android:id="@+id/group_help"
+        android:visible="false">
         <item
-            android:id="@+id/ihelp"
+            android:id="@+id/help"
             android:icon="@drawable/ic_menu_help"
-            android:orderInCategory="6"
+            android:orderInCategory="7"
             android:title="@string/help"
             app:showAsAction="ifRoom" />
     </group>
 
-    <group android:id="@+id/group_idata">
+    <group
+        android:id="@+id/group_data"
+        android:visible="false">
         <item
-            android:id="@+id/idata"
+            android:id="@+id/data"
             android:icon="@drawable/ic_menu_upload"
-            android:orderInCategory="7"
+            android:orderInCategory="8"
             android:title="@string/data"
             app:showAsAction="never" />
     </group>
 
-    <group android:id="@+id/group_clear_hist">
+    <group
+        android:id="@+id/group_clear_hist"
+        android:visible="false">
         <item
             android:id="@+id/clear_history"
             android:icon="@drawable/ic_menu_delete"
-            android:orderInCategory="8"
+            android:orderInCategory="9"
             android:title="@string/clear_history"
             app:showAsAction="never" />
     </group>
 
 
-    <group android:id="@+id/group_donate">
+    <group
+        android:id="@+id/group_donate"
+        android:visible="false">
         <item
             android:id="@+id/donate"
             android:icon="@drawable/ic_coins_l"
-            android:orderInCategory="9"
+            android:orderInCategory="10"
             android:title="@string/title_thanks"
             app:showAsAction="never" />
     </group>
 
-    <group android:id="@+id/group_about">
+    <group
+        android:id="@+id/group_about"
+        android:visible="false">
         <item
             android:id="@+id/about"
             android:icon="@drawable/ic_menu_info_details"
-            android:orderInCategory="10"
+            android:orderInCategory="11"
             android:title="@string/about"
             app:showAsAction="never" />
     </group>
 
-    <group android:id="@+id/group_exit">
+    <group
+        android:id="@+id/group_exit"
+        android:visible="false">
         <item
             android:id="@+id/exit"
             android:icon="@drawable/ic_menu_close_clear_cancel"
-            android:orderInCategory="11"
+            android:orderInCategory="12"
             android:title="@string/exit"
             app:showAsAction="never" />
     </group>

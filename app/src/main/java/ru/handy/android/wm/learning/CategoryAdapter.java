@@ -1,28 +1,25 @@
 package ru.handy.android.wm.learning;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import ru.handy.android.wm.R;
-import ru.handy.android.wm.statistics.Statistics;
 
 /**
  * Адаптер для заполнения данных для списка категорий
@@ -34,18 +31,52 @@ public class CategoryAdapter extends BaseAdapter {
     private final Context ctx;
     private final LayoutInflater lInflater;
     private final ArrayList<Category> objects;
-    // обработчик для чекбоксов
-    OnCheckedChangeListener checkChangList = (buttonView, isChecked) -> {
-        // меняем галочку в чек-боксе
-        ((Category) getItem((Integer) buttonView.getTag())).setChecked(isChecked);
-    };
     private boolean isStatistics; // true - статистика, false - все категории
+    // список для регистрации слушателей про изменению галок на категориях
+    private List<OnCatCheckedListener> listeners = new ArrayList<OnCatCheckedListener>();
 
     public CategoryAdapter(Context context, ArrayList<Category> categories, boolean isStatistics) {
         ctx = context;
         objects = categories;
         lInflater = (LayoutInflater) ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.isStatistics = isStatistics;
+    }
+
+    /**
+     * получение списка категорий
+     *
+     * @return спиок категорий
+     */
+    public ArrayList<Category> getCategories() {
+        return objects;
+    }
+
+    /**
+     * получение индекса в списке категорий по данной категории
+     *
+     * @param category искомая категория
+     * @return индекс искомой категории. Возвращает -1, если категория не найдена
+     */
+    public int getIdByCategory(Category category) {
+        for (int i = 0; i < objects.size(); i++) {
+            if (objects.get(i).getName().equals(category.getName()))
+                return i;
+        }
+        return -1;
+    }
+
+    /**
+     * получение индекса в списке категорий по имени данной категории
+     *
+     * @param catName имя искомой категории
+     * @return индекс искомой категории. Возвращает -1, если категория не найдена
+     */
+    public int getIdByCatName(String catName) {
+        for (int i = 0; i < objects.size(); i++) {
+            if (objects.get(i).getName().equals(catName))
+                return i;
+        }
+        return -1;
     }
 
     // кол-во элементов
@@ -113,13 +144,23 @@ public class CategoryAdapter extends BaseAdapter {
         });
         tvAmount.setOnClickListener(v -> {
             Category c = (Category) getItem((Integer) v.getTag());
-                c.setChecked(!c.isChecked());
-                cbCategory.setChecked(c.isChecked());
+            c.setChecked(!c.isChecked());
+            cbCategory.setChecked(c.isChecked());
         });
+        //без установки здесь слушателя контекстного меню на кажоде поле не получается устновить его на саму listView
+        cbCategory.setOnCreateContextMenuListener(null);
+        tvAmount.setOnCreateContextMenuListener(null);
         // пишем позицию
         cbCategory.setTag(position);
         tvAmount.setTag(position);
-        cbCategory.setOnCheckedChangeListener(checkChangList);
+        cbCategory.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            int pos = (Integer) buttonView.getTag();
+            // ставим галку в категории такую же как и в чек-боксе
+            ((Category) CategoryAdapter.this.getItem(pos)).setChecked(isChecked);
+            // передаем информацию в слушатели
+            for (OnCatCheckedListener listener : listeners)
+                listener.onCatChecked(objects, pos, isChecked);
+        });
         // проставляем начальные данные чек-бокса
         cbCategory.setChecked(cat.isChecked());
         if (isStatistics) {
@@ -138,19 +179,23 @@ public class CategoryAdapter extends BaseAdapter {
         return view;
     }
 
+    /**
+     * добавление слушателей по изменению галок на категориях
+     *
+     * @param listenerToAdd слушатель к добавлению
+     */
+    public void addListener(OnCatCheckedListener listenerToAdd) {
+        listeners.add(listenerToAdd);
+    }
+
     private void setBackground(CheckBox cbCategory, TextView tvAmount, MotionEvent event, Drawable defBackground) {
         if (event.getAction() == MotionEvent.ACTION_DOWN
                 || event.getAction() == MotionEvent.ACTION_MOVE) {
             cbCategory.setBackgroundResource(R.color.bright_blue);
             tvAmount.setBackgroundResource(R.color.bright_blue);
         } else {
-            if (android.os.Build.VERSION.SDK_INT >= 16) {
-                cbCategory.setBackground(defBackground);
-                tvAmount.setBackground(defBackground);
-            } else {
-                cbCategory.setBackgroundDrawable(defBackground);
-                tvAmount.setBackgroundDrawable(defBackground);
-            }
+            cbCategory.setBackground(defBackground);
+            tvAmount.setBackground(defBackground);
         }
     }
 
@@ -163,12 +208,6 @@ public class CategoryAdapter extends BaseAdapter {
                 cats.add(c);
         }
         return cats;
-    }
-
-    private void chooseCategory(String catName) {
-        ((Statistics) ctx).getIntent().putExtra(NEW_CATEGORIES, catName);
-        ((Statistics) ctx).setResult(Activity.RESULT_OK, ((Statistics) ctx).getIntent());
-        ((Statistics) ctx).finish();
     }
 
     private String s(int res) {

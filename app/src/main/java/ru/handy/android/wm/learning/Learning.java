@@ -3,10 +3,10 @@ package ru.handy.android.wm.learning;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteException;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.Spannable;
@@ -43,14 +43,11 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.sql.Date;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
@@ -69,7 +66,7 @@ import ru.handy.android.wm.setting.Utils;
 
 public class Learning extends AppCompatActivity implements OnClickListener, OnTouchListener {
 
-    private static final int GET_CATEGORIES = 1;
+    public static final int GET_CATEGORIES = 1;
     private GlobApp app;
     private LinearLayout llDownLearning;
     private LinearLayout llCenterLearning;
@@ -155,17 +152,17 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
 
         String lt = db.getValueByVariable(DB.LEARNING_TYPE);
         learningType = lt == null ? 0 : Integer.parseInt(lt);
-        //проверяем не прошел ли бесплатный 30 дневный период по типу обучения. Если да, то возвращаем в базовый тип обучения
-        String strStartDate = db.getValueByVariable(DB.DATE_LEARNING_METHOD);
+        //проверяем не прошел ли бесплатный 7 дневный период по типу обучения. Если да, то возвращаем в базовый тип обучения
+        /*String strStartDate = db.getValueByVariable(DB.DATE_LEARNING_METHOD);
         Date startDate = strStartDate == null || strStartDate.equals("") ? null : Date.valueOf(strStartDate);
         if (!isFromOldDB && amountDonate == 0 && startDate != null && learningType != 0) {
             long dif = (System.currentTimeMillis() - startDate.getTime()) / (1000 * 60 * 60 * 24);
             Log.d("myLogs", "dif = " + dif);
-            if (dif > 30) { // и если закончился бесплатный месяц
+            if (dif > 7) { // и если закончились бесплатные 7 дней
                 db.updateRecExitState(DB.LEARNING_TYPE, "0");
                 learningType = 0;
             }
-        }
+        }*/
 
         String speak = db.getValueByVariable(DB.LEARNING_SPEAK);
         isSpeak = (speak == null || speak.equals("1"));
@@ -173,17 +170,17 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         isShowTrancr = (trancr == null || trancr.equals("1"));
         amountWords = db.getValueByVariable(DB.LEARNING_AMOUNT_WORDS) == null ? 8 :
                 Integer.parseInt(db.getValueByVariable(DB.LEARNING_AMOUNT_WORDS));
-        //проверяем не прошел ли бесплатный 30 дневный период по кол-ву слов в обучении. Если да, то возвращаем в базовый
-        strStartDate = db.getValueByVariable(DB.DATE_LANG_WORD_AMOUNT);
+        //проверяем не прошел ли бесплатный 7 дневный период по кол-ву слов в обучении. Если да, то возвращаем в базовый
+        /*strStartDate = db.getValueByVariable(DB.DATE_LANG_WORD_AMOUNT);
         startDate = strStartDate == null || strStartDate.equals("") ? null : Date.valueOf(strStartDate);
         if (!isFromOldDB && amountDonate == 0 && startDate != null && amountWords != 8) {
             long dif = (System.currentTimeMillis() - startDate.getTime()) / (1000 * 60 * 60 * 24);
             Log.d("myLogs", "dif = " + dif);
-            if (dif > 30) { // и если закончился бесплатный месяц
+            if (dif > 7) { // и если закончились бесплатные 7 дней
                 db.updateRecExitState(DB.LEARNING_AMOUNT_WORDS, "8");
                 amountWords = 8;
             }
-        }
+        }*/
         String showTrancr = db.getValueByVariable(DB.LEARNING_SHOW_DONTKNOW);
         isShowDontKnow = (showTrancr == null || showTrancr.equals("1"));
 
@@ -292,17 +289,17 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
             // если не в первый раз, то урок берется из БД
         } else {
             isEngFixing = lang.equals("0");
-            //проверяем не прошел ли бесплатный 30 дневный период по языку обучения. Если да, то возвращаем в базовый
-            strStartDate = db.getValueByVariable(DB.DATE_LANGUAGE);
+            //проверяем не прошел ли бесплатный 7 дневный период по языку обучения. Если да, то возвращаем в базовый
+            /*strStartDate = db.getValueByVariable(DB.DATE_LANGUAGE);
             startDate = strStartDate == null || strStartDate.equals("") ? null : Date.valueOf(strStartDate);
             if (!isFromOldDB && amountDonate == 0 && startDate != null && !isEngFixing) {
                 long dif = (System.currentTimeMillis() - startDate.getTime()) / (1000 * 60 * 60 * 24);
                 Log.d("myLogs", "dif = " + dif);
-                if (dif > 30) { // и если закончился бесплатный месяц
+                if (dif > 7) { // и если закончились бесплатные 7 дней
                     db.updateRecExitState(DB.LEARNING_LANGUAGE, "0");
                     isEngFixing = true;
                 }
-            }
+            }*/
             ivSound.setVisibility(isEngFixing ? View.VISIBLE : View.GONE);
             // загружаем урок из БД
             fixing = new Fixing(db, null, 1);
@@ -388,10 +385,11 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
             ViewGroup.LayoutParams params = llAdMob.getLayoutParams();
             params.height = 0;
             llAdMob.setLayoutParams(params);
+            loadAdMob(true, false); // загружаем только баннерную рекламу
+            Log.i("myLogs", "loadAdMob - загрузка только баннерной рекламы");
         } else {
-            // загружаем AdMob
-            Log.i("myLogs", "loadAdMob");
-            loadAdMob();
+            loadAdMob(true, true);
+            Log.i("myLogs", "loadAdMob - загрузка баннерной и полноэкранной рекламы");
         }
         // отправляем в Firebase инфу с настройками по словарю
         if (mFBAnalytics != null) {
@@ -435,9 +433,14 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
-        menu.setGroupVisible(R.id.group_addrec, false);
-        menu.setGroupVisible(R.id.group_clear_hist, false);
-        menu.setGroupVisible(R.id.group_resetStat, false);
+        menu.setGroupVisible(R.id.group_dictionary, true);
+        menu.setGroupVisible(R.id.group_statistics, true);
+        menu.setGroupVisible(R.id.group_action_settings, true);
+        menu.setGroupVisible(R.id.group_help, true);
+        menu.setGroupVisible(R.id.group_data, true);
+        menu.setGroupVisible(R.id.group_donate, true);
+        menu.setGroupVisible(R.id.group_about, true);
+        menu.setGroupVisible(R.id.group_exit, true);
         this.menu = menu;
         return true;
     }
@@ -446,7 +449,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.idictionary:
+            case R.id.dictionary:
                 startActivity(new Intent(this, Dictionary.class));
                 return true;
             case R.id.statistics:
@@ -458,12 +461,12 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                 // 0 означает класс Settings
                 startActivityForResult(intent1, 0);
                 return true;
-            case R.id.ihelp:
+            case R.id.help:
                 Intent intent2 = new Intent(this, Help.class);
                 intent2.putExtra("idhelp", 0);
                 startActivity(intent2);
                 return true;
-            case R.id.idata:
+            case R.id.data:
                 startActivity(new Intent(this, EditData.class));
                 return true;
             case R.id.donate:
@@ -483,21 +486,13 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
 
     /**
      * инициализируем AdMob и загружаем баннерную и межстраничную рекламу
-     */
-    public void loadAdMob() {
-        // по умолчанию загружаем весь AdMob
-        loadAdMob(false);
-    }
-
-    /**
-     * инициализируем AdMob и загружаем баннерную и межстраничную рекламу
      *
-     * @param onlyInterstitialAd выполнять загрузку только InterstitialAd или всего AdMob
-     *
+     * @param isBanner выполнять загрузку баннера или нет
+     * @param isInterstitialAd выполнять загрузку InterstitialAd или нет
      */
-    private void loadAdMob(boolean onlyInterstitialAd) {
+    public void loadAdMob(boolean isBanner, boolean isInterstitialAd) {
         AdRequest adRequest = new AdRequest.Builder().build();
-        if (!onlyInterstitialAd) {
+        if (isBanner) {
             // инициализация AdMob для рекламы
             MobileAds.initialize(this, initializationStatus -> Log.d("myLogs", "AdMob is initialized"));
             // загружаем баннерную рекламу
@@ -505,43 +500,49 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
             avBottomBannerLearning.loadAd(adRequest);
         }
 
-        InterstitialAd.load(this, s(R.string.id_interstitial_lesson_end_test), adRequest,
-                new InterstitialAdLoadCallback() {
-                    @Override
-                    public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
-                        Learning.this.interstitialAd = interstitialAd;
-                        Log.i("myLogs", "interstitial Ad is loaded");
-                        Learning.this.interstitialAd.setFullScreenContentCallback(
-                                new FullScreenContentCallback() {
-                                    @Override
-                                    public void onAdDismissedFullScreenContent() {
-                                        // если показ межстраничной пропущен, рекламы открываем окно с выбором категории
-                                        startActivityForResult(new Intent(Learning.this, Categories.class), GET_CATEGORIES);
-                                        loadAdMob(true);
-                                        Log.d("myLogs", "interstitial ad was dismissed.");
-                                    }
+        if (isInterstitialAd) {
+            InterstitialAd.load(this, s(R.string.id_interstitial_lesson_end_test), adRequest,
+                    new InterstitialAdLoadCallback() {
+                        @Override
+                        public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                            Learning.this.interstitialAd = interstitialAd;
+                            Log.i("myLogs", "interstitial Ad is loaded");
+                            Learning.this.interstitialAd.setFullScreenContentCallback(
+                                    new FullScreenContentCallback() {
+                                        @Override
+                                        public void onAdDismissedFullScreenContent() {
+                                            // если показ межстраничной рекламы пропущен, открываем окно с выбором категории
+                                            Intent intent = new Intent(Learning.this, Categories.class);
+                                            intent.putExtra("fromAct", 0); // 0 - запуск из Learning
+                                            startActivityForResult(intent, GET_CATEGORIES);
+                                            loadAdMob(false, true);
+                                            Log.d("myLogs", "interstitial ad was dismissed.");
+                                        }
 
-                                    @Override
-                                    public void onAdFailedToShowFullScreenContent(AdError adError) {
-                                        // и после ошибки показа межстраничной рекламы открываем окно с выбором категории
-                                        startActivityForResult(new Intent(Learning.this, Categories.class), GET_CATEGORIES);
-                                        loadAdMob(true);
-                                        Log.d("myLogs", "interstitial ad failed to show.");
-                                    }
+                                        @Override
+                                        public void onAdFailedToShowFullScreenContent(AdError adError) {
+                                            // и после ошибки показа межстраничной рекламы открываем окно с выбором категории
+                                            Intent intent = new Intent(Learning.this, Categories.class);
+                                            intent.putExtra("fromAct", 0); // 0 - запуск из Learning
+                                            startActivityForResult(intent, GET_CATEGORIES);
+                                            loadAdMob(false, true);
+                                            Log.d("myLogs", "interstitial ad failed to show.");
+                                        }
 
-                                    @Override
-                                    public void onAdShowedFullScreenContent() {
-                                        Log.d("myLogs", "interstitial ad was shown.");
-                                    }
-                                });
-                    }
+                                        @Override
+                                        public void onAdShowedFullScreenContent() {
+                                            Log.d("myLogs", "interstitial ad was shown.");
+                                        }
+                                    });
+                        }
 
-                    @Override
-                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                        Log.i("myLogs", loadAdError.getMessage());
-                        Learning.this.interstitialAd = null;
-                    }
-                });
+                        @Override
+                        public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                            Log.i("myLogs", loadAdError.getMessage());
+                            Learning.this.interstitialAd = null;
+                        }
+                    });
+        }
     }
 
     /**
@@ -635,7 +636,9 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                             if (interstitialAd != null) {
                                 interstitialAd.show(Learning.this);
                             } else {
-                                startActivityForResult(new Intent(Learning.this, Categories.class), GET_CATEGORIES);
+                                Intent intent = new Intent(this, Categories.class);
+                                intent.putExtra("fromAct", 0); // 0 - запуск из Learning
+                                startActivityForResult(intent, GET_CATEGORIES);
                             }
                         }
                     } catch (InterruptedException e) {
@@ -658,7 +661,9 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         }
         // обработка нажатия кнопки с категориями
         if (v.getId() == R.id.bCategory) {
-            startActivityForResult(new Intent(this, Categories.class), GET_CATEGORIES);
+            Intent intent = new Intent(this, Categories.class);
+            intent.putExtra("fromAct", 0); // 0 - запуск из Learning
+            startActivityForResult(intent, GET_CATEGORIES);
             return;
         }
         // обработка нажатия озвучки слова
@@ -711,8 +716,6 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                 break;
             case R.id.bDontKnow:
                 selectedWord = new Word(0, etAnswerWord.getText().toString(), "", etAnswerWord.getText().toString());
-                if (fixing.getCategories().equals(""))
-                    return;
                 break;
             case R.id.bKnow:
                 selectedWord = curWord;
@@ -888,37 +891,49 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == AppCompatActivity.RESULT_OK) {
             if (requestCode == GET_CATEGORIES || requestCode == 3) { // если выбрана категория (3-статистика)
-                boolean isOnlyMistakes = data.getBooleanExtra("isOnlyMistakes", false);
-                String categories = data.getStringExtra(Categories.NEW_CATEGORIES);
-                for (int i = 0; i < buttons.size(); i++) {
-                    buttons.get(i).setTextColor(Color.parseColor("black"));
+                try {
+                    boolean isOnlyMistakes = data.getBooleanExtra("isOnlyMistakes", false);
+                    String categories = data.getStringExtra(Categories.NEW_CATEGORIES);
+                    for (int i = 0; i < buttons.size(); i++) {
+                        buttons.get(i).setTextColor(Color.parseColor("black"));
+                    }
+                    String lang = db.getValueByVariable(DB.LEARNING_LANGUAGE);
+                    isEngFixing = (lang == null || lang.equals("0"));
+                    ivSound.setVisibility(isEngFixing ? View.VISIBLE : View.GONE);
+                    String trancr = db.getValueByVariable(DB.LEARNING_SHOW_TRANSCR);
+                    isShowTrancr = (trancr == null || trancr.equals("1"));
+                    fixing = new Fixing(db, categories, 0, isOnlyMistakes);
+                    showWords();
+                    setTextAmountWords();
+                    if (fixing.getCurWord() == null) {
+                        bCategory.setTextColor(Color.parseColor("darkgray"));
+                        bCategory.setText(R.string.choose_category);
+                    } else {
+                        bCategory.setTextColor(Color.parseColor("black"));
+                        Spannable span = new SpannableString(s(R.string.category)
+                                + "\n" + fixing.getCategories());
+                        int fontSize = (int) (bCategory.getTextSize() * 0.7);
+                        span.setSpan(new AbsoluteSizeSpan(fontSize, false), 0, 10,
+                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        fontSize = (int) (bCategory.getTextSize() * 1.2);
+                        span.setSpan(new AbsoluteSizeSpan(fontSize, false), 11, span.length(),
+                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        bCategory.setText(span);
+                    }
+                    InputMethodManager imm = (InputMethodManager) this
+                            .getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(tvCheckedWord.getWindowToken(), 0);
+                } catch (SQLiteException e) {
+                    //обработка ошибки, когда выбрано слишком много категорий
+                    if (e.getMessage().startsWith("Expression tree is too large")) {
+                        Toast.makeText(getApplicationContext(), s(R.string.to_much_categories), Toast.LENGTH_LONG).show();
+                    } else {
+                        e.printStackTrace();
+                    }
+                    Intent intent = new Intent(this, Categories.class);
+                    intent.putExtra("fromAct", 0); // 0 - запуск из Learning
+                    startActivityForResult(intent, GET_CATEGORIES);
                 }
-                String lang = db.getValueByVariable(DB.LEARNING_LANGUAGE);
-                isEngFixing = (lang == null || lang.equals("0"));
-                ivSound.setVisibility(isEngFixing ? View.VISIBLE : View.GONE);
-                String trancr = db.getValueByVariable(DB.LEARNING_SHOW_TRANSCR);
-                isShowTrancr = (trancr == null || trancr.equals("1"));
-                fixing = new Fixing(db, categories, 0, isOnlyMistakes);
-                showWords();
-                setTextAmountWords();
-                if (fixing.getCurWord() == null) {
-                    bCategory.setTextColor(Color.parseColor("darkgray"));
-                    bCategory.setText(R.string.choose_category);
-                } else {
-                    bCategory.setTextColor(Color.parseColor("black"));
-                    Spannable span = new SpannableString(s(R.string.category)
-                            + "\n" + fixing.getCategories());
-                    int fontSize = (int) (bCategory.getTextSize() * 0.7);
-                    span.setSpan(new AbsoluteSizeSpan(fontSize, false), 0, 10,
-                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    fontSize = (int) (bCategory.getTextSize() * 1.2);
-                    span.setSpan(new AbsoluteSizeSpan(fontSize, false), 11, span.length(),
-                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    bCategory.setText(span);
-                }
-                InputMethodManager imm = (InputMethodManager) this
-                        .getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(tvCheckedWord.getWindowToken(), 0);
             } else if (requestCode == 0) { // если вернулся результат с настройками
                 setLearningType(data.getIntExtra("learningType", 0));
                 setRepeatsAmount(data.getIntExtra("repeatsAmount", 2));

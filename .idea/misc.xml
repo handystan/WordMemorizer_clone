@@ -12,13 +12,18 @@
         <entry key="..\:/Android/AndroidStudioProjects/WordMemorizer/app/src/main/res/drawable/selector_gray.xml" value="0.15104166666666666" />
         <entry key="..\:/Android/AndroidStudioProjects/WordMemorizer/app/src/main/res/drawable/share.xml" value="0.14739583333333334" />
         <entry key="..\:/Android/AndroidStudioProjects/WordMemorizer/app/src/main/res/drawable/share_2.xml" value="0.14739583333333334" />
+        <entry key="..\:/Android/AndroidStudioProjects/WordMemorizer/app/src/main/res/layout/about.xml" value="0.16077898550724637" />
+        <entry key="..\:/Android/AndroidStudioProjects/WordMemorizer/app/src/main/res/layout/categories.xml" value="0.1" />
+        <entry key="..\:/Android/AndroidStudioProjects/WordMemorizer/app/src/main/res/layout/category.xml" value="0.10643115942028986" />
+        <entry key="..\:/Android/AndroidStudioProjects/WordMemorizer/app/src/main/res/layout/dialog_category_rename.xml" value="0.4" />
         <entry key="..\:/Android/AndroidStudioProjects/WordMemorizer/app/src/main/res/layout/dialog_pay.xml" value="0.12228260869565218" />
         <entry key="..\:/Android/AndroidStudioProjects/WordMemorizer/app/src/main/res/layout/dictionary.xml" value="0.1" />
-        <entry key="..\:/Android/AndroidStudioProjects/WordMemorizer/app/src/main/res/layout/edit_data.xml" value="0.1" />
+        <entry key="..\:/Android/AndroidStudioProjects/WordMemorizer/app/src/main/res/layout/edit_data.xml" value="0.264" />
         <entry key="..\:/Android/AndroidStudioProjects/WordMemorizer/app/src/main/res/layout/file_dialog_main.xml" value="0.1625" />
         <entry key="..\:/Android/AndroidStudioProjects/WordMemorizer/app/src/main/res/layout/file_dialog_row.xml" value="0.14895833333333333" />
         <entry key="..\:/Android/AndroidStudioProjects/WordMemorizer/app/src/main/res/layout/learning.xml" value="0.1" />
         <entry key="..\:/Android/AndroidStudioProjects/WordMemorizer/app/src/main/res/layout/thanks.xml" value="0.4" />
+        <entry key="..\:/Android/AndroidStudioProjects/WordMemorizer/app/src/main/res/layout/wordedit.xml" value="0.1526268115942029" />
         <entry key="..\:/Android/AndroidStudioProjects/WordMemorizer/app/src/main/res/menu/main.xml" value="0.1421875" />
         <entry key="..\:/Android/AndroidStudioProjects/WordMemorizer/app/src/main/res/menu/menu_scrolling.xml" value="0.1265625" />
         <entry key="..\:/Android/AndroidStudioProjects/WordMemorizer/app/src/main/res/xml/file_paths.xml" value="0.13072916666666667" />

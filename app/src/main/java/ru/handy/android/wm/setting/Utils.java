@@ -26,6 +26,7 @@ import android.widget.Toast;
 
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.List;
 
 import ru.handy.android.wm.DB;
 import ru.handy.android.wm.GlobApp;
@@ -86,7 +87,7 @@ public class Utils {
             String strColor = db.getValueByVariable(DB.BG_COLOR);
             sTheme = strColor == null ? 1 : Integer.parseInt(strColor);
         }
-        //проверяем не прошел ли бесплатный 30 дневный период по типу обучения. Если да, то возвращаем в базовый тип обучения
+        //проверяем не прошел ли бесплатный 7 дневный период по типу обучения. Если да, то возвращаем в базовый тип обучения
         String fromOldDB = db.getValueByVariable(DB.OLD_FREE_DB);
         boolean isFromOldDB = !(fromOldDB == null || fromOldDB.equals("0"));
         String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
@@ -96,7 +97,7 @@ public class Utils {
         if (!isFromOldDB && amountDonate == 0 && startDate != null && sTheme != 1) {
             long dif = (System.currentTimeMillis() - startDate.getTime()) / (1000 * 60 * 60 * 24);
             Log.d("myLogs", "dif = " + dif);
-            if (dif > 30) { // и если закончился бесплатный месяц
+            if (dif > 7) { // и если закончились бесплатные 7 дней
                 db.updateRecExitState(DB.BG_COLOR, "1");
                 sTheme = 1;
             }
@@ -230,7 +231,7 @@ public class Utils {
     /**
      * изменение цвета фона toolbar
      *
-     * @param act активити
+     * @param act         активити
      * @param toolbarView бар
      */
     public static void colorizeToolbar(AppCompatActivity act, Toolbar toolbarView) {
@@ -352,12 +353,12 @@ public class Utils {
     /**
      * главный метод, в котором вызываются диалоговые окно, оповещающее о платных функциях
      *
-     * @param kindOfSetting      вид настройки, у которой сохраняется дата начала бесплатного периода (если пусто, то значит у этой настройки не сохраняется дата начала):
-     *                           DATE_TRIAL_STATS, DATE_BG_COLOR, DATE_LEARNING_METHOD, DATE_LANGUAGE, DATE_LANG_WORD_AMOUNT
-     * @param act                activity или fragmentActivity, из которого запускается диалоговое окно
-     * @param pay                класс, через который идут платежи
-     * @param db                 ссылка на класс с базой данных
-     * @param learningType       если меняется метод обучения, то нужно указать, какой именно метод устанавливается
+     * @param kindOfSetting вид настройки, у которой сохраняется дата начала бесплатного периода (если пусто, то значит у этой настройки не сохраняется дата начала):
+     *                      DATE_TRIAL_STATS, DATE_BG_COLOR, DATE_LEARNING_METHOD, DATE_LANGUAGE, DATE_LANG_WORD_AMOUNT
+     * @param act           activity или fragmentActivity, из которого запускается диалоговое окно
+     * @param pay           класс, через который идут платежи
+     * @param db            ссылка на класс с базой данных
+     * @param learningType  если меняется метод обучения, то нужно указать, какой именно метод устанавливается
      */
     public static void mainAlertForPay(final String kindOfSetting, final Object act, final Pay pay, final DB db, final int learningType) {
         final FragmentActivity fragAct;
@@ -385,7 +386,7 @@ public class Utils {
         } else if (!isFromOldDB && amountDonate == 0 && startDate != null) { // если приложение не оплачены и стоит дата начала тестового периода
             long dif = (System.currentTimeMillis() - startDate.getTime()) / (1000 * 60 * 60 * 24);
             Log.d("myLogs", "dif = " + dif);
-            if (dif > 30) { // и если закончился бесплатный месяц
+            if (dif > 7) { // и если закончились бесплатные 7 дней
                 Utils.alertForPay(kindOfSetting, act, pay, db, false);
                 return;
             }
@@ -396,39 +397,39 @@ public class Utils {
         } else if (kindOfSetting.equals(DB.DATE_BG_COLOR)) {
             ((OtherSetting) act).changeColor("");
         } else if (kindOfSetting.equals(DB.DATE_LEARNING_METHOD)) {
-            ((LearningSetting) act).setLearningType(learningType);
+            ((LearningSetting) act).setLearningType(learningType); // это уже не актуально, так как это убрал из платных функций
         } else if (kindOfSetting.equals(DB.DATE_LANGUAGE)) {
-            ((LearningSetting) act).setEng(false);
+            ((LearningSetting) act).setEng(false); // это уже не актуально, так как это убрал из платных функций
         } else if (kindOfSetting.equals(DB.DATE_LANG_WORD_AMOUNT)) {
-            ((LearningSetting) act).setAmountWords();
+            ((LearningSetting) act).setAmountWords(); // это уже не актуально, так как это убрал из платных функций
         }
     }
 
     /**
      * главный метод, в котором вызываются диалоговые окно, оповещающее о платных функциях (перегруженный метод)
      *
-     * @param kindOfSetting      вид настройки, у которой сохраняется дата начала бесплатного периода (если пусто, то значит у этой настройки не сохраняется дата начала):
-     *                           DATE_TRIAL_STATS, DATE_BG_COLOR, DATE_LEARNING_METHOD, DATE_LANGUAGE, DATE_LANG_WORD_AMOUNT
-     * @param act                activity или fragmentActivity, из которого запускается диалоговое окно
-     * @param pay                класс, через который идут платежи
-     * @param db                 ссылка на класс с базой данных
+     * @param kindOfSetting вид настройки, у которой сохраняется дата начала бесплатного периода (если пусто, то значит у этой настройки не сохраняется дата начала):
+     *                      DATE_TRIAL_STATS, DATE_BG_COLOR, DATE_LEARNING_METHOD, DATE_LANGUAGE, DATE_LANG_WORD_AMOUNT
+     * @param act           activity или fragmentActivity, из которого запускается диалоговое окно
+     * @param pay           класс, через который идут платежи
+     * @param db            ссылка на класс с базой данных
      */
     public static void mainAlertForPay(final String kindOfSetting, final Object act, final Pay pay, final DB db) {
         mainAlertForPay(kindOfSetting, act, pay, db, 0);
     }
 
-        /**
-         * универсальное диалоговое окно, оповещающее о платных функциях
-         *
-         * @param kindOfSetting      вид настройки, у которой сохраняется дата начала бесплатного периода (если пусто, то значит у этой настройки не сохраняется дата начала
-         *                           DATE_TRIAL_STATS, DATE_BG_COLOR, DATE_LEARNING_METHOD, DATE_LANGUAGE, DATE_LANG_WORD_AMOUNT
-         * @param act                activity или fragmentActivity, из которого запускается диалоговое окно
-         * @param pay                класс, через который идут платежи
-         * @param db                 ссылка на класс с базой данных
-         * @param isButtonFreePeriod показывать ли кнопку с 30 дневным бесплатным периодом
-         * @param learningType       если меняется метод обучения, то нужно указать, какой именно метод устанавливается
-         */
-        public static void alertForPay(final String kindOfSetting, final Object act, final Pay pay, final DB db, final boolean isButtonFreePeriod, final int learningType) {
+    /**
+     * универсальное диалоговое окно, оповещающее о платных функциях
+     *
+     * @param kindOfSetting      вид настройки, у которой сохраняется дата начала бесплатного периода (если пусто, то значит у этой настройки не сохраняется дата начала
+     *                           DATE_TRIAL_STATS, DATE_BG_COLOR, DATE_LEARNING_METHOD, DATE_LANGUAGE, DATE_LANG_WORD_AMOUNT
+     * @param act                activity или fragmentActivity, из которого запускается диалоговое окно
+     * @param pay                класс, через который идут платежи
+     * @param db                 ссылка на класс с базой данных
+     * @param isButtonFreePeriod показывать ли кнопку с 7 дневным бесплатным периодом
+     * @param learningType       если меняется метод обучения, то нужно указать, какой именно метод устанавливается
+     */
+    public static void alertForPay(final String kindOfSetting, final Object act, final Pay pay, final DB db, final boolean isButtonFreePeriod, final int learningType) {
         final FragmentActivity fragAct;
         if (act instanceof Learning || act instanceof EditData) {
             fragAct = (FragmentActivity) act;
@@ -471,7 +472,7 @@ public class Utils {
             }
         });
         if (isButtonFreePeriod && !kindOfSetting.equals("")) {
-            builder.setNeutralButton(R.string.try_30day_free, (dialog, which) -> {
+            builder.setNeutralButton(R.string.try_7day_free, (dialog, which) -> {
                 db.updateRecExitState(kindOfSetting, new Date(System.currentTimeMillis()).toString());
                 if (kindOfSetting.equals(DB.DATE_TRIAL_STATS)) {
                     fragAct.startActivityForResult(new Intent(fragAct, Statistics.class), 3);
@@ -492,7 +493,7 @@ public class Utils {
                 if (kindOfSetting.equals(DB.DATE_LEARNING_METHOD)) {
                     ((LearningSetting) act).setLearningType(0, true);
                 } else if (kindOfSetting.equals(DB.DATE_LANGUAGE)) {
-                    ((LearningSetting) act).setEng(true,true);
+                    ((LearningSetting) act).setEng(true, true);
                 } else if (kindOfSetting.equals(DB.DATE_LANG_WORD_AMOUNT)) {
                     int amountWords = db.getValueByVariable(DB.LEARNING_AMOUNT_WORDS) == null ? 8 :
                             Integer.parseInt(db.getValueByVariable(DB.LEARNING_AMOUNT_WORDS));
@@ -512,9 +513,42 @@ public class Utils {
      * @param act                activity или fragmentActivity, из которого запускается диалоговое окно
      * @param pay                класс, через который идут платежи
      * @param db                 ссылка на класс с базой данных
-     * @param isButtonFreePeriod показывать ли кнопку с 30 дневным бесплатным периодом
+     * @param isButtonFreePeriod показывать ли кнопку с 7 дневным бесплатным периодом
      */
     public static void alertForPay(final String kindOfSetting, final Object act, final Pay pay, final DB db, final boolean isButtonFreePeriod) {
         Utils.alertForPay(kindOfSetting, act, pay, db, isButtonFreePeriod, 0);
     }
+
+    /**
+     * разделяет сроку на элементы на основе данного разделителя
+     *
+     * @param str         строка, котороая преобразуется в ArrayList
+     * @param delimiter   разделитель, по которому строка делится на элементы
+     * @param deleteBlank удалять пробелы в начале и конце каждого элемента или нет
+     * @return список List
+     */
+    public static List<String> strToList(String str, String delimiter, boolean deleteBlank) {
+        String[] arr = str.split(",");
+        List<String> list = new ArrayList<String>(); //список со всеми категориями в данном слове
+        for (String s : arr) {
+            list.add(deleteBlank ? s.trim() : s);
+        }
+        return list;
+    }
+
+    /**
+     * объединяет список в одну строку на основе разделителя
+     *
+     * @param list      список, который преобразуется в строку я использованием разделителя
+     * @param delimiter разделитель, по которому строка делится на элементы
+     * @return строка
+     */
+    public static String listToStr(List<String> list, String delimiter) {
+        String str = "";
+        for (int i = 0; i < list.size(); i++) {
+            str = str + list.get(i) + ((i == list.size() - 1) ? "" : ", ");
+        }
+        return str;
+    }
+
 }

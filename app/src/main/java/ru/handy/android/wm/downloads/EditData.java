@@ -1,7 +1,9 @@
 package ru.handy.android.wm.downloads;
 
+import static ru.handy.android.wm.setting.Utils.listToStr;
+import static ru.handy.android.wm.setting.Utils.strToList;
+
 import android.annotation.SuppressLint;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -46,7 +48,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -70,6 +71,7 @@ import ru.handy.android.wm.GlobApp;
 import ru.handy.android.wm.Help;
 import ru.handy.android.wm.R;
 import ru.handy.android.wm.Thanks;
+import ru.handy.android.wm.learning.Categories;
 import ru.handy.android.wm.learning.Learning;
 import ru.handy.android.wm.setting.Pay;
 import ru.handy.android.wm.setting.Utils;
@@ -78,6 +80,8 @@ public class EditData extends AppCompatActivity {
 
     private static final int REQUEST_LOAD = 0;
     private static final int REQUEST_SAVE = 1;
+    private static final int GET_CAT_UPLOAD_XLS = 2;
+    private static final int GET_CAT_UPLOAD_TXT = 3;
     LinearLayout llPayInformation;
     Button bPay;
     Button bOpenDialog;
@@ -87,6 +91,7 @@ public class EditData extends AppCompatActivity {
     EditText etOpenFileName;
     EditText etSaveFileName;
     CheckBox cbDelete;
+    CheckBox cbOnlyChoseCat;
     Spinner sFileType;
     EditText etSemicolon;
     TextView tvSemicolon;
@@ -151,6 +156,7 @@ public class EditData extends AppCompatActivity {
         sFileType = findViewById(R.id.sFileType);
         etSemicolon = findViewById(R.id.etSemicolon);
         tvSemicolon = findViewById(R.id.tvSemicolon);
+        cbOnlyChoseCat = findViewById(R.id.cbOnlyChoseCat);
         ivShare1 = findViewById(R.id.ivShare1);
         ivShare2 = findViewById(R.id.ivShare2);
 
@@ -179,8 +185,8 @@ public class EditData extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view,
                                        int position, long id) {
                 if (position == 0) {
-                    etSemicolon.setVisibility(View.INVISIBLE);
-                    tvSemicolon.setVisibility(View.INVISIBLE);
+                    etSemicolon.setVisibility(View.GONE);
+                    tvSemicolon.setVisibility(View.GONE);
                 } else {
                     etSemicolon.setVisibility(View.VISIBLE);
                     tvSemicolon.setVisibility(View.VISIBLE);
@@ -259,7 +265,13 @@ public class EditData extends AppCompatActivity {
                     if (!fileName.endsWith(".xls")) { // если пользователь выбрал не то расширение файла
                         Toast.makeText(getApplicationContext(), s(R.string.should_be_xls), Toast.LENGTH_LONG).show();
                     } else {
-                        writeXlsFile(uriUploadFile);
+                        if (cbOnlyChoseCat.isChecked()) {
+                            Intent intent = new Intent(this, Categories.class);
+                            intent.putExtra("fromAct", 2); // 2 - запуск из EditData
+                            startActivityForResult(intent, GET_CAT_UPLOAD_XLS);
+                        } else {
+                            writeXlsFile(uriUploadFile, null);
+                        }
                     }
                 } else if (sFileType.getSelectedItemPosition() == 1) { // выгружается txt-файл
                     if (fileName.endsWith(".xls")) { // если пользователь выбрал не то расширение файла
@@ -268,7 +280,13 @@ public class EditData extends AppCompatActivity {
                         Toast.makeText(getApplicationContext(), s(R.string.empty_delimiter),
                                 Toast.LENGTH_LONG).show();
                     } else {
-                        writeTxtFile(uriUploadFile);
+                        if (cbOnlyChoseCat.isChecked()) {
+                            Intent intent = new Intent(this, Categories.class);
+                            intent.putExtra("fromAct", 2); // 2 - запуск из EditData
+                            startActivityForResult(intent, GET_CAT_UPLOAD_TXT);
+                        } else {
+                            writeTxtFile(uriUploadFile, null);
+                        }
                     }
                 }
                 // в зависимости от того новый это файл или нет, устанавливаем доступность кнопки по отправке файла
@@ -439,14 +457,21 @@ public class EditData extends AppCompatActivity {
      * Выгрузка словаря в экселевский файл с расширением xls
      *
      * @param fileUri uri файла
+     * @param categories перечень категорий, которые нужно выгружать в файл (если null, то выгружаются все категории)
      * @return количество выгруженных строк
      */
-    private int writeXlsFile(Uri fileUri) {
+    private int writeXlsFile(Uri fileUri, String categories) {
         Cursor c = null;
         WritableWorkbook wb = null;
+        List<String> catsToWrite = null; // список категорий, переносимых в файл
         int i = 0;
         try {
-            c = db.getAllWords();
+            if (categories == null) {
+                c = db.getAllWords();
+            } else {
+                c = db.getDataByCategory(categories);
+                catsToWrite = strToList(categories, ",", true);
+            }
             if (c.moveToFirst()) {
                 wb = Workbook.createWorkbook(getContentResolver().openOutputStream(fileUri));
                 WritableSheet sheet = wb.createSheet("WM", 0);
@@ -454,7 +479,13 @@ public class EditData extends AppCompatActivity {
                     sheet.addCell(new Label(0, i, c.getString(c.getColumnIndex(DB.C_EW_ENGWORD))));
                     sheet.addCell(new Label(1, i, c.getString(c.getColumnIndex(DB.C_EW_TRANSCRIPTION))));
                     sheet.addCell(new Label(2, i, c.getString(c.getColumnIndex(DB.C_EW_RUSTRANSLATE))));
-                    sheet.addCell(new Label(3, i, c.getString(c.getColumnIndex(DB.C_EW_CATEGORY))));
+                    if (categories == null) {
+                        sheet.addCell(new Label(3, i, c.getString(c.getColumnIndex(DB.C_EW_CATEGORY))));
+                    } else {
+                        List<String> catsInWord = strToList(c.getString(c.getColumnIndex(DB.C_EW_CATEGORY)), ",", true);
+                        catsInWord.retainAll(catsToWrite);
+                        sheet.addCell(new Label(3, i, listToStr(catsInWord, ", ")));
+                    }
                     i++;
                 } while (c.moveToNext());
                 wb.write();
@@ -645,29 +676,39 @@ public class EditData extends AppCompatActivity {
      * Выгрузка словаря в экселевский текстовый файл
      *
      * @param fileUri uri файла
+     * @param categories перечень категорий, которые нужно выгружать в файл (если null, то выгружаются все категории)
      * @return количество выгруженных строк
      */
-    private int writeTxtFile(Uri fileUri) {
+    private int writeTxtFile(Uri fileUri, String categories) {
         Cursor c = null;
         BufferedWriter bw = null;
+        List<String> catsToWrite = null; // список категорий, переносимых в файл
         // разделитель строк
         String d = etSemicolon.getText().toString();
         int i = 0;
         try {
             StringBuilder sb = new StringBuilder();
-            c = db.getAllWords();
+            if (categories == null) {
+                c = db.getAllWords();
+            } else {
+                c = db.getDataByCategory(categories);
+                catsToWrite = strToList(categories, ",", true);
+            }
             if (c.moveToFirst()) {
                 do {
                     sb.append(c.getString(c.getColumnIndex(DB.C_EW_ENGWORD)))
                             .append(d)
-                            .append(c.getString(c
-                                    .getColumnIndex(DB.C_EW_TRANSCRIPTION)))
+                            .append(c.getString(c.getColumnIndex(DB.C_EW_TRANSCRIPTION)))
                             .append(d)
-                            .append(c.getString(c
-                                    .getColumnIndex(DB.C_EW_RUSTRANSLATE)))
-                            .append(d)
-                            .append(c.getString(c
-                                    .getColumnIndex(DB.C_EW_CATEGORY)));
+                            .append(c.getString(c.getColumnIndex(DB.C_EW_RUSTRANSLATE)))
+                            .append(d);
+                    if (categories == null) {
+                        sb.append(c.getString(c.getColumnIndex(DB.C_EW_CATEGORY)));
+                    } else {
+                        List<String> catsInWord = strToList(c.getString(c.getColumnIndex(DB.C_EW_CATEGORY)), ",", true);
+                        catsInWord.retainAll(catsToWrite);
+                        sb.append(listToStr(catsInWord, ", "));
+                    }
                     i++;
                     if (c.moveToNext()) {
                         sb.append("\r\n");
@@ -676,7 +717,7 @@ public class EditData extends AppCompatActivity {
                         break;
                 } while (c.moveToNext());
                 bw = new BufferedWriter(new OutputStreamWriter(
-                        getContentResolver().openOutputStream(fileUri), StandardCharsets.UTF_8));
+                        getContentResolver().openOutputStream(fileUri, "rwt"), StandardCharsets.UTF_8));
                 bw.write(sb.toString());
                 bw.close();
                 Toast.makeText(getApplicationContext(), s(R.string.amount_save_rows) + ": " + i,
@@ -754,6 +795,10 @@ public class EditData extends AppCompatActivity {
                 String path = pathArr[pathArr.length - 1];
                 fileName = path.endsWith(fileName) ? path : fileName; // а теперь имя файла с путем
                 etSaveFileName.setText(fileName);
+            } else if (requestCode == GET_CAT_UPLOAD_XLS) {
+                writeXlsFile(uriUploadFile, data.getStringExtra("categories"));
+            } else if (requestCode == GET_CAT_UPLOAD_TXT) {
+                writeTxtFile(uriUploadFile, data.getStringExtra("categories"));
             }
         } else if (resultCode == AppCompatActivity.RESULT_CANCELED) {
             // do nothing
@@ -764,14 +809,9 @@ public class EditData extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
-        menu.setGroupVisible(R.id.group_addrec, false);
-        menu.setGroupVisible(R.id.group_dictionary, false);
-        menu.setGroupVisible(R.id.group_clear_hist, false);
-        menu.setGroupVisible(R.id.group_statistics, false);
-        menu.setGroupVisible(R.id.group_idata, false);
-        menu.setGroupVisible(R.id.group_resetStat, false);
-        menu.setGroupVisible(R.id.group_action_settings, false);
-        menu.setGroupVisible(R.id.group_exit, false);
+        menu.setGroupVisible(R.id.group_help, true);
+        menu.setGroupVisible(R.id.group_donate, true);
+        menu.setGroupVisible(R.id.group_about, true);
         return true;
     }
 
@@ -787,7 +827,7 @@ public class EditData extends AppCompatActivity {
                 super.onBackPressed();
             }
             return true;
-        } else if (item.getItemId() == R.id.ihelp) { // вызов помощи
+        } else if (item.getItemId() == R.id.help) { // вызов помощи
             Intent intent = new Intent(this, Help.class);
             intent.putExtra("idhelp", 2);
             startActivity(intent);

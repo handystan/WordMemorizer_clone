@@ -10,6 +10,8 @@
     <string name="edit_record">редактировать</string>
     <string name="add_record">добавить</string>
     <string name="delete_record">удалить</string>
+    <string name="rename_category">переименовать категорию</string>
+    <string name="new_category_name">новое имя категории</string>
     <string name="categories">Категории</string>
     <string name="english_word">английское слово</string>
     <string name="transcription">транскрипция</string>
@@ -35,6 +37,7 @@
     <string name="delete_data">удалить существующие слова</string>
     <string name="semicolon_row">- разделитель для столбцов</string>
     <string name="semicolon">;</string>
+    <string name="only_chose_category">только слова выбранных категорий</string>
     <string name="download_data">загрузить слова</string>
     <string name="upload_data">выгрузить слова</string>
     <string name="amount_load_rows">Количество загруженных из файла строк</string>
@@ -50,6 +53,8 @@
     <string name="view">просмотр</string>
     <string name="edit">редактирование</string>
     <string name="word_is_deleted">слово удалено</string>
+    <string name="deleted">Удалено</string>
+    <string name="words_in_categories"> слов в выбранных категориях</string>
     <string name="word_is_changed">слово изменено</string>
     <string name="word_is_added">слово добавлено</string>
     <string name="empty_delimiter">Поле с разделителем должно быть заполнено.</string>
@@ -59,8 +64,13 @@
     <string name="android_version30_rescription">Внимание! Текущая версия Android не позволяет сохранить файл. Обратитесь к разработчику handy@list.ru</string>
     <string name="no_data_for_download">Нет данных для выгрузки в файл</string>
     <string name="should_be_xls">Экселевский файл должен быть с расширением \'xls\'</string>
-    <string name="shouldnt_be_xls">Текстовый файл не должен быть с расширением \'xls\', \'xlsx\'</string>
+    <string name="shouldnt_be_xls">Текстовый файл не должен быть с расширением \'xls\'</string>
     <string name="choose_category">Выбрать категорию</string>
+    <string name="choose_category_and_upload_file">Выбрать категорию и выгрузить файл</string>
+    <string name="delete_category">Удалить категорию</string>
+    <string name="delete_category_words">Удалить слова выбранных категорий?</string>
+    <string name="choose_all_categories">выбрать все категории</string>
+    <string name="chose">выбрано</string>
     <string name="category">категория:</string>
     <string name="ofWords">Слов</string>
     <string name="right">Верно</string>
@@ -111,7 +121,7 @@
     <string name="no_advertisement">- убрать рекламу;</string>
     <string name="see_statistics">- посмотреть статистику и запускать уроки со словами с ранее сделанными ошибками;</string>
     <string name="unlimited_downloads">- загружать неограниченное количество слов из файлов;</string>
-    <string name="change_background2">- изменять цвет фона приложения;</string>
+    <string name="change_background2">- изменять цвет фона приложения.</string>
     <string name="other_learning_type">- использовать другие способы обучения: написание слов и комплексное обучение;</string>
     <string name="change_language">- менять направление обучения с английкого на русский;</string>
     <string name="change_amount_words">- изменять количество слов для выбора при отгадывании слов.</string>
@@ -150,7 +160,7 @@
     <string name="us">Американский английский</string>
     <string name="uk">Британский аглийский</string>
     <string name="buy">Купить</string>
-    <string name="try_30day_free">Попробовать 30 дней бесплатно</string>
+    <string name="try_7day_free">Попробовать 7 дней бесплатно</string>
     <string name="aready_purchased">Товар уже приобретен. Повторная покупка не возможна</string>
     <string name="pay_service_disconnected">Нет связи с сервисом покупки</string>
     <string name="purchase_error">Ошибка покупки товара</string>
@@ -173,6 +183,9 @@
     <string name="bg_color">Цвет фона</string>
     <string name="share">Отправить</string>
     <string name="file_read_error">Ошибка чтения файла</string>
+    <string name="to_much_categories">Выбрано слишком много категорий</string>
+    <string name="success_of_rename_category">Имя категории успешно изменено</string>
+    <string name="no_rename_category">Новое имя категории не отличается от прежнего</string>
     <string name="id_bottom_banner_real">ca-app-pub-8509841932044551/6071495540</string>
     <string name="id_bottom_banner_test">ca-app-pub-3940256099942544/6300978111</string>
     <string name="id_interstitial_lesson_end_real">ca-app-pub-8509841932044551/9583755757</string>
@@ -222,6 +235,7 @@
 <p></p>Словарь позволяет (с помощью контекстного меню) редактировать, добавлять
 и удалять слова, их перевод, транскрипцию и <a href=\'#\'>категорию(и)</a>.
 <br>Допустимо в одно слово вписывать несколько категорий через запятую.
+<p>Можно удалить слова выбранных категорий или изменить название категории.
 <p>В настройках словаря можно выбрать опцию, по которой в случае пустой строки 
 поиска отображаются все последние слова, которые были просмотрены.
 <br>По умолчанию при пустой строке поиска отображаются все слова из словаря.
@@ -239,7 +253,7 @@
 <br>&nbsp;&nbsp;- 4 столбец: категория.
 <br>Для текстового формата разделитель слов по умолчанию - \";\". Текстовые файлы нужно загружать с кодировкой UTF-8.
 <p>По умолчанию из файла можно загрузить не более 10 слов. Для безлимитной загрузки слов нужно внести единоразовую небольшую плату 99 руб.
-<p>Также он позволяет выгружать словарь в Excel-файл или текстовый файл такого же формата.
+<p>Также он позволяет выгружать весь словарь (или слова только выбранных категорий) в Excel-файл или текстовый файл такого же формата.
 <p>Здесь же файл сразу можно отправить любому пользователю через любой установенный мессенджер или почтовую программу.
 <p><b>Совет:</b> для правильного отображения транскрипции рекомендуется пользоваться
 выгрузкой/загрузкой в Excel-файл.
@@ -260,7 +274,7 @@
     <string name="about_desc">
 <![CDATA[
 <p><big><b>WordMemorizer</b></big>
-<br>Версия 2.7 для версии Android 5.0 и выше.
+<br>Версия 2.8 для версии Android 5.0 и выше.
 <p><b>Производитель</b>
 <br>Handy Systems
 <p><b>e-mail</b>

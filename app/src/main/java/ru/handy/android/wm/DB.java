@@ -1,5 +1,8 @@
 package ru.handy.android.wm;
 
+import static ru.handy.android.wm.setting.Utils.listToStr;
+import static ru.handy.android.wm.setting.Utils.strToList;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -8,11 +11,13 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
 import ru.handy.android.wm.learning.Category;
 import ru.handy.android.wm.learning.Word;
+import ru.handy.android.wm.setting.Utils;
 
 public class DB {
 
@@ -66,7 +71,7 @@ public class DB {
     // что было введено в поле поиска в словаре
     public static final String SEARCH_WORD = "searchWord";
     // английские слова будут произноситься по американски или британски (0-американский, 1-британский)
-    public static final String PRONUNCIATION_USUK= "pronunciationUsUk";
+    public static final String PRONUNCIATION_USUK = "pronunciationUsUk";
     // какие слова в словаре переводятся: 0-английские, 1-русские
     public static final String DICT_TRASL_DIRECT = "dictTranslDirect";
     // тип поиска слов: 0-по начальным буквам, 1-по буквам в любой части слова
@@ -115,7 +120,7 @@ public class DB {
             + " text, " + C_ES_VALUE + " text);";
 
     private static final String DB_NAME = "ewdb";
-    private static final int DB_VERSION = 30; // 13 - первая версия с платными настройками
+    private static final int DB_VERSION = 31; // 13 - первая версия с платными настройками
     private final Context mCtx;
 
     private DBHelper mDBHelper;
@@ -169,14 +174,16 @@ public class DB {
      * @return ArrayList<String> с перечнем категорий
      */
     public ArrayList<String> getCategories() {
-        Cursor cursor = mDB.query(true, T_ENGWORDS, new String[]{C_EW_CATEGORY}, C_EW_CATEGORY
-                + " IS NOT NULL AND " + C_EW_CATEGORY + " <> ''", null, null, null, C_EW_CATEGORY, null);
+        Cursor cursor = mDB.query(true, T_ENGWORDS, new String[]{C_EW_CATEGORY}, null,
+                null, null, null, C_EW_CATEGORY, null);
         if (cursor != null) {
             if (cursor.moveToFirst()) {
                 ArrayList<String> list = new ArrayList<>();
                 do {
-                    String str = cursor.getString(
-                            cursor.getColumnIndex(C_EW_CATEGORY)).trim();
+                    String str = "";
+                    if (!cursor.isNull(cursor.getColumnIndex(C_EW_CATEGORY))) {
+                        str = cursor.getString(cursor.getColumnIndex(C_EW_CATEGORY)).trim();
+                    }
                     String[] arr = str.split(",");
                     for (String category : arr) {
                         category = category.trim();
@@ -185,41 +192,7 @@ public class DB {
                     }
                 } while (cursor.moveToNext());
                 cursor.close();
-                Collections.sort(list, (str1, str2) -> {
-                    String s1 = str1.toLowerCase(new Locale("ru"));
-                    String s2 = str2.toLowerCase(new Locale("ru"));
-                    String s1p = s1;
-                    String s2p = s2;
-                    int n1 = 0;
-                    for (int i = 1; i < s1.length(); i++) {
-                        try {
-                            n1 = Integer.parseInt(s1.substring(s1.length()
-                                    - i));
-                            s1p = s1.substring(0, s1.length() - i);
-                        } catch (Exception e) {
-                            break;
-                        }
-                    }
-                    int n2 = 0;
-                    for (int i = 1; i < s2.length(); i++) {
-                        try {
-                            n2 = Integer.parseInt(s2.substring(s2.length()
-                                    - i));
-                            s2p = s2.substring(0, s2.length() - i);
-                        } catch (Exception e) {
-                            break;
-                        }
-                    }
-                    if (!s1.startsWith("прочее") && s2.startsWith("прочее")) {
-                        return -1;
-                    } else if (s1.startsWith("прочее")
-                            && !s2.startsWith("прочее")) {
-                        return 1;
-                    } else if (n1 != 0 && n2 != 0 && s1p.equals(s2p)) {
-                        return n1 - n2;
-                    }
-                    return s1.compareToIgnoreCase(s2);
-                });
+                Collections.sort(list, Category::compare2Strings);
                 return list;
             }
         }
@@ -288,7 +261,7 @@ public class DB {
         String whereClause = null;
         String column = engOrRus ? C_EW_ENGWORD : C_EW_RUSTRANSLATE;
         if (partOfWord != null && !partOfWord.equals("")) {
-            partOfWord = partOfWord.replace("'", "");
+            partOfWord = partOfWord.replace("'", "''");
             whereClause = C_EW_ENGWORD + " LIKE " + (isStartWord ? "'" : "'%") + partOfWord + "%' OR "
                     + C_EW_RUSTRANSLATE + " LIKE " + (isStartWord ? "'" : "'%") + partOfWord + "%'";
         }
@@ -347,7 +320,9 @@ public class DB {
             String[] arr = category.split(",");
             for (String cat : arr) {
                 String c = cat.trim().replace("'", "''");
-                if (!c.equals(""))
+                if (c.equals("")) {
+                    whereClause.append(C_EW_CATEGORY).append("='' OR ");
+                } else {
                     whereClause.append(C_EW_CATEGORY).append("='").append(c).append("' OR ")
                             .append(C_EW_CATEGORY).append(" LIKE '").append(c).append(",%' OR ")
                             .append(C_EW_CATEGORY).append(" LIKE '").append(c).append(" ,%' OR ")
@@ -364,12 +339,10 @@ public class DB {
                             .append(C_EW_CATEGORY).append(" LIKE '%, ").append(c).append("  ,%' OR ")
                             .append(C_EW_CATEGORY).append(" LIKE '%,  ").append(c).append(" ,%' OR ")
                             .append(C_EW_CATEGORY).append(" LIKE '%,  ").append(c).append("  ,%' OR ");
+                }
             }
-            if (whereClause.toString().equals(""))
-                whereClause = new StringBuilder(C_EW_CATEGORY + "=''");
-            else
-                whereClause = new StringBuilder(whereClause
-                        .substring(0, whereClause.length() - 4));
+            whereClause = new StringBuilder(whereClause
+                    .substring(0, whereClause.length() - 4));
         }
         return whereClause.toString();
     }
@@ -378,10 +351,10 @@ public class DB {
      * Добавляем новое слово в главной таблице engwords английских слов
      * и в таблице с действующим уроком (если слово нужной категории)
      *
-     * @param engWord английское слово
+     * @param engWord       английское слово
      * @param transcription транскрипция
-     * @param rusTranslate русский перевод
-     * @param category категория
+     * @param rusTranslate  русский перевод
+     * @param category      категория
      * @return возвращает id нового слова в таблице T_ENGWORDS
      */
     public long addRecEngWord(String engWord, String transcription,
@@ -542,6 +515,48 @@ public class DB {
     }
 
     /**
+     * Удаление всех слов данных категорий
+     *
+     * @param categories - категория, к которой может относится слово
+     * @return массив из трех чисел (кол-во удаленных категорий, кол-во удаленных слов этих категорий, кол-во проапдейченных слов с категориями)
+     */
+    public int[] deleteCategories(String categories) {
+        //список со всеми категориями
+        List<String> cats = strToList(categories, ",", true);
+        mDB.beginTransaction();
+        Cursor c = getDataByCategory(categories); // курсор со списком всех слов данных категорий
+        int deletedWords = 0; // счетчик для удаленных слов
+        int updatedWords = 0; //счетчик для проапдейченных слов
+        try {
+            if (c.moveToFirst()) {
+                do {
+                    int wordId = c.getInt(c.getColumnIndex(C_EW_ID));
+                    String catInWord = c.getString(c.getColumnIndex(C_EW_CATEGORY));
+                    //список со всеми категориями в данном слове
+                    List<String> catsInWord = strToList(catInWord, ",", true);
+                    catsInWord.removeAll(cats);
+                    //если в слове только удаляемые категории, то удаляем его
+                    if (catsInWord.size() == 0) {
+                        int del = mDB.delete(T_ENGWORDS, C_EW_ID + "=" + wordId, null);
+                        deletedWords = deletedWords + del;
+                    } else { //если в слове есть не удаляемые категории, то апдейтим его категорию
+                        String newCat = listToStr(catsInWord, ", ");
+                        ContentValues cv = new ContentValues();
+                        cv.put(C_EW_CATEGORY, newCat);
+                        int upd = mDB.update(T_ENGWORDS, cv, C_EW_ID + "=" + wordId, null);
+                        updatedWords = updatedWords + upd;
+                    }
+                } while (c.moveToNext());
+                c.close();
+            }
+            mDB.setTransactionSuccessful();
+            return new int[]{cats.size(), deletedWords, updatedWords};
+        } finally {
+            mDB.endTransaction();
+        }
+    }
+
+    /**
      * устанавливает порядковый номер столбца C_EW_HISTORY. Если id = null, то
      * значение этого столбца во всех словах становится = null
      *
@@ -563,6 +578,35 @@ public class DB {
         } else {
             cv.putNull(C_EW_HISTORY);
             mDB.update(T_ENGWORDS, cv, null, null);
+        }
+    }
+
+    /**
+     * в столбце категорий таблицы со словами одна категория заменяется на другую (просто ищутся совпадения)
+     * @param oldName старое название катгории
+     * @param newName новое название катгории
+     */
+    public void categoryRename (String oldName, String newName) {
+        // если меняется категория на пустую, то нужно удалить возможные запятые перед и после нее
+        // (если в слове было несколько категорий)
+        if (!oldName.equals("") && newName.equals("")) {
+            mDB.execSQL("UPDATE " + T_ENGWORDS + " SET " + C_EW_CATEGORY + " = REPLACE(" +
+                    C_EW_CATEGORY + ", ', " + oldName + "', '')");
+            mDB.execSQL("UPDATE " + T_ENGWORDS + " SET " + C_EW_CATEGORY + " = REPLACE(" +
+                    C_EW_CATEGORY + ", '," + oldName + "', '')");
+            mDB.execSQL("UPDATE " + T_ENGWORDS + " SET " + C_EW_CATEGORY + " = REPLACE(" +
+                    C_EW_CATEGORY + ", '" + oldName + ", ', '')");
+            mDB.execSQL("UPDATE " + T_ENGWORDS + " SET " + C_EW_CATEGORY + " = REPLACE(" +
+                    C_EW_CATEGORY + ", '" + oldName + ",', '')");
+            mDB.execSQL("UPDATE " + T_ENGWORDS + " SET " + C_EW_CATEGORY + " = REPLACE(" +
+                    C_EW_CATEGORY + ", '" + oldName + "', '')");
+        } else if (oldName.equals("") && !newName.equals("")) { // если пустая категория меняется на нормальную
+            ContentValues cv = new ContentValues();
+            cv.put(C_EW_CATEGORY, newName);
+            mDB.update(T_ENGWORDS, cv, C_EW_CATEGORY + " = ''", null);
+        } else if (!oldName.equals(newName)) { // делаем апдейт только, если старое и нове имя разные
+            mDB.execSQL("UPDATE " + T_ENGWORDS + " SET " + C_EW_CATEGORY + " = REPLACE(" +
+                    C_EW_CATEGORY + ", '" + oldName + "', '" + newName + "')");
         }
     }
 

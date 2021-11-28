@@ -145,14 +145,9 @@ public class Statistics extends AppCompatActivity implements View.OnClickListene
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
-        menu.setGroupVisible(R.id.group_addrec, false);
-        menu.setGroupVisible(R.id.group_dictionary, false);
-        menu.setGroupVisible(R.id.group_statistics, false);
-        menu.setGroupVisible(R.id.group_action_settings, false);
-        menu.setGroupVisible(R.id.group_idata, false);
-        menu.setGroupVisible(R.id.group_donate, false);
-        menu.setGroupVisible(R.id.group_clear_hist, false);
-        menu.setGroupVisible(R.id.group_exit, false);
+        menu.setGroupVisible(R.id.group_resetStat, true);
+        menu.setGroupVisible(R.id.group_help, true);
+        menu.setGroupVisible(R.id.group_about, true);
         this.menu = menu;
         return true;
     }
@@ -180,7 +175,7 @@ public class Statistics extends AppCompatActivity implements View.OnClickListene
                         .create()
                         .show();
                 return true;
-            case R.id.ihelp:
+            case R.id.help:
                 Intent intent = new Intent(this, Help.class);
                 intent.putExtra("idhelp", 0);
                 startActivity(intent);

@@ -230,7 +230,7 @@
                             android:ems="10"
                             android:maxLength="1"
                             android:text="@string/semicolon"
-                            android:visibility="invisible" />
+                            android:visibility="visible" />
 
                         <TextView
                             android:id="@+id/tvSemicolon"
@@ -240,13 +240,24 @@
                             android:layout_toEndOf="@+id/etSemicolon"
                             android:background="#00000000"
                             android:text="@string/semicolon_row"
-                            android:visibility="invisible" />
+                            android:visibility="visible" />
+
+                        <CheckBox
+                            android:id="@+id/cbOnlyChoseCat"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentStart="true"
+                            android:layout_below="@+id/etSemicolon"
+                            android:background="#00000000"
+                            android:checked="false"
+                            android:text="@string/only_chose_category"
+                            android:textSize="13sp" />
 
                         <Button
                             android:id="@+id/bUpload"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_below="@+id/etSemicolon"
+                            android:layout_below="@+id/cbOnlyChoseCat"
                             android:layout_centerHorizontal="true"
                             android:background="@drawable/bord_action_button"
                             android:paddingLeft="5dp"

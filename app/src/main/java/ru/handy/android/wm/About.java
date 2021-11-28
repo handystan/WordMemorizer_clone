@@ -104,9 +104,10 @@ public class About extends AppCompatActivity implements View.OnClickListener {
                 params.height = amountDonate == 0 ? LinearLayout.LayoutParams.WRAP_CONTENT : 0;
                 llAdMob.setLayoutParams(params);
                 if (amountDonate > 0) {
+                    learning.loadAdMob(true, false); // загрузка только баннерной рекламы
                     learning.setInterstitialAd(null);
                 } else {
-                    learning.loadAdMob(); // загружаем AdMob
+                    learning.loadAdMob(true, true); // загрузка баннерной и полноэкранной рекламы
                 }
                 amountClick = 0;
 

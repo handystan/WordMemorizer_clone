@@ -114,12 +114,16 @@ public class LearningSetting extends Fragment {
         });
         rbWritingLearning.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
-                Utils.mainAlertForPay(DB.DATE_LEARNING_METHOD, LearningSetting.this, pay, db, 1);
+                setLearningType(1);
+                // убираем из платных функций изменение метода обучения
+                //Utils.mainAlertForPay(DB.DATE_LEARNING_METHOD, LearningSetting.this, pay, db, 1);
             }
         });
         rbComplexLearning.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
-                Utils.mainAlertForPay(DB.DATE_LEARNING_METHOD, LearningSetting.this, pay, db, 2);
+                setLearningType(2);
+                // убираем из платных функций изменение метода обучения
+                //Utils.mainAlertForPay(DB.DATE_LEARNING_METHOD, LearningSetting.this, pay, db, 2);
             }
         });
         // раскрывающийся список для кол-ва повторений в комплексном обучении
@@ -173,7 +177,9 @@ public class LearningSetting extends Fragment {
         });
         rbRus.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
-                Utils.mainAlertForPay(DB.DATE_LANGUAGE, LearningSetting.this, pay, db);
+                setEng(false);
+                // убираем из платных функций изменение языка заучивания
+                //Utils.mainAlertForPay(DB.DATE_LANGUAGE, LearningSetting.this, pay, db);
             }
         });
         // показывать транскрипцию или нет
@@ -202,7 +208,9 @@ public class LearningSetting extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if ((position + 2) != amountWords) {
-                    Utils.mainAlertForPay(DB.DATE_LANG_WORD_AMOUNT, LearningSetting.this, pay, db);
+                    setAmountWords();
+                    // убираем из платных функций изменение кол-ва варианта слов для отгадывания
+                    //Utils.mainAlertForPay(DB.DATE_LANG_WORD_AMOUNT, LearningSetting.this, pay, db);
                 }
             }
 

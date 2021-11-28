@@ -73,7 +73,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.beginTransaction();
         try {
-            if (oldVersion <= 22 && newVersion == 30) {
+            if (oldVersion <= 22 && newVersion == 31) {
                 insertExitState(db, DB.BG_COLOR, "1"); // белый фон
                 insertExitState(db, DB.OLD_FREE_DB, "1"); // клиенты из старой базы, которым автоматом все делается бесплатно
                 insertExitState(db, DB.LEARNING_TYPE, "0");
@@ -90,26 +90,33 @@ public class DBHelper extends SQLiteOpenHelper {
                 db.delete(DB.T_ENGWORDS, null, null);
                 db.delete(DB.T_LESSON, null, null);
                 insertAllDict(db);
-            } else if (oldVersion == 23 && newVersion == 30) {
+            } else if (oldVersion == 23 && newVersion == 31) {
                 updateDictFrom23(db);
                 updateDictFrom24(db);
                 updateDictFrom26(db);
                 updateDictFrom27(db);
                 updateDictFrom28(db);
-            }  else if (oldVersion == 24 && newVersion == 30) { // версия 25 была тестовой
+                updateDictFrom30(db);
+            }  else if (oldVersion == 24 && newVersion == 31) { // версия 25 была тестовой
                 updateDictFrom24(db);
                 updateDictFrom26(db);
                 updateDictFrom27(db);
                 updateDictFrom28(db);
-            }  else if (oldVersion == 26 && newVersion == 30) {
+                updateDictFrom30(db);
+            }  else if (oldVersion == 26 && newVersion == 31) {
                 updateDictFrom26(db);
                 updateDictFrom27(db);
                 updateDictFrom28(db);
-            }  else if (oldVersion == 27 && newVersion == 30) {
+                updateDictFrom30(db);
+            }  else if (oldVersion == 27 && newVersion == 31) {
                 updateDictFrom27(db);
                 updateDictFrom28(db);
-            }  else if (oldVersion == 28 && newVersion == 30) { // версия 29 не прошла цензуру Google
+                updateDictFrom30(db);
+            }  else if (oldVersion == 28 && newVersion == 31) { // версия 29 не прошла цензуру Google
                 updateDictFrom28(db);
+                updateDictFrom30(db);
+            }  else if (oldVersion == 30 && newVersion == 31) {
+                updateDictFrom30(db);
             }
             db.setTransactionSuccessful();
         } finally {
@@ -485,7 +492,7 @@ public class DBHelper extends SQLiteOpenHelper {
         insertDict(db, "screwdriver", "[ˈskruːdraɪvə]", "отвертка", "инструменты столярные");
         insertDict(db, "tape measure", "[teɪp ˈmeʒə]", "рулетка", "инструменты столярные");
         insertDict(db, "vise", "[vaɪs]", "тиски", "инструменты столярные");
-        insertDict(db, "file", "[faɪl]", "напильник, файл", "инструменты столярные, прочее2");
+        insertDict(db, "file", "[faɪl]", "напильник, файл", "инструменты столярные");
         insertDict(db, "asteroid", "[ˈæstərɔɪd]", "астероид", "космос");
         insertDict(db, "comet", "[ˈkɔmɪt]", "комета", "космос");
         insertDict(db, "constellation", "[kɔnstəˈleɪʃən]", "созвездие", "космос");
@@ -3173,6 +3180,15 @@ public class DBHelper extends SQLiteOpenHelper {
         insertDict(db, "suppose", "[səˈpəuz]", "полагать, предполагать", "глаголы умст. деятельности");
         insertDict(db, "wonder", "[ˈwʌndə]", "удивляться, чудо", "глаголы умст. деятельности");
     }
+
+    // заполняем основную таблицу-словарь при переходе из версии 30
+    private void updateDictFrom30(SQLiteDatabase db) {
+        ContentValues cv = new ContentValues();
+        cv.put(DB.C_EW_CATEGORY, "инструменты столярные");
+        db.update(DB.T_ENGWORDS, cv, DB.C_EW_ENGWORD + "='file' AND " + DB.C_EW_CATEGORY
+                + "='инструменты столярные, прочее2'", null);
+    }
+
 
     // вставка отдельно записи в таблице EW_ENGWORD
     private void insertDict(SQLiteDatabase db, String engWord,

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFFFFF"
@@ -25,7 +26,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#FFFFFF"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            tools:ignore="ExtraText">
 
             <TextView
                 android:id="@+id/tvMessage1"
@@ -44,8 +46,8 @@
                 android:layout_height="wrap_content"
                 android:background="#FFFFFF"
                 android:paddingBottom="5dp"
-                android:paddingLeft="20dp"
-                android:paddingRight="10dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="10dp"
                 android:text="@string/no_advertisement" />
 
             <TextView
@@ -54,8 +56,8 @@
                 android:layout_height="wrap_content"
                 android:background="#FFFFFF"
                 android:paddingBottom="5dp"
-                android:paddingLeft="20dp"
-                android:paddingRight="10dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="10dp"
                 android:text="@string/see_statistics" />
 
             <TextView
@@ -63,8 +65,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="#FFFFFF"
-                android:paddingLeft="20dp"
-                android:paddingRight="10dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="10dp"
                 android:paddingBottom="10dp"
                 android:text="@string/unlimited_downloads" />
 
@@ -73,8 +75,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="#FFFFFF"
-                android:paddingLeft="20dp"
-                android:paddingRight="10dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="10dp"
                 android:paddingBottom="5dp"
                 android:text="@string/change_background2" />
 
@@ -82,9 +84,10 @@
                 android:id="@+id/tvMessage6"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
                 android:background="#FFFFFF"
-                android:paddingLeft="20dp"
-                android:paddingRight="10dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="10dp"
                 android:paddingBottom="5dp"
                 android:text="@string/other_learning_type" />
 
@@ -92,9 +95,10 @@
                 android:id="@+id/tvMessage7"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
                 android:background="#FFFFFF"
-                android:paddingLeft="20dp"
-                android:paddingRight="10dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="10dp"
                 android:paddingBottom="5dp"
                 android:text="@string/change_language" />
 
@@ -102,9 +106,10 @@
                 android:id="@+id/tvMessage8"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
                 android:background="#FFFFFF"
-                android:paddingLeft="20dp"
-                android:paddingRight="10dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="10dp"
                 android:paddingBottom="5dp"
                 android:text="@string/change_amount_words" />
 

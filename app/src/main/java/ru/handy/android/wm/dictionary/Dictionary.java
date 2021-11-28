@@ -51,6 +51,8 @@ import ru.handy.android.wm.GlobApp;
 import ru.handy.android.wm.Help;
 import ru.handy.android.wm.R;
 import ru.handy.android.wm.Thanks;
+import ru.handy.android.wm.learning.Categories;
+import ru.handy.android.wm.learning.Learning;
 import ru.handy.android.wm.setting.Settings;
 import ru.handy.android.wm.setting.Utils;
 
@@ -369,6 +371,13 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
                 setSearchRule1(data.getBooleanExtra("searchRule", true));
                 setShowHistory(data.getBooleanExtra("showHistory", false));
                 setAdapter();
+            } else if (requestCode == Learning.GET_CATEGORIES) {
+                int deletedWordsAmount = data.getIntExtra("deletedWordsAmount", 0);
+                int updateWordsAmount = data.getIntExtra("updateWordsAmount", 0);
+                Toast.makeText(getApplicationContext(), s(R.string.deleted) + " "
+                        + (deletedWordsAmount + updateWordsAmount) + " "
+                        + s(R.string.words_in_categories), Toast.LENGTH_LONG).show();
+                setAdapter();
             }
         } else if (resultCode == AppCompatActivity.RESULT_CANCELED) {
             // do nothing
@@ -379,13 +388,11 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
-        menu.setGroupVisible(R.id.group_addrec, false);
-        menu.setGroupVisible(R.id.group_dictionary, false);
-        menu.setGroupVisible(R.id.group_clear_hist, false);
-        menu.setGroupVisible(R.id.group_statistics, false);
-        menu.setGroupVisible(R.id.group_idata, false);
-        menu.setGroupVisible(R.id.group_resetStat, false);
-        menu.setGroupVisible(R.id.group_exit, false);
+        menu.setGroupVisible(R.id.group_delete_category, true);
+        menu.setGroupVisible(R.id.group_action_settings, true);
+        menu.setGroupVisible(R.id.group_help, true);
+        menu.setGroupVisible(R.id.group_donate, true);
+        menu.setGroupVisible(R.id.group_about, true);
         return true;
     }
 
@@ -394,12 +401,16 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
         // Операции для выбранного пункта меню
         if (item.getItemId() == android.R.id.home) { // обрабатываем кнопку "назад" в ActionBar
             super.onBackPressed();
+        } else if (item.getItemId() == R.id.delete_category) { // вызов списка категорий для удаления
+            Intent intent = new Intent(this, Categories.class);
+            intent.putExtra("fromAct", 1); // 0 - запуск из Dictionary
+            startActivityForResult(intent, Learning.GET_CATEGORIES);
         } else if (item.getItemId() == R.id.action_settings) { // вызов настроек
             Intent intent1 = new Intent(this, Settings.class);
             intent1.putExtra("idsetting", 1);
             // 0 означает класс Settings
             startActivityForResult(intent1, 0);
-        } else if (item.getItemId() == R.id.ihelp) { // вызов помощи
+        } else if (item.getItemId() == R.id.help) { // вызов помощи
             Intent intent2 = new Intent(this, Help.class);
             intent2.putExtra("idhelp", 1);
             startActivity(intent2);

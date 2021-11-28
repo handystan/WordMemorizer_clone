@@ -5,9 +5,10 @@
       <root url="file://$USER_HOME$/.gradle/caches/transforms-3/95110014022dd3667bfd1b05911f665c/transformed/jetified-billing-4.0.0/res" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-3/2cd648719920459836be03ddb2d586b8/transformed/jetified-billing-4.0.0/res" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-3/9423d4849e2b6173343f0f2455a9d9fb/transformed/jetified-billing-4.0.0/res" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/86876696abcf3df27da9cc6893ac2aca/transformed/jetified-billing-4.0.0/AndroidManifest.xml" />
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/86876696abcf3df27da9cc6893ac2aca/transformed/jetified-billing-4.0.0/jars/classes.jar!/" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-3/86876696abcf3df27da9cc6893ac2aca/transformed/jetified-billing-4.0.0/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/f8cfcfdb4d8dd95167faef8784f77c73/transformed/jetified-billing-4.0.0/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/f8cfcfdb4d8dd95167faef8784f77c73/transformed/jetified-billing-4.0.0/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/f8cfcfdb4d8dd95167faef8784f77c73/transformed/jetified-billing-4.0.0/AndroidManifest.xml" />
     </CLASSES>
     <JAVADOC>
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.android.billingclient/billing/4.0.0/cb57948320e32ab49be0258bd18efd3f5baed3d7/billing-4.0.0-javadoc.jar!/" />

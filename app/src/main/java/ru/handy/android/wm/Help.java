@@ -33,8 +33,7 @@ public class Help extends AppCompatActivity {
         Utils.onActivityCreateSetTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.help);
-        Intent intent = getIntent();
-        idHelp = intent.getIntExtra("idhelp", 0);
+        idHelp = getIntent().getIntExtra("idhelp", 0);
 
         // Obtain the shared Tracker instance.
         app = (GlobApp) getApplication();
