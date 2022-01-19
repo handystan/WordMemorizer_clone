@@ -25,6 +25,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import java.util.Locale;
 
 import ru.handy.android.wm.learning.Learning;
+import ru.handy.android.wm.setting.Pay;
 
 /**
  * This is a subclass of {@link Application} used to provide shared objects for this app
@@ -40,6 +41,7 @@ public class GlobApp extends Application {
     public static final String PURCHASE_MOTIVES = "purchase_motives"; // событие по покупке приложения и мотивам этой покупки
     public static final String FINISHED_LESSONS = "finished_lessons"; // событие по полному окончанию урока
     private DB db;
+    private Pay pay;
     private TextToSpeech tts;
     private FirebaseAnalytics mFBAnalytics;
     private Learning learning;
@@ -73,7 +75,7 @@ public class GlobApp extends Application {
     /**
      * Регистрирует событие обучения со всеми настройками обучения для оплаченных (PAID_LEARNING) и не оплаченных приложений (ALL_LEARNING)
      *
-     * @param paidApp               оплачено ли приложение ('Оплачено', т.е. DB.AMOUNT_DONATE > 0 или DB.OLD_FREE_DB == 1, 'Не оплачено')
+     * @param paidApp               оплачено ли приложение ('Оплачено', т.е. DB.AMOUNT_DONATE > 0, 'Не оплачено')
      * @param categories            категория(и) слов для данного урока
      * @param learningType          тип обучения ('Выбор верного варианта', 'Написание слова', 'Комплексное обучение')
      * @param learningSpeak         озвучивать английское слово после отгадывания или нет: 'Озвучивать слово', 'Не озвучивать слово'
@@ -81,6 +83,7 @@ public class GlobApp extends Application {
      * @param learningShowDontKnow  показывать кнопку "не знаю" в обучалке: 'Показывать кнопку \'Не знаю\'', 'Не показывать кнопку \'Не знаю\''
      * @param learningLanguage      какие слова отгадыватся в обучалке: 'Отгадывание английских слов', 'Отгадывание русских слов'
      * @param learningAmountWords   сколько вариантов слов для отгадывания будет предложено: от 2 до 12
+     * @param learningRepeatsAmount сохранять или нет историю по всем незаконченным урокам: 0-нет, 1-да (1 по умолчанию)
      * @param learningRepeatsAmount кол-во повторений последовательностей в комплексном обучении: от 1 до 10 (по умолчанию - 2)
      * @param answer                'Верный ответ' или 'Неверный ответ'
      */
@@ -88,7 +91,7 @@ public class GlobApp extends Application {
                                            String learningSpeak, String learningShowTranscr,
                                            String learningShowDontKnow, String learningLanguage,
                                            String learningAmountWords, String learningRepeatsAmount,
-                                           String answer) {
+                                           String learningLessonsHistory, String answer) {
         Bundle bundle = new Bundle();
         bundle.putString("paid_app", paidApp);
         bundle.putString("categories", categories);
@@ -99,6 +102,7 @@ public class GlobApp extends Application {
         bundle.putString("learning_language", learningLanguage);
         bundle.putString("learning_amount_words", learningAmountWords);
         bundle.putString("learning_repeats_amount", learningRepeatsAmount);
+        bundle.putString("learning_lessons_istory", learningLessonsHistory);
         bundle.putString("answer", answer);
         getFBAnalytics().logEvent(ALL_LEARNING, bundle);
         if (paidApp.equals(s(R.string.paid))) {
@@ -112,6 +116,7 @@ public class GlobApp extends Application {
             bundle.putString("learning_language", learningLanguage);
             bundle.putString("learning_amount_words", learningAmountWords);
             bundle.putString("learning_repeats_amount", learningRepeatsAmount);
+            bundle.putString("learning_lessons_istory", learningLessonsHistory);
             bundle.putString("answer", answer);
             getFBAnalytics().logEvent(PAID_LEARNING, bundle);
         }
@@ -191,7 +196,7 @@ public class GlobApp extends Application {
     /**
      * Регистрирует событие о том, что урок полностью закончен (FINISHED_LESSONS)
      *
-     * @param paidApp  оплачено ли приложение ('Оплачено', т.е. DB.AMOUNT_DONATE > 0 или DB.OLD_FREE_DB == 1, 'Не оплачено')
+     * @param paidApp  оплачено ли приложение ('Оплачено', т.е. DB.AMOUNT_DONATE > 0, 'Не оплачено')
      */
     synchronized public void finishedLessonsEvent(String paidApp) {
         Bundle bundle = new Bundle();
@@ -218,6 +223,29 @@ public class GlobApp extends Application {
      */
     synchronized public void closeDb() {
         if (db != null) db.close();
+    }
+
+    /**
+     * Gets open {@link Pay}
+     *
+     * @return
+     */
+    synchronized public Pay getPay(GlobApp app) {
+        if (pay == null) {
+            pay = new Pay(app);
+            Log.d("myLogs", "create new pay");
+        }
+        return pay;
+    }
+
+    /**
+     * Close {@link Pay}
+     */
+    synchronized public void closePay() {
+        if (pay != null) {
+            pay.close();
+            pay = null;
+        }
     }
 
     /**

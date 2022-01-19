@@ -1,6 +1,7 @@
 package ru.handy.android.wm;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -19,6 +20,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,15 +35,17 @@ import ru.handy.android.wm.setting.Utils;
  */
 public class Thanks extends AppCompatActivity implements View.OnClickListener {
 
-    LinearLayout llDonate;
-    Spinner sDonate;
     Button bDonate;
     TextView tvEvaluate;
+    SeekBar sbDonate;
+    TextView tv0;
+    TextView tv1;
+    TextView tv2;
     Button bEvaluate;
     private GlobApp app;
     // класс для обработки платежей
     private Pay pay;
-    private String itemSKU = Pay.ITEM_SKU_2dol;
+    private String itemSKU = Pay.ITEM_SKU_249rub;
     // показывает сумму, которую пользователь пожертвовал разработчику
     private int amountDonate = 0;
     private DB db;
@@ -62,7 +66,7 @@ public class Thanks extends AppCompatActivity implements View.OnClickListener {
         db = app.getDb(); // открываем подключение к БД
 
         // устанавливаем toolbar и actionbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar bar = getSupportActionBar();
         if (bar != null) {
@@ -78,37 +82,45 @@ public class Thanks extends AppCompatActivity implements View.OnClickListener {
             bar.setHomeAsUpIndicator(upArrow);
         }
 
-        llDonate = (LinearLayout) findViewById(R.id.llDonate);
-        sDonate = (Spinner) findViewById(R.id.sDonate);
-        bDonate = (Button) findViewById(R.id.bDonate);
-        tvEvaluate = (TextView) findViewById(R.id.tvEvaluate);
-        bEvaluate = (Button) findViewById(R.id.bEvaluate);
+        sbDonate = findViewById(R.id.sbDonate);
+        tv0 = findViewById(R.id.tv0);
+        tv1 = findViewById(R.id.tv1);
+        tv2 = findViewById(R.id.tv2);
+        bDonate = findViewById(R.id.bDonate);
+        tvEvaluate = findViewById(R.id.tvEvaluate);
+        bEvaluate = findViewById(R.id.bEvaluate);
         bEvaluate.setOnClickListener(this);
 
         String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
         amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
-        // адаптер для спиннера размера взноса
-        String[] spinnerData = {(amountDonate == 0 ? "99 " : "100 ") + s(R.string.rub)
-                , "250 " + s(R.string.rub), "500 " + s(R.string.rub)};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, spinnerData);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        sDonate.setAdapter(adapter);
-        sDonate.setSelection(0);
-        sDonate.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        // обрабатываем изменение значения SpinnerBar
+        sbDonate.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position == 0) {
-                    itemSKU = amountDonate == 0 ? Pay.ITEM_SKU_99rub : Pay.ITEM_SKU_2dol;
-                } else if (position == 1) {
-                    itemSKU = Pay.ITEM_SKU_5dol;
-                } else if (position == 2) {
-                    itemSKU = Pay.ITEM_SKU_10dol;
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (progress == 0) {
+                    itemSKU = Pay.ITEM_SKU_249rub;
+                    tv0.setTextColor(Color.parseColor("#EC407A"));
+                    tv1.setTextColor(Color.parseColor("#76000000"));
+                    tv2.setTextColor(Color.parseColor("#76000000"));
+                } else if (progress == 1) {
+                    itemSKU = Pay.ITEM_SKU_499rub;
+                    tv0.setTextColor(Color.parseColor("#76000000"));
+                    tv1.setTextColor(Color.parseColor("#EC407A"));
+                    tv2.setTextColor(Color.parseColor("#76000000"));
+                } else if (progress == 2) {
+                    itemSKU = Pay.ITEM_SKU_999rub;
+                    tv0.setTextColor(Color.parseColor("#76000000"));
+                    tv1.setTextColor(Color.parseColor("#76000000"));
+                    tv2.setTextColor(Color.parseColor("#EC407A"));
                 }
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> arg0) {
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
             }
         });
         bDonate.setOnClickListener(this);
@@ -118,7 +130,7 @@ public class Thanks extends AppCompatActivity implements View.OnClickListener {
         } else {
             tvEvaluate.setTextAppearance(android.R.style.TextAppearance_Medium);
         }
-        pay = new Pay(this);
+        pay = app.getPay(app);
     }
 
     @Override
@@ -155,7 +167,7 @@ public class Thanks extends AppCompatActivity implements View.OnClickListener {
     public void onClick(View v) {
         // обработка нажатия кнопки с добровольным взносом
         if (v.getId() == bDonate.getId()) {
-            int purchaseRes = pay.purchase(itemSKU, 1001);
+            int purchaseRes = pay.purchase(this, itemSKU, 1001);
             int i = 0;
             while (purchaseRes != 0) {
                 i++;
@@ -164,7 +176,7 @@ public class Thanks extends AppCompatActivity implements View.OnClickListener {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                purchaseRes = pay.purchase(itemSKU, 1001);
+                purchaseRes = pay.purchase(this, itemSKU, 1001);
                 if (i == 10) {
                     if (purchaseRes == 7) {
                         Toast.makeText(Thanks.this.getApplicationContext(), "Товар уже приобретен. Повторная покупка не возможна", Toast.LENGTH_LONG).show();
@@ -196,7 +208,6 @@ public class Thanks extends AppCompatActivity implements View.OnClickListener {
     @Override
     protected void onDestroy() {
         Log.d("myLogs", "onDestroy Thanks");
-        if (pay != null) pay.close();
         super.onDestroy();
     }
 }

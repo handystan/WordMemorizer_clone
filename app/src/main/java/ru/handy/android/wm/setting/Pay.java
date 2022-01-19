@@ -16,6 +16,7 @@ import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.ConsumeParams;
+import com.android.billingclient.api.ConsumeResponseListener;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
@@ -39,16 +40,14 @@ import ru.handy.android.wm.statistics.Statistics;
 public class Pay implements PurchasesUpdatedListener {
 
     // идентификаторы продукта, которые покупается с помощью InAppBilling
-    public static final String ITEM_SKU_1dol = "ru.handy.android.wm.1dol";
-    public static final String ITEM_SKU_2dol = "ru.handy.android.wm.2dol";
-    public static final String ITEM_SKU_5dol = "ru.handy.android.wm.5dol";
-    public static final String ITEM_SKU_10dol = "ru.handy.android.wm.10dol";
-    public static final String ITEM_SKU_99rub = "ru.handy.android.wm.99rub";
-    /*public static final String ITEM_SKU_1dol = "android.test.refunded";
-    public static final String ITEM_SKU_2dol = "android.test.purchased";
-    public static final String ITEM_SKU_5dol = "android.test.canceled";
-    public static final String ITEM_SKU_10dol = "android.test.item_unavailable";
-    public static final String ITEM_SKU_99rub = "android.test.purchased";*/
+    public static final String ITEM_SKU_249rub = "donate_wm249rub";
+    public static final String ITEM_SKU_499rub = "donate_wm499rub";
+    public static final String ITEM_SKU_999rub = "donate_wm999rub";
+    public static final String ITEM_SKU_249rub_noad = "ru.handy.android.wm.249rub";
+    /*public static final String ITEM_SKU_249rub = "android.test.purchased";
+    public static final String ITEM_SKU_499rub = "android.test.canceled";
+    public static final String ITEM_SKU_999rub = "android.test.item_unavailable";
+    public static final String ITEM_SKU_249rub_noad = "android.test.purchased";*/
     private BillingClient billingClient;
     private Activity act;
     private List<SkuDetails> skuDetList = new ArrayList<>(); //список с идентификаторами возможных покупок
@@ -58,26 +57,24 @@ public class Pay implements PurchasesUpdatedListener {
     private DB db;
     private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
-    public Pay(Activity activity) {
-        act = activity;
-        billingClient = BillingClient.newBuilder(act).enablePendingPurchases().setListener(this).build();
+    public Pay(GlobApp globApp) {
+        app = globApp; // получаем доступ к приложению
+        billingClient = BillingClient.newBuilder(app.getApplicationContext()).enablePendingPurchases().setListener(this).build();
         billingClient.startConnection(new BillingClientStateListener() {
             @Override
             public void onBillingSetupFinished(BillingResult billingResult) {
                 if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                     Log.i("myLogs", "Billing client successfully set up");
-                    app = (GlobApp) act.getApplication(); // получаем доступ к приложению
                     mFBAnalytics = app.getFBAnalytics(); // получение экземпляра FirebaseAnalytics
                     db = app.getDb(); // открываем подключение к БД
                     String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
                     amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
                     //заполняем список с идентификаторами возможных покупок
                     List<String> skuList = new ArrayList<>();
-                    skuList.add(ITEM_SKU_1dol);
-                    skuList.add(ITEM_SKU_2dol);
-                    skuList.add(ITEM_SKU_5dol);
-                    skuList.add(ITEM_SKU_10dol);
-                    skuList.add(ITEM_SKU_99rub);
+                    skuList.add(ITEM_SKU_249rub);
+                    skuList.add(ITEM_SKU_499rub);
+                    skuList.add(ITEM_SKU_999rub);
+                    skuList.add(ITEM_SKU_249rub_noad);
                     SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
                     params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP);
                     billingClient.querySkuDetailsAsync(params.build(),
@@ -102,7 +99,8 @@ public class Pay implements PurchasesUpdatedListener {
      * @param requestCode - идентификатор запроса на оплату
      * @return код ответа: 0 - удачная покупка, остальные ответа - не удачная покупка
      */
-    public int purchase(String itemSKU, int requestCode) {
+    public int purchase(Activity activity, String itemSKU, int requestCode) {
+        act = activity;
         if (billingClient == null || !billingClient.isReady()) return -1;
         reqCode = requestCode;
         SkuDetails skuDetails = null; // искомый продукт, который хотят купить
@@ -121,20 +119,19 @@ public class Pay implements PurchasesUpdatedListener {
      * слушатель, который обрабатывает покупку
      *
      * @param billingResult результат покупки
-     * @param purchases перечень покупок
+     * @param purchases     перечень покупок
      */
     @Override
     public void onPurchasesUpdated(@NonNull BillingResult billingResult, @Nullable List<Purchase> purchases) {
         if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases != null) {
             for (Purchase purchase : purchases) {
                 String itemSKU = purchase.getSkus().get(0);
-                Toast.makeText(act.getApplicationContext(), s(R.string.thank_you), Toast.LENGTH_LONG).show();
+                Toast.makeText(app.getApplicationContext(), s(R.string.thank_you), Toast.LENGTH_LONG).show();
                 Log.i("myLogs", "Оплата произведена успешно!");
-                final int thisSKU = itemSKU.equals(ITEM_SKU_1dol) ? 50 :
-                        (itemSKU.equals(ITEM_SKU_2dol) ? 100 :
-                                (itemSKU.equals(ITEM_SKU_5dol) ? 250 :
-                                        (itemSKU.equals(ITEM_SKU_10dol) ? 500 :
-                                                (itemSKU.equals(ITEM_SKU_99rub) ? 99 : 0))));
+                final int thisSKU = itemSKU.equals(ITEM_SKU_249rub) ? 249 :
+                        (itemSKU.equals(ITEM_SKU_499rub) ? 499 :
+                                (itemSKU.equals(ITEM_SKU_999rub) ? 999 :
+                                        (itemSKU.equals(ITEM_SKU_249rub_noad) ? 249 : 0)));
                 int oldAmountDonate = amountDonate;
                 amountDonate += thisSKU;
                 db.updateRecExitState(DB.AMOUNT_DONATE, amountDonate + "");
@@ -144,7 +141,7 @@ public class Pay implements PurchasesUpdatedListener {
                 if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
                     // 1001 - ответ пришел от Thanks
                     // если это первая покупка, то делаем невозобновляемую покупку, а если не первая, то возобновляемую через consume
-                    if (reqCode == 1001 & oldAmountDonate > 0) {
+                    if (reqCode == 1001) {
                         consume(purchase.getSkus().get(0), purchase.getPurchaseToken());
                         purchaseMotive = s(R.string.from_thanks);
                     } else if (reqCode == 1002) { // 1002 - открываем статистику после оплаты (3 - это код для статистики)
@@ -174,13 +171,16 @@ public class Pay implements PurchasesUpdatedListener {
                     } else if (reqCode == 1007) { // 1007 - ответ пришел от фрагмента OtherSetting по смене цвета фона
                         ((Settings) act).getOtherSetting().changeColor(itemSKU);
                         purchaseMotive = s(R.string.bg_color);
+                    } else if (reqCode == 1008) { // 1008 - ответ пришел от NoAd
+                        consume(purchase.getSkus().get(0), purchase.getPurchaseToken());
+                        purchaseMotive = s(R.string.from_noad);
                     }
-                    // отправляем в Firebase инфу с настройками по словарю
-                    if (mFBAnalytics != null) {
+                    // отправляем в Firebase инфу с настройками по словарю (с 32 версии не актуальный функционал
+                    /*if (mFBAnalytics != null) {
                         app.purchaseEvent(purchaseMotive, db.getValueByVariable(DB.DATE_TRIAL_STATS),
                                 db.getValueByVariable(DB.DATE_LEARNING_METHOD), db.getValueByVariable(DB.DATE_LANGUAGE),
                                 db.getValueByVariable(DB.DATE_LANG_WORD_AMOUNT), db.getValueByVariable(DB.DATE_BG_COLOR));
-                    }
+                    }*/
 
                     if (!purchase.isAcknowledged()) {
                         AcknowledgePurchaseParams acknowledgePurchaseParams =
@@ -226,11 +226,10 @@ public class Pay implements PurchasesUpdatedListener {
             Purchase.PurchasesResult purchasesResult = billingClient.queryPurchases(BillingClient.SkuType.INAPP);
             for (Purchase purchase : purchasesResult.getPurchasesList()) {
                 String sku = purchase.getSkus().get(0);
-                if (sku.equals(ITEM_SKU_1dol)) amountDonate += 50;
-                if (sku.equals(ITEM_SKU_2dol)) amountDonate += 100;
-                if (sku.equals(ITEM_SKU_5dol)) amountDonate += 250;
-                if (sku.equals(ITEM_SKU_10dol)) amountDonate += 500;
-                if (sku.equals(ITEM_SKU_99rub)) amountDonate += 99;
+                if (sku.equals(ITEM_SKU_249rub)) amountDonate += 249;
+                if (sku.equals(ITEM_SKU_499rub)) amountDonate += 499;
+                if (sku.equals(ITEM_SKU_999rub)) amountDonate += 999;
+                if (sku.equals(ITEM_SKU_249rub_noad)) amountDonate += 249;
             }
         } catch (final Exception e) {
             Log.e("myLogs", "e = " + e.getMessage());
@@ -251,11 +250,10 @@ public class Pay implements PurchasesUpdatedListener {
             if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                 Log.i("myLogs", "Продукт " + itemSKU + " оплачен и снова доступен для покупки");
             } else {
-                int thisSKU = itemSKU.equals(ITEM_SKU_1dol) ? 50 :
-                        (itemSKU.equals(ITEM_SKU_2dol) ? 100 :
-                                (itemSKU.equals(ITEM_SKU_5dol) ? 250 :
-                                        (itemSKU.equals(ITEM_SKU_10dol) ? 500 :
-                                                (itemSKU.equals(ITEM_SKU_99rub) ? 99 : 0))));
+                int thisSKU = itemSKU.equals(ITEM_SKU_249rub) ? 249 :
+                        (itemSKU.equals(ITEM_SKU_499rub) ? 499 :
+                                (itemSKU.equals(ITEM_SKU_999rub) ? 999 :
+                                        (itemSKU.equals(ITEM_SKU_249rub_noad) ? 249 : 0)));
                 amountDonate = Math.max(0, amountDonate - thisSKU);
                 db.updateRecExitState(DB.AMOUNT_DONATE, amountDonate + "");
                 Log.w("myLogs", "Внимание! Не сработал метод Consume (подтвеждение и возможность повторного перевода)!");
@@ -265,7 +263,7 @@ public class Pay implements PurchasesUpdatedListener {
     }
 
     private String s(int res) {
-        return act.getResources().getString(res);
+        return app.getResources().getString(res);
     }
 
     public void close() {

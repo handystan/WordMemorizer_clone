@@ -12,9 +12,9 @@
         android:id="@+id/rlUpLearning"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
         android:background="#00000000"
         android:padding="2dp">
 
@@ -22,15 +22,14 @@
             android:id="@+id/bCategory"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:background="@drawable/bord_action_button"
-            android:paddingBottom="3dp"
             android:paddingTop="0dp"
+            android:paddingBottom="3dp"
             android:text="@string/choose_category"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
+            android:textAppearance="?android:attr/textAppearanceMedium" />
     </RelativeLayout>
 
     <LinearLayout
@@ -38,9 +37,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/llDontKnow"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
         android:layout_below="@+id/rlUpLearning"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:background="#00000000"
         android:clickable="true"
         android:focusable="true"
@@ -67,7 +66,7 @@
                 android:id="@+id/ivSound"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:background="#00000000"
                 android:clickable="true"
@@ -104,9 +103,9 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:background="@drawable/bord_ans_buttons"
-                        android:paddingBottom="15dp"
-                        android:paddingRight="5dp"
                         android:paddingTop="15dp"
+                        android:paddingEnd="5dp"
+                        android:paddingBottom="15dp"
                         android:textAppearance="?android:attr/textAppearanceMedium" />
 
                     <Button
@@ -115,9 +114,9 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:background="@drawable/bord_ans_buttons"
-                        android:paddingBottom="15dp"
-                        android:paddingLeft="5dp"
+                        android:paddingStart="5dp"
                         android:paddingTop="15dp"
+                        android:paddingBottom="15dp"
                         android:textAppearance="?android:attr/textAppearanceMedium" />
                 </TableRow>
 
@@ -133,9 +132,9 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:background="@drawable/bord_ans_buttons"
-                        android:paddingBottom="15dp"
-                        android:paddingRight="5dp"
                         android:paddingTop="15dp"
+                        android:paddingEnd="5dp"
+                        android:paddingBottom="15dp"
                         android:textAppearance="?android:attr/textAppearanceMedium" />
 
                     <Button
@@ -144,9 +143,9 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:background="@drawable/bord_ans_buttons"
-                        android:paddingBottom="15dp"
-                        android:paddingLeft="5dp"
+                        android:paddingStart="5dp"
                         android:paddingTop="15dp"
+                        android:paddingBottom="15dp"
                         android:textAppearance="?android:attr/textAppearanceMedium" />
                 </TableRow>
 
@@ -162,9 +161,9 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:background="@drawable/bord_ans_buttons"
-                        android:paddingBottom="15dp"
-                        android:paddingRight="5dp"
                         android:paddingTop="15dp"
+                        android:paddingEnd="5dp"
+                        android:paddingBottom="15dp"
                         android:textAppearance="?android:attr/textAppearanceMedium" />
 
                     <Button
@@ -173,9 +172,9 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:background="@drawable/bord_ans_buttons"
-                        android:paddingBottom="15dp"
-                        android:paddingLeft="5dp"
+                        android:paddingStart="5dp"
                         android:paddingTop="15dp"
+                        android:paddingBottom="15dp"
                         android:textAppearance="?android:attr/textAppearanceMedium" />
                 </TableRow>
 
@@ -191,9 +190,9 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:background="@drawable/bord_ans_buttons"
-                        android:paddingBottom="15dp"
-                        android:paddingRight="5dp"
                         android:paddingTop="15dp"
+                        android:paddingEnd="5dp"
+                        android:paddingBottom="15dp"
                         android:textAppearance="?android:attr/textAppearanceMedium" />
 
                     <Button
@@ -202,9 +201,9 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:background="@drawable/bord_ans_buttons"
-                        android:paddingBottom="15dp"
-                        android:paddingLeft="5dp"
+                        android:paddingStart="5dp"
                         android:paddingTop="15dp"
+                        android:paddingBottom="15dp"
                         android:textAppearance="?android:attr/textAppearanceMedium" />
                 </TableRow>
 
@@ -220,9 +219,9 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:background="@drawable/bord_ans_buttons"
-                        android:paddingBottom="15dp"
-                        android:paddingRight="5dp"
                         android:paddingTop="15dp"
+                        android:paddingEnd="5dp"
+                        android:paddingBottom="15dp"
                         android:textAppearance="?android:attr/textAppearanceMedium" />
 
                     <Button
@@ -231,9 +230,9 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:background="@drawable/bord_ans_buttons"
-                        android:paddingBottom="15dp"
-                        android:paddingLeft="5dp"
+                        android:paddingStart="5dp"
                         android:paddingTop="15dp"
+                        android:paddingBottom="15dp"
                         android:textAppearance="?android:attr/textAppearanceMedium" />
                 </TableRow>
 
@@ -249,9 +248,9 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:background="@drawable/bord_ans_buttons"
-                        android:paddingBottom="15dp"
-                        android:paddingRight="5dp"
                         android:paddingTop="15dp"
+                        android:paddingEnd="5dp"
+                        android:paddingBottom="15dp"
                         android:textAppearance="?android:attr/textAppearanceMedium" />
 
                     <Button
@@ -260,9 +259,9 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:background="@drawable/bord_ans_buttons"
-                        android:paddingBottom="15dp"
-                        android:paddingLeft="5dp"
+                        android:paddingStart="5dp"
                         android:paddingTop="15dp"
+                        android:paddingBottom="15dp"
                         android:textAppearance="?android:attr/textAppearanceMedium" />
                 </TableRow>
             </TableLayout>
@@ -285,7 +284,7 @@
                     android:id="@+id/etAnswerWord"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
+                    android:layout_marginStart="10dp"
                     android:hint="@string/inter_translate"
                     android:imeOptions="actionDone"
                     android:inputType="text"
@@ -321,8 +320,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/llDownLearning"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:background="#00000000"
         android:orientation="horizontal"
         android:padding="5dp">
@@ -341,7 +340,7 @@
             android:id="@+id/bKnow"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_marginLeft="5dp"
+            android:layout_marginStart="5dp"
             android:layout_weight="1"
             android:background="@drawable/bord_know_button"
             android:padding="2dp"
@@ -354,8 +353,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/llAdMob"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:background="#99BBBBBB"
         android:clickable="true"
         android:padding="5dp">
@@ -371,17 +370,16 @@
         android:id="@+id/llAdMob"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true">
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true">
 
-        <com.google.android.gms.ads.AdView
-            xmlns:ads="http://schemas.android.com/apk/res-auto"
+        <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
             android:id="@+id/avBottomBannerLearning"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             ads:adSize="SMART_BANNER"
-            ads:adUnitId="@string/id_bottom_banner_test" />
+            ads:adUnitId="@string/id_bottom_banner_real" />
         <!-- этот adUnitId нужно вставить перед тем, как публиковать приложение
         ads:adUnitId="@string/id_bottom_banner_real"
         вот это тестовый adUnitId

@@ -88,20 +88,19 @@ public class Utils {
             sTheme = strColor == null ? 1 : Integer.parseInt(strColor);
         }
         //проверяем не прошел ли бесплатный 7 дневный период по типу обучения. Если да, то возвращаем в базовый тип обучения
-        String fromOldDB = db.getValueByVariable(DB.OLD_FREE_DB);
-        boolean isFromOldDB = !(fromOldDB == null || fromOldDB.equals("0"));
         String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
         int amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
-        String strStartDate = db.getValueByVariable(DB.DATE_BG_COLOR);
+        //  с 32 версии не актуальный функционал
+        /*String strStartDate = db.getValueByVariable(DB.DATE_BG_COLOR);
         Date startDate = strStartDate == null || strStartDate.equals("") ? null : Date.valueOf(strStartDate);
-        if (!isFromOldDB && amountDonate == 0 && startDate != null && sTheme != 1) {
+        if (amountDonate == 0 && startDate != null && sTheme != 1) {
             long dif = (System.currentTimeMillis() - startDate.getTime()) / (1000 * 60 * 60 * 24);
             Log.d("myLogs", "dif = " + dif);
             if (dif > 7) { // и если закончились бесплатные 7 дней
                 db.updateRecExitState(DB.BG_COLOR, "1");
                 sTheme = 1;
             }
-        }
+        }*/
         switch (sTheme) {
             default:
             case THEME_1:
@@ -351,7 +350,7 @@ public class Utils {
     }
 
     /**
-     * главный метод, в котором вызываются диалоговые окно, оповещающее о платных функциях
+     * главный метод, в котором вызываются диалоговые окно, оповещающее о платных функциях (уже не актуально, платные функции убраны)
      *
      * @param kindOfSetting вид настройки, у которой сохраняется дата начала бесплатного периода (если пусто, то значит у этой настройки не сохраняется дата начала):
      *                      DATE_TRIAL_STATS, DATE_BG_COLOR, DATE_LEARNING_METHOD, DATE_LANGUAGE, DATE_LANG_WORD_AMOUNT
@@ -373,17 +372,14 @@ public class Utils {
         }
         String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
         int amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
-        String fromOldDB = db.getValueByVariable(DB.OLD_FREE_DB);
-        boolean isFromOldDB = !(fromOldDB == null || fromOldDB.equals("0"));
         String strStartDate = db.getValueByVariable(kindOfSetting);
         final Date startDate = strStartDate == null || strStartDate.equals("") ? null : Date.valueOf(strStartDate);
-        Log.d("myLogs", "isFromOldDB = " + isFromOldDB);
         Log.d("myLogs", "amountDonate = " + amountDonate);
         Log.d("myLogs", "startDate = " + startDate);
-        if (!isFromOldDB && amountDonate == 0 && startDate == null) { //если приложение еще не оплачено и еще не начался бесплатный месяц
+        if (amountDonate == 0 && startDate == null) { //если приложение еще не оплачено и еще не начался бесплатный месяц
             Utils.alertForPay(kindOfSetting, act, pay, db, true, learningType);
             return;
-        } else if (!isFromOldDB && amountDonate == 0 && startDate != null) { // если приложение не оплачены и стоит дата начала тестового периода
+        } else if (amountDonate == 0 && startDate != null) { // если приложение не оплачены и стоит дата начала тестового периода
             long dif = (System.currentTimeMillis() - startDate.getTime()) / (1000 * 60 * 60 * 24);
             Log.d("myLogs", "dif = " + dif);
             if (dif > 7) { // и если закончились бесплатные 7 дней
@@ -391,22 +387,23 @@ public class Utils {
                 return;
             }
         }
-        if (kindOfSetting.equals(DB.DATE_TRIAL_STATS)) {
+        // с 32 версии не актуальный функционал и вся эта функция
+        /*if (kindOfSetting.equals(DB.DATE_TRIAL_STATS)) {
             // 3 означает класс Statistics
-            fragAct.startActivityForResult(new Intent(fragAct, Statistics.class), 3);
+            fragAct.startActivityForResult(new Intent(fragAct, Statistics.class), 3); // это уже не актуально, так как это убрал из платных функций
         } else if (kindOfSetting.equals(DB.DATE_BG_COLOR)) {
-            ((OtherSetting) act).changeColor("");
+            ((OtherSetting) act).changeColor(""); // это уже не актуально, так как это убрал из платных функций
         } else if (kindOfSetting.equals(DB.DATE_LEARNING_METHOD)) {
             ((LearningSetting) act).setLearningType(learningType); // это уже не актуально, так как это убрал из платных функций
         } else if (kindOfSetting.equals(DB.DATE_LANGUAGE)) {
             ((LearningSetting) act).setEng(false); // это уже не актуально, так как это убрал из платных функций
         } else if (kindOfSetting.equals(DB.DATE_LANG_WORD_AMOUNT)) {
             ((LearningSetting) act).setAmountWords(); // это уже не актуально, так как это убрал из платных функций
-        }
+        }*/
     }
 
     /**
-     * главный метод, в котором вызываются диалоговые окно, оповещающее о платных функциях (перегруженный метод)
+     * главный метод, в котором вызываются диалоговые окно, оповещающее о платных функциях (перегруженный метод) (уже не актуально, платные функции убраны)
      *
      * @param kindOfSetting вид настройки, у которой сохраняется дата начала бесплатного периода (если пусто, то значит у этой настройки не сохраняется дата начала):
      *                      DATE_TRIAL_STATS, DATE_BG_COLOR, DATE_LEARNING_METHOD, DATE_LANGUAGE, DATE_LANG_WORD_AMOUNT
@@ -419,7 +416,7 @@ public class Utils {
     }
 
     /**
-     * универсальное диалоговое окно, оповещающее о платных функциях
+     * универсальное диалоговое окно, оповещающее о платных функциях (уже не актуально, платные функции убраны)
      *
      * @param kindOfSetting      вид настройки, у которой сохраняется дата начала бесплатного периода (если пусто, то значит у этой настройки не сохраняется дата начала
      *                           DATE_TRIAL_STATS, DATE_BG_COLOR, DATE_LEARNING_METHOD, DATE_LANGUAGE, DATE_LANG_WORD_AMOUNT
@@ -430,7 +427,7 @@ public class Utils {
      * @param learningType       если меняется метод обучения, то нужно указать, какой именно метод устанавливается
      */
     public static void alertForPay(final String kindOfSetting, final Object act, final Pay pay, final DB db, final boolean isButtonFreePeriod, final int learningType) {
-        final FragmentActivity fragAct;
+        /*final FragmentActivity fragAct;
         if (act instanceof Learning || act instanceof EditData) {
             fragAct = (FragmentActivity) act;
         } else if (act instanceof OtherSetting) {
@@ -449,7 +446,7 @@ public class Utils {
         LayoutInflater inflater = fragAct.getLayoutInflater();
         builder.setView(inflater.inflate(R.layout.dialog_pay, null));
         builder.setPositiveButton(R.string.buy, (dialog, which) -> {
-            int purchaseRes = pay.purchase(Pay.ITEM_SKU_99rub, reqCode);
+            int purchaseRes = pay.purchase(fragAct, Pay.ITEM_SKU_249rub_noad, reqCode);
             int i = 0;
             while (purchaseRes != 0) {
                 i++;
@@ -458,7 +455,7 @@ public class Utils {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                purchaseRes = pay.purchase(Pay.ITEM_SKU_99rub, reqCode);
+                purchaseRes = pay.purchase(fragAct, Pay.ITEM_SKU_249rub_noad, reqCode);
                 if (i == 10) {
                     if (purchaseRes == 7) {
                         Toast.makeText(fragAct, R.string.aready_purchased, Toast.LENGTH_LONG).show();
@@ -502,11 +499,11 @@ public class Utils {
             }
         });
         AlertDialog dialog = builder.create();
-        dialog.show();
+        dialog.show();*/
     }
 
     /**
-     * универсальное диалоговое окно, оповещающее о платных функциях (перегруженная функция)
+     * универсальное диалоговое окно, оповещающее о платных функциях (перегруженная функция)  (уже не актуально, платные функции убраны)
      *
      * @param kindOfSetting      вид настройки, у которой сохраняется дата начала бесплатного периода (если пусто, то значит у этой настройки не сохраняется дата начала
      *                           DATE_TRIAL_STATS, DATE_BG_COLOR, DATE_LEARNING_METHOD, DATE_LANGUAGE, DATE_LANG_WORD_AMOUNT
@@ -529,7 +526,7 @@ public class Utils {
      */
     public static List<String> strToList(String str, String delimiter, boolean deleteBlank) {
         String[] arr = str.split(",");
-        List<String> list = new ArrayList<String>(); //список со всеми категориями в данном слове
+        List<String> list = new ArrayList<>(); //список со всеми категориями в данном слове
         for (String s : arr) {
             list.add(deleteBlank ? s.trim() : s);
         }

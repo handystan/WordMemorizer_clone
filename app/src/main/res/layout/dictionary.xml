@@ -17,46 +17,63 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+    <RelativeLayout
+        android:id="@+id/rlDict"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:background="@drawable/bg_image"
-        android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <EditText
-            android:id="@+id/inputWord"
+        <LinearLayout
+            android:id="@+id/llUpDict"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginRight="10dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
             android:background="#00000000"
-            android:hint="@string/search"
-            android:selectAllOnFocus="true">
+            android:orientation="vertical">
 
-            <requestFocus />
-        </EditText>
+            <EditText
+                android:id="@+id/inputWord"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="10dp"
+                android:background="#00000000"
+                android:hint="@string/search"
+                android:selectAllOnFocus="true">
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:background="#888888" />
+                <requestFocus />
+            </EditText>
 
-        <TextView
-            android:id="@+id/tvNoWords"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="#00000000"
-            android:paddingLeft="10dp"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="#888888" />
+            <View
+                android:id="@+id/view"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:background="#888888" />
+
+            <TextView
+                android:id="@+id/tvNoWords"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#00000000"
+                android:paddingStart="10dp"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="#888888" />
+        </LinearLayout>
 
         <RelativeLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:id="@+id/rlCentralDict"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/llAdMobDict"
+            android:layout_below="@+id/llUpDict"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
             android:background="#00000000">
 
             <ListView
@@ -70,9 +87,7 @@
                 android:layout_width="20dp"
                 android:layout_height="match_parent"
                 android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
                 android:layout_marginEnd="0dp"
-                android:layout_marginRight="0dp"
                 android:background="#00000000"
                 android:orientation="vertical"
                 android:padding="0dp"
@@ -84,9 +99,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="0"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="0" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter1"
@@ -94,9 +109,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="1"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="1" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter2"
@@ -104,9 +119,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="2"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="2" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter3"
@@ -114,9 +129,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="3"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="3" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter4"
@@ -124,9 +139,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="4"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="4" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter5"
@@ -134,9 +149,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="5"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="5" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter6"
@@ -144,9 +159,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="6"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="6" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter7"
@@ -154,9 +169,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="7"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="7" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter8"
@@ -164,9 +179,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="8"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="8" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter9"
@@ -174,9 +189,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="9"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="9" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter10"
@@ -184,9 +199,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="10"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="10" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter11"
@@ -194,9 +209,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="11"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="11" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter12"
@@ -204,9 +219,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="12"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="12" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter13"
@@ -214,9 +229,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="13"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="13" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter14"
@@ -224,9 +239,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="14"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="14" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter15"
@@ -234,9 +249,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="15"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="15" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter16"
@@ -244,9 +259,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="16"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="16" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter17"
@@ -254,9 +269,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="17"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="17" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter18"
@@ -264,9 +279,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="18"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="18" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter19"
@@ -274,9 +289,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="19"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="19" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter20"
@@ -284,9 +299,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="20"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="20" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter21"
@@ -294,9 +309,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="21"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="21" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter22"
@@ -304,9 +319,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="22"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="22" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter23"
@@ -314,9 +329,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="23"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="23" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter24"
@@ -324,9 +339,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="24"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="24" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter25"
@@ -334,9 +349,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="25"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="25" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter26"
@@ -344,9 +359,9 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="26"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="26" />
+                    android:textColor="#55000000" />
 
                 <Button
                     android:id="@+id/bLetter27"
@@ -354,13 +369,29 @@
                     android:layout_height="16dp"
                     android:background="@drawable/bord_letter_button"
                     android:gravity="start|center_vertical"
+                    android:tag="27"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#55000000"
-                    android:tag="27" />
+                    android:textColor="#55000000" />
 
             </LinearLayout>
         </RelativeLayout>
-    </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llAdMobDict"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true">
+
+            <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/avBottomBannerDict"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                ads:adSize="SMART_BANNER"
+                ads:adUnitId="@string/id_bottom_banner_dict" />
+        </LinearLayout>
+    </RelativeLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"

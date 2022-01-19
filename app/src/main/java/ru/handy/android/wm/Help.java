@@ -8,8 +8,12 @@ import android.text.Html;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.ActionBar;
@@ -17,6 +21,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import ru.handy.android.wm.setting.Utils;
@@ -27,6 +34,9 @@ public class Help extends AppCompatActivity {
     private int idHelp; // id ActionBar, который выбран на момент вызова помощи
     private String linkWord;
     private TextView mTextView;
+    private LinearLayout llAdMobHelp;
+    private AdView avBottomBannerHelp;
+    private DB db;
     private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
     public void onCreate(Bundle savedInstanceState) {
@@ -42,6 +52,27 @@ public class Help extends AppCompatActivity {
             String[] arrClName = this.getClass().toString().split("\\.");
             app.openActEvent(arrClName[arrClName.length - 1]);
         }
+        db = app.getDb(); // открываем подключение к БД
+
+        String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
+        int amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
+        avBottomBannerHelp = findViewById(R.id.avBottomBannerHelp);
+        llAdMobHelp = findViewById(R.id.llAdMobHelp);
+        // инициализация AdMob для рекламы
+        MobileAds.initialize(this, initializationStatus ->
+                Log.d("myLogs", "AdMob in " + getClass().getSimpleName() + " is initialized"));
+        AdRequest adRequest = new AdRequest.Builder().build();
+        // загружаем баннерную рекламу
+        avBottomBannerHelp.loadAd(adRequest);
+        ViewGroup.LayoutParams params = llAdMobHelp.getLayoutParams();
+        if (amountDonate > 0) {
+            params.height = 0;
+            Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName() + " без отображения");
+        } else {
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName());
+        }
+        llAdMobHelp.setLayoutParams(params);
 
         // устанавливаем toolbar и actionbar
         Toolbar toolbar = findViewById(R.id.toolbar);

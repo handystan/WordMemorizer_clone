@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
@@ -28,8 +27,9 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@+id/llDownCWL"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
             android:background="#00000000"
             android:orientation="vertical"
             android:padding="5dp">
@@ -38,7 +38,7 @@
                 android:id="@+id/lvCatWordsList"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp"
                 android:layout_marginTop="10dp"
                 android:background="#00000000" />
 
@@ -48,9 +48,7 @@
             android:id="@+id/llDownCWL"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentRight="true"
+            android:layout_above="@+id/llAdMobCatWordList"
             android:background="#88BBBBBB"
             android:orientation="horizontal"
             android:padding="0dp"
@@ -91,6 +89,22 @@
                 android:textColor="#FF0000"
                 android:paddingLeft="5dp"
                 android:paddingRight="5dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llAdMobCatWordList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true">
+
+            <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/avBottomBannerCatWordList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                ads:adSize="SMART_BANNER"
+                ads:adUnitId="@string/id_bottom_banner_catwordlist" />
         </LinearLayout>
 
     </RelativeLayout>

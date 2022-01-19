@@ -6,6 +6,8 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,6 +18,9 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.tabs.TabLayout;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -37,6 +42,8 @@ public class Settings extends AppCompatActivity {
     private DictSetting dictSetting;
     private LearningSetting learningSetting;
     private OtherSetting otherSetting;
+    private LinearLayout llAdMobSettings;
+    private AdView avBottomBannerSettings;
     private DB db;
     private ActionBar bar;
     // что было выбрано при вызове настроек: 0-обучение, 1-словарь, 2- прочее
@@ -62,8 +69,28 @@ public class Settings extends AppCompatActivity {
         }
         db = app.getDb(); // открываем подключение к БД
 
+        String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
+        int amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
+        avBottomBannerSettings = findViewById(R.id.avBottomBannerSettings);
+        llAdMobSettings = findViewById(R.id.llAdMobSettings);
+        // инициализация AdMob для рекламы
+        MobileAds.initialize(this, initializationStatus ->
+                Log.d("myLogs", "AdMob in " + getClass().getSimpleName() + " is initialized"));
+        AdRequest adRequest = new AdRequest.Builder().build();
+        // загружаем баннерную рекламу
+        avBottomBannerSettings.loadAd(adRequest);
+        ViewGroup.LayoutParams params = llAdMobSettings.getLayoutParams();
+        if (amountDonate > 0) {
+            params.height = 0;
+            Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName() + " без отображения");
+        } else {
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName());
+        }
+        llAdMobSettings.setLayoutParams(params);
+
         // устанавливаем toolbar и actionbar
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         bar = getSupportActionBar();
         if (bar != null) {
@@ -79,7 +106,7 @@ public class Settings extends AppCompatActivity {
             bar.setHomeAsUpIndicator(upArrow);
         }
 
-        viewPager = (ViewPager) findViewById(R.id.viewpager);
+        viewPager = findViewById(R.id.viewpager);
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         if (savedInstanceState != null) {
             learningSetting = (LearningSetting) getSupportFragmentManager().getFragment(savedInstanceState, "learningSetting");
@@ -96,7 +123,7 @@ public class Settings extends AppCompatActivity {
         viewPager.setAdapter(adapter);
         viewPager.setCurrentItem(idSetting);
 
-        tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
         Log.d("myLogs", "onCreate Setting");
     }
@@ -151,6 +178,7 @@ public class Settings extends AppCompatActivity {
         intent.putExtra("isShowTranscr", learningSetting.isShowTranscr());
         intent.putExtra("amountWords", learningSetting.getAmountWords());
         intent.putExtra("isShowDontKnow", learningSetting.isShowDontKnow());
+        intent.putExtra("isLessonsHistory", learningSetting.isLessonsHistory());
         intent.putExtra("translDirection", dictSetting.isEngTransl());
         intent.putExtra("searchRule", dictSetting.isSearchRule1());
         intent.putExtra("showHistory", dictSetting.isShowHistory());

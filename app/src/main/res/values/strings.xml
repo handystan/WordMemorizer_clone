@@ -92,6 +92,8 @@
     <string name="not_show_dont_know">Не показывать кнопку \'Не знаю\'</string>
     <string name="speak_eng_word">Автоматически озвучивать англ. слово</string>
     <string name="clear_history">Очистить историю</string>
+    <string name="renew_lesson">Обновить урок</string>
+    <string name="renew_current_lesson">Сбросить текущий урок и начать его заново?</string>
     <string name="about">О программе</string>
     <string name="exit">Выход</string>
     <string name="show_history">показывать последние просмотренные слова, когда строка поиска пустая</string>
@@ -106,6 +108,8 @@
     <string name="amount_words">Количество слов для выбора</string>
     <string name="thank_you">Спасибо за вашу поддержку!</string>
     <string name="title_thanks">Благодарность</string>
+    <string name="switch_off_advertisement">Отключить рекламу</string>
+    <string name="no_advertisement_forever">Отключить рекламу навсегда за 249 руб.</string>
     <string name="rub">руб</string>
     <string name="text_for_donate">Если вам понравилось приложение, вы можете поддержать разработчика небольшим взносом:</string>
     <string name="donate">Поддержать</string>
@@ -117,7 +121,7 @@
     <string name="other">прочее</string>
     <string name="change_background">Поменять фон</string>
     <string name="buy_paid_features">Купить платные функции?</string>
-    <string name="buying_is_allowed">Приобретение платного контента за 99 руб. позволяет:</string>
+    <string name="buying_is_allowed">Приобретение платного контента позволяет:</string>
     <string name="no_advertisement">- убрать рекламу;</string>
     <string name="see_statistics">- посмотреть статистику и запускать уроки со словами с ранее сделанными ошибками;</string>
     <string name="unlimited_downloads">- загружать неограниченное количество слов из файлов;</string>
@@ -178,6 +182,7 @@
     <string name="US_eng">Амер. английский</string>
     <string name="UK_eng">Брит. английский</string>
     <string name="from_thanks">Из Thanks</string>
+    <string name="from_noad">Из NoAd</string>
     <string name="data_from_file">Данные из файла</string>
     <string name="learning_lang">Язык обучения</string>
     <string name="bg_color">Цвет фона</string>
@@ -186,10 +191,22 @@
     <string name="to_much_categories">Выбрано слишком много категорий</string>
     <string name="success_of_rename_category">Имя категории успешно изменено</string>
     <string name="no_rename_category">Новое имя категории не отличается от прежнего</string>
-    <string name="id_bottom_banner_real">ca-app-pub-8509841932044551/6071495540</string>
-    <string name="id_bottom_banner_test">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="save_lessons_history">Сохранять историю всех незаконченных уроков</string>
+    <string name="no_save_lessons_history">Сохранять историю только последнего урока</string>
     <string name="id_interstitial_lesson_end_real">ca-app-pub-8509841932044551/9583755757</string>
     <string name="id_interstitial_lesson_end_test">ca-app-pub-3940256099942544/1033173712</string>
+    <string name="id_bottom_banner_real">ca-app-pub-8509841932044551/6071495540</string>
+    <string name="id_bottom_banner_test">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="id_bottom_banner_dict">ca-app-pub-8509841932044551/3504257476</string>
+    <string name="id_bottom_banner_data">ca-app-pub-8509841932044551/5121387636</string>
+    <string name="id_bottom_banner_worddescr">ca-app-pub-8509841932044551/8454127982</string>
+    <string name="id_bottom_banner_wordedit">ca-app-pub-8509841932044551/3095303171</string>
+    <string name="id_bottom_banner_catwordlist">ca-app-pub-8509841932044551/5853134935</string>
+    <string name="id_bottom_banner_categories">ca-app-pub-8509841932044551/9227265553</string>
+    <string name="id_bottom_banner_settings">ca-app-pub-8509841932044551/2909091601</string>
+    <string name="id_bottom_banner_statistics">ca-app-pub-8509841932044551/9846212650</string>
+    <string name="id_bottom_banner_about">ca-app-pub-8509841932044551/6616386416</string>
+    <string name="id_bottom_banner_help">ca-app-pub-8509841932044551/3712049149</string>
     <string name="helpForLearning">
 <![CDATA[
 <p><b><big>WordMemorizer</big></b> - программа-помощник в запоминании английских слов.
@@ -199,11 +216,12 @@
 <br>&nbsp;&nbsp;&nbsp;- отгадать верный перевод из предложенных вариантов или
 <br>&nbsp;&nbsp;&nbsp;- написать (продиктовать) перевод или
 <br>&nbsp;&nbsp;&nbsp;- комплексный вариант: по каждому слову сначала предлагается выбор варианта из рус. перевода, потом выбор варианта из англ. перевода и наконец написание англ. перевода.
-<p></p>В настройках к обучению можно:
+<p></p>В настройках к обучению также можно:
 <br>&nbsp;&nbsp;&nbsp;- настроить отгадывание как английских, так и русских слов;
 <br>&nbsp;&nbsp;&nbsp;- отображать либо скрывать транскрипцию;
 <br>&nbsp;&nbsp;&nbsp;- включить автоматическую озвучку английского слова после каждого отгадывания;
 <br>&nbsp;&nbsp;&nbsp;- изменять количество вариантов ответов при отгадывании слов;
+<br>&nbsp;&nbsp;&nbsp;- сохранять или стирать историю всех незаконченных уроков;
 <br>&nbsp;&nbsp;&nbsp;- изменять цвет фона;
 <br>&nbsp;&nbsp;&nbsp;- выбирать произношение английского слова (американское или британское).
 <p></p>Нажатием нижней строки с количеством слов можно посмотреть все слова выбранной <a href=\'#\'>категории(й)</a>&nbsp;
@@ -246,17 +264,14 @@
 <![CDATA[
 <p><b>Данные</b>
 <br>Данный раздел позволяет загружать словарь из Excel-файла (расширение xls) или текстового файла определенного формата:
-<br>Данный раздел позволяет загружать словарь из Excel-файла (расширение xls) или текстового файла определенного формата:
 <br>&nbsp;&nbsp;- 1 столбец: английское слово
 <br>&nbsp;&nbsp;- 2 столбец: транскрипция
 <br>&nbsp;&nbsp;- 3 столбец: русский перевод
 <br>&nbsp;&nbsp;- 4 столбец: категория.
 <br>Для текстового формата разделитель слов по умолчанию - \";\". Текстовые файлы нужно загружать с кодировкой UTF-8.
-<p>По умолчанию из файла можно загрузить не более 10 слов. Для безлимитной загрузки слов нужно внести единоразовую небольшую плату 99 руб.
 <p>Также он позволяет выгружать весь словарь (или слова только выбранных категорий) в Excel-файл или текстовый файл такого же формата.
 <p>Здесь же файл сразу можно отправить любому пользователю через любой установенный мессенджер или почтовую программу.
-<p><b>Совет:</b> для правильного отображения транскрипции рекомендуется пользоваться
-выгрузкой/загрузкой в Excel-файл.
+<p><b>Совет:</b> для правильного отображения транскрипции рекомендуется пользоваться выгрузкой/загрузкой в Excel-файл.
 <p><b><a href=\'#\'>На главную</a></b><p>
     ]]>
     </string>
@@ -274,7 +289,7 @@
     <string name="about_desc">
 <![CDATA[
 <p><big><b>WordMemorizer</b></big>
-<br>Версия 2.8 для версии Android 5.0 и выше.
+<br>Версия 2.9 для версии Android 5.0 и выше.
 <p><b>Производитель</b>
 <br>Handy Systems
 <p><b>e-mail</b>

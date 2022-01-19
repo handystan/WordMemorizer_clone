@@ -19,22 +19,24 @@
             android:authorities="ru.handy.android.wm.provider"
             android:exported="false"
             android:grantUriPermissions="true">
+
             <!-- ressource file to create -->
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
-        </provider>
-        <!-- необходимо для показа рекламы в AdMod -->
+        </provider> <!-- необходимо для показа рекламы в AdMod -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-8509841932044551~4673479939" />
 
         <activity
             android:name=".learning.Learning"
+            android:exported="true"
             android:label="@string/word_memorizer"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -63,7 +65,7 @@
             android:name=".setting.Settings"
             android:label="@string/action_settings" />
         <activity
-            android:name=".learning.CategoreWordsList"
+            android:name=".learning.CategoryWordsList"
             android:label="@string/category_words_list" />
         <activity
             android:name=".learning.Categories"
@@ -72,6 +74,9 @@
         <activity
             android:name=".Thanks"
             android:label="@string/title_thanks" />
+        <activity
+            android:name=".NoAd"
+            android:label="@string/switch_off_advertisement" />
     </application>
 
 </manifest>

@@ -1,35 +1,48 @@
 package ru.handy.android.wm.learning;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.Intent;
+import android.database.sqlite.SQLiteException;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
+import ru.handy.android.wm.About;
 import ru.handy.android.wm.DB;
 import ru.handy.android.wm.GlobApp;
 import ru.handy.android.wm.R;
+import ru.handy.android.wm.Thanks;
 import ru.handy.android.wm.setting.Utils;
 
 /**
  * класс с со словами категории из уровка (все, отгаданные и не отгаданные)
  */
-public class CategoreWordsList extends AppCompatActivity implements View.OnClickListener {
+public class CategoryWordsList extends AppCompatActivity implements View.OnClickListener {
 
+    private boolean isUpdatedLesson = false; // была ли нажат пункт меню по обновлению урока
     private GlobApp app;
     private ListView lvCatWordsList;
     private Button bAllWordsCWL;
@@ -39,6 +52,8 @@ public class CategoreWordsList extends AppCompatActivity implements View.OnClick
     private ArrayList<Word> rightWords; // кол-во отгаданных слов
     private ArrayList<Word> wrongWords; // кол-во не отгаданных слов
     private WordsAdapter wAdapter;
+    private LinearLayout llAdMobCatWordList;
+    private AdView avBottomBannerCatWordList;
     private DB db;
     private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
@@ -61,13 +76,33 @@ public class CategoreWordsList extends AppCompatActivity implements View.OnClick
         db = app.getDb(); // открываем подключение к БД
 
         // устанавливаем toolbar и actionbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar bar = getSupportActionBar();
         if (bar != null) {
             bar.setDisplayHomeAsUpEnabled(true);
             bar.setDisplayShowHomeEnabled(true);
         }
+
+        String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
+        int amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
+        avBottomBannerCatWordList = findViewById(R.id.avBottomBannerCatWordList);
+        llAdMobCatWordList = findViewById(R.id.llAdMobCatWordList);
+        // инициализация AdMob для рекламы
+        MobileAds.initialize(this, initializationStatus -> Log.d("myLogs", "AdMob in CategoryWordsList is initialized"));
+        AdRequest adRequest = new AdRequest.Builder().build();
+        // загружаем баннерную рекламу
+        avBottomBannerCatWordList.loadAd(adRequest);
+        ViewGroup.LayoutParams params = llAdMobCatWordList.getLayoutParams();
+        if (amountDonate > 0) {
+            params.height = 0;
+            Log.i("myLogs", "загружена баннерная реклама в CategoryWordsList без отображения");
+        } else {
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            Log.i("myLogs", "загружена баннерная реклама в CategoryWordsList");
+        }
+        llAdMobCatWordList.setLayoutParams(params);
+
         // устанавливаем цвет фона и шрифта для toolbar
         Utils.colorizeToolbar(this, toolbar);
         // устанавливаем цвет стрелки "назад" в toolbar
@@ -85,9 +120,16 @@ public class CategoreWordsList extends AppCompatActivity implements View.OnClick
         bWrongWordsCWL = findViewById(R.id.bWrongWordsCWL);
         bWrongWordsCWL.setOnClickListener(this);
 
-        allWords = db.getAllWordsInLesson();
-        rightWords = db.getRightWordsInLesson();
-        wrongWords = db.getAllWrongWordsInLesson();
+        initWordList();
+    }
+
+    /**
+     * инициирование урока данными, в т.ч. и после нажаитя кнопки "Обновить урок"
+     */
+    private void initWordList() {
+        allWords = db.getAllWordsInCurLesson();
+        rightWords = db.getRightWordsInCurLesson();
+        wrongWords = db.getAllWrongWordsInCurLesson();
         Collections.sort(allWords, (word1, word2) -> word1.getEngWord().compareToIgnoreCase(word2.getEngWord()));
         Collections.sort(rightWords, (word1, word2) -> word1.getEngWord().compareToIgnoreCase(word2.getEngWord()));
         Collections.sort(wrongWords, (word1, word2) -> word1.getEngWord().compareToIgnoreCase(word2.getEngWord()));
@@ -123,27 +165,65 @@ public class CategoreWordsList extends AppCompatActivity implements View.OnClick
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        menu.setGroupVisible(R.id.group_renew_lesson, true);
+        menu.setGroupVisible(R.id.group_about, true);
+        return true;
+    }
+
     // обрабатываем кнопку "назад" в ActionBar
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Операции для выбранного пункта меню
         if (item.getItemId() == android.R.id.home) {
+            createIntent();
             finish();
             return true;
-        } else {
-            return super.onOptionsItemSelected(item);
+        } else if (item.getItemId() == R.id.renew_lesson) { // загружаем урок заново
+            new AlertDialog.Builder(this)
+                    .setMessage(s(R.string.renew_current_lesson))
+                    .setPositiveButton(s(R.string.yes), (dialog, which) -> {
+                        new Fixing(db, db.getCategoryCurLesson(), true, false);
+                        initWordList();
+                        isUpdatedLesson = true;
+                    })
+                    .setNegativeButton(R.string.cancel, null)
+                    .create()
+                    .show();
+        } else if (item.getItemId() == R.id.about) { // вызов страницы О программе
+            startActivity(new Intent(this, About.class));
         }
+        return super.onOptionsItemSelected(item);
+    }
+
+    // обработка кнопки назад
+    @Override
+    public void onBackPressed() {
+        createIntent();
+        super.onBackPressed();
+    }
+
+    private void createIntent() {
+        Intent intent = new Intent();
+        intent.putExtra("isUpdatedLesson", isUpdatedLesson);
+        setResult(RESULT_OK, intent);
+    }
+
+    private String s(int res) {
+        return getResources().getString(res);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        super.onResume();
     }
 
     @Override
     public void onDestroy() {
-        Log.d("myLogs", "onDestroy WrongWords");
+        Log.d("myLogs", "onDestroy CategoryWordsList");
         super.onDestroy();
     }
 }

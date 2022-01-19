@@ -6,10 +6,13 @@ import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,6 +22,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.ArrayList;
@@ -44,6 +50,8 @@ public class Statistics extends AppCompatActivity implements View.OnClickListene
     private Button bLearningMistakes;
     private Button bLearningAll;
     private CategoryAdapter cAdapter;
+    private LinearLayout llAdMobStatistics;
+    private AdView avBottomBannerStatistics;
     private DB db;
     private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
@@ -62,8 +70,28 @@ public class Statistics extends AppCompatActivity implements View.OnClickListene
         }
         db = app.getDb(); // открываем подключение к БД
 
+        String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
+        int amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
+        avBottomBannerStatistics = findViewById(R.id.avBottomBannerStatistics);
+        llAdMobStatistics = findViewById(R.id.llAdMobStatistics);
+        // инициализация AdMob для рекламы
+        MobileAds.initialize(this, initializationStatus ->
+                Log.d("myLogs", "AdMob in " + getClass().getSimpleName() + " is initialized"));
+        AdRequest adRequest = new AdRequest.Builder().build();
+        // загружаем баннерную рекламу
+        avBottomBannerStatistics.loadAd(adRequest);
+        ViewGroup.LayoutParams params = llAdMobStatistics.getLayoutParams();
+        if (amountDonate > 0) {
+            params.height = 0;
+            Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName() + " без отображения");
+        } else {
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName());
+        }
+        llAdMobStatistics.setLayoutParams(params);
+
         // устанавливаем toolbar и actionbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar bar = getSupportActionBar();
         if (bar != null) {
@@ -79,11 +107,11 @@ public class Statistics extends AppCompatActivity implements View.OnClickListene
             bar.setHomeAsUpIndicator(upArrow);
         }
 
-        lvChooseCat = (ListView) findViewById(R.id.lvChooseCat);
-        tvRightAnswers = (TextView) findViewById(R.id.tvRightAnswers);
-        tvWrongAnswers = (TextView) findViewById(R.id.tvWrongAnswers);
-        bLearningMistakes = (Button) findViewById(R.id.bLearningMistakes);
-        bLearningAll = (Button) findViewById(R.id.bLearningAll);
+        lvChooseCat = findViewById(R.id.lvChooseCat);
+        tvRightAnswers = findViewById(R.id.tvRightAnswers);
+        tvWrongAnswers = findViewById(R.id.tvWrongAnswers);
+        bLearningMistakes = findViewById(R.id.bLearningMistakes);
+        bLearningAll = findViewById(R.id.bLearningAll);
 
         // получаем из БД список категорий с ошибками
         categoryStats = db.getCategoryStats();

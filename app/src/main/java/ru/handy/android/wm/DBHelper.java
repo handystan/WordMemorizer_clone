@@ -2,9 +2,14 @@ package ru.handy.android.wm;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * класс по созданию и управлению БД
@@ -38,6 +43,7 @@ public class DBHelper extends SQLiteOpenHelper {
             insertExitState(db, DB.LEARNING_SHOW_TRANSCR, "1");
             insertExitState(db, DB.LEARNING_AMOUNT_WORDS, "8");
             insertExitState(db, DB.LEARNING_SHOW_DONTKNOW, "1");
+            insertExitState(db, DB.LEARNING_LESSONS_HISTORY, "1");
             insertExitState(db, DB.SEARCH_WORD, "");
             insertExitState(db, DB.PRONUNCIATION_USUK, "0");
             insertExitState(db, DB.DICT_TRASL_DIRECT, "0");
@@ -45,12 +51,12 @@ public class DBHelper extends SQLiteOpenHelper {
             insertExitState(db, DB.DICT_SHOW_HISTORY, "0");
             insertExitState(db, DB.AMOUNT_DONATE, "0");
             insertExitState(db, DB.BG_COLOR, "1"); // белый фон
-            insertExitState(db, DB.OLD_FREE_DB, "0"); // новая БД с платными настройками
-            insertExitState(db, DB.DATE_TRIAL_STATS, ""); // дата начала месячного бесплатного периода для статистики
+            // с 32 версии это уже не нужно
+            /*insertExitState(db, DB.DATE_TRIAL_STATS, ""); // дата начала месячного бесплатного периода для статистики
             insertExitState(db, DB.DATE_BG_COLOR, ""); // дата начала месячного бесплатного периода для смены цвета фона
             insertExitState(db, DB.DATE_LEARNING_METHOD, ""); // дата начала месячного бесплатного периода для смены метода обучения
             insertExitState(db, DB.DATE_LANGUAGE, ""); // дата начала месячного бесплатного периода для смены языка обучения
-            insertExitState(db, DB.DATE_LANG_WORD_AMOUNT, ""); // дата начала месячного бесплатного периода для кол-ва слов, показываемых при обучении
+            insertExitState(db, DB.DATE_LANG_WORD_AMOUNT, ""); // дата начала месячного бесплатного периода для кол-ва слов, показываемых при обучении*/
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
@@ -73,50 +79,38 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.beginTransaction();
         try {
-            if (oldVersion <= 22 && newVersion == 31) {
-                insertExitState(db, DB.BG_COLOR, "1"); // белый фон
-                insertExitState(db, DB.OLD_FREE_DB, "1"); // клиенты из старой базы, которым автоматом все делается бесплатно
-                insertExitState(db, DB.LEARNING_TYPE, "0");
-                insertExitState(db, DB.LEARNING_SPEAK, "1");
-                insertExitState(db, DB.LEARNING_REPEATS_AMOUNT, "2");
-                insertExitState(db, DB.LEARNING_SHOW_DONTKNOW, "1");
-                insertExitState(db, DB.PRONUNCIATION_USUK, "0");
-                insertExitState(db, DB.DATE_TRIAL_STATS, "");
-                insertExitState(db, DB.DATE_BG_COLOR, "");
-                insertExitState(db, DB.DATE_LEARNING_METHOD, "");
-                insertExitState(db, DB.DATE_LANGUAGE, "");
-                insertExitState(db, DB.DATE_LANG_WORD_AMOUNT, "");
-                //db.execSQL(DB.T_STATISTICS_CREATE);
-                db.delete(DB.T_ENGWORDS, null, null);
-                db.delete(DB.T_LESSON, null, null);
-                insertAllDict(db);
-            } else if (oldVersion == 23 && newVersion == 31) {
-                updateDictFrom23(db);
-                updateDictFrom24(db);
+            if (oldVersion <= 24 && newVersion == 32) { // версия 25 была тестовой
+                // сначала удаляем всю старую БД
+                Cursor c = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'", null);
+                while (c.moveToNext()) {
+                    String tableName = c.getString(0);
+                    if (!tableName.equals("android_metadata") && !tableName.equals("sqlite_sequence")) {
+                        db.execSQL("DROP TABLE IF EXISTS " + tableName);
+                    }
+                }
+                c.close();
+                // потом создаем новую БД
+                onCreate(db);
+            } else if (oldVersion == 26 && newVersion == 32) {
                 updateDictFrom26(db);
                 updateDictFrom27(db);
                 updateDictFrom28(db);
                 updateDictFrom30(db);
-            }  else if (oldVersion == 24 && newVersion == 31) { // версия 25 была тестовой
-                updateDictFrom24(db);
-                updateDictFrom26(db);
+                updateDictFrom31(db);
+            } else if (oldVersion == 27 && newVersion == 32) {
                 updateDictFrom27(db);
                 updateDictFrom28(db);
                 updateDictFrom30(db);
-            }  else if (oldVersion == 26 && newVersion == 31) {
-                updateDictFrom26(db);
-                updateDictFrom27(db);
+                updateDictFrom31(db);
+            } else if (oldVersion == 28 && newVersion == 32) { // версия 29 не прошла цензуру Google
                 updateDictFrom28(db);
                 updateDictFrom30(db);
-            }  else if (oldVersion == 27 && newVersion == 31) {
-                updateDictFrom27(db);
-                updateDictFrom28(db);
+                updateDictFrom31(db);
+            } else if (oldVersion == 30 && newVersion == 32) {
                 updateDictFrom30(db);
-            }  else if (oldVersion == 28 && newVersion == 31) { // версия 29 не прошла цензуру Google
-                updateDictFrom28(db);
-                updateDictFrom30(db);
-            }  else if (oldVersion == 30 && newVersion == 31) {
-                updateDictFrom30(db);
+                updateDictFrom31(db);
+            } else if (oldVersion == 31 && newVersion == 32) {
+                updateDictFrom31(db);
             }
             db.setTransactionSuccessful();
         } finally {
@@ -2704,104 +2698,6 @@ public class DBHelper extends SQLiteOpenHelper {
         insertDict(db, "rosehip", "[ˈrəʊzɪp]", "шиповник", "ягоды, кустарники");
     }
 
-    // заполняем основную таблицу-словарь при переходе из версии 23
-    private void updateDictFrom23(SQLiteDatabase db) {
-        ContentValues cv = new ContentValues();
-        cv.put(DB.C_EW_TRANSCRIPTION, "[hə:ˈself]");
-        db.update(DB.T_ENGWORDS, cv, DB.C_EW_ENGWORD + "='herself'", null);
-        cv = new ContentValues();
-        cv.put(DB.C_EW_TRANSCRIPTION, "[auəˈselvz]");
-        db.update(DB.T_ENGWORDS, cv, DB.C_EW_ENGWORD + "='ourselves'", null);
-        cv = new ContentValues();
-        cv.put(DB.C_EW_RUSTRANSLATE, "тревога");
-        cv.put(DB.C_EW_CATEGORY, "эмоции отрицательные");
-        db.update(DB.T_ENGWORDS, cv, DB.C_EW_ENGWORD + "='anxiety'", null);
-        cv = new ContentValues();
-        cv.put(DB.C_EW_CATEGORY, "эмоции отрицательные");
-        db.update(DB.T_ENGWORDS, cv, DB.C_EW_ENGWORD + "='fear'", null);
-        cv = new ContentValues();
-        cv.put(DB.C_EW_RUSTRANSLATE, "восторг");
-        cv.put(DB.C_EW_CATEGORY, "эмоции положительные");
-        db.update(DB.T_ENGWORDS, cv, DB.C_EW_ENGWORD + "='delight'", null);
-        cv = new ContentValues();
-        cv.put(DB.C_EW_RUSTRANSLATE, "любовь, любить");
-        cv.put(DB.C_EW_CATEGORY, "эмоции положительные");
-        db.update(DB.T_ENGWORDS, cv, DB.C_EW_ENGWORD + "='love'", null);
-        cv = new ContentValues();
-        cv.put(DB.C_EW_RUSTRANSLATE, "спокойный, тихий, спокойствие");
-        cv.put(DB.C_EW_CATEGORY, "эмоции положительные, прилагательные характера3");
-        db.update(DB.T_ENGWORDS, cv, DB.C_EW_ENGWORD + "='calm'", null);
-        insertDict(db, "amazement", "[əˈmeɪzmənt]", "изумление", "эмоции нейтральные");
-        insertDict(db, "apathy", "[ˈæpəθɪ]", "апатия", "эмоции нейтральные");
-        insertDict(db, "astonishment", "[əsˈtɔnɪʃmənt]", "удивление", "эмоции нейтральные");
-        insertDict(db, "boredom", "[ˈbɔːdəm]", "скука", "эмоции нейтральные");
-        insertDict(db, "contemplation", "[kɒntəmˈpleɪʃn]", "созерцание", "эмоции нейтральные");
-        insertDict(db, "curiosity", "[kjuərɪˈɔsɪtɪ]", "любопытство", "эмоции нейтральные");
-        insertDict(db, "humility", "[hju:ˈmɪlɪtɪ] ", "смирение", "эмоции нейтральные");
-        insertDict(db, "indifference", "[ɪnˈdɪfrəns]", "безразличие, равнодушие", "эмоции нейтральные");
-        insertDict(db, "interest", "[ˈɪntrɪst]", "интерес", "эмоции нейтральные");
-        insertDict(db, "relaxedness", "[riːlækˈsɪdnəs]", "расслабленность", "эмоции нейтральные");
-        insertDict(db, "anger", "[ˈæŋɡə]", "гнев", "эмоции отрицательные");
-        insertDict(db, "annoyance", "[əˈnɔɪəns]", "раздражение", "эмоции отрицательные");
-        insertDict(db, "confusion", "[kənˈfju:ʒən]", "растерянность", "эмоции отрицательные");
-        insertDict(db, "contempt", "[kənˈtempt]", "презрение", "эмоции отрицательные");
-        insertDict(db, "despair", "[dɪsˈpɛə]", "отчаяние", "эмоции отрицательные");
-        insertDict(db, "disappointment", "[dɪsəˈpɔɪntmənt]", "разочарование", "эмоции отрицательные");
-        insertDict(db, "disgust", "[dɪsˈɡʌst]", "отвращение", "эмоции отрицательные");
-        insertDict(db, "displeasure", "[dɪsˈpleʒə]", "недовольство", "эмоции отрицательные");
-        insertDict(db, "fright", "[fraɪt]", "испуг", "эмоции отрицательные");
-        insertDict(db, "grief", "[ɡri:f]", "горе", "эмоции отрицательные");
-        insertDict(db, "hatred", "[ˈheɪtrɪd]", "ненависть", "эмоции отрицательные");
-        insertDict(db, "horror", "[ˈhɔrə]", "ужас", "эмоции отрицательные");
-        insertDict(db, "indignation", "[ɪndɪɡˈneɪʃən]", "возмущение, негодование", "эмоции отрицательные");
-        insertDict(db, "jealousy", "[ˈʤeləsɪ]", "ревность", "эмоции отрицательные");
-        insertDict(db, "loneliness", "[ˈləʊnlɪnɪs]", "одиночество", "эмоции отрицательные");
-        insertDict(db, "repentance", "[rɪˈpentəns]", "раскаяние", "эмоции отрицательные");
-        insertDict(db, "sadness", "[ˈsædnɪs]", "печаль, грусть", "эмоции отрицательные");
-        insertDict(db, "shame", "[ʃeɪm]", "стыд", "эмоции отрицательные");
-        insertDict(db, "spite", "[spaɪt]", "злость", "эмоции отрицательные");
-        insertDict(db, "suffering", "[ˈsʌfərɪŋ] ", "страдание", "эмоции отрицательные");
-        insertDict(db, "admiration", "[ædməˈreɪʃən]", "восхищение", "эмоции положительные");
-        insertDict(db, "anticipation", "[ænˌtɪsɪˈpeɪʃən]", "предвкушение", "эмоции положительные");
-        insertDict(db, "belief", "[bɪˈli:f]", "вера", "эмоции положительные");
-        insertDict(db, "blessedness", "[ˈblesɪdnɪs]", "блаженство", "эмоции положительные");
-        insertDict(db, "confidence", "[ˈkɔnfɪdəns]", "уверенность", "эмоции положительные");
-        insertDict(db, "enthusiasm", "[ɪnˈθju:zɪæzm]", "энтузиазм", "эмоции положительные");
-        insertDict(db, "gratitude", "[ˈɡrætɪtju:d]", "благодарность", "эмоции положительные");
-        insertDict(db, "hope", "[həup]", "надежда", "эмоции положительные");
-        insertDict(db, "joy", "[dʒɔɪ]", "радость", "эмоции положительные");
-        insertDict(db, "optimism", "[ˈɔptɪmɪzm]", "оптимизм", "эмоции положительные");
-        insertDict(db, "pleasure", "[ˈpleʒə]", "удовольствие", "эмоции положительные");
-        insertDict(db, "pride", "[praɪd]", "гордость", "эмоции положительные");
-        insertDict(db, "respect", "[rɪsˈpekt]", "уважение", "эмоции положительные");
-        insertDict(db, "sympathy", "[ˈsɪmpəθɪ]", "симпатия", "эмоции положительные");
-        insertDict(db, "tender emotion", "[ˈtendə ɪˈməʊʃn]", "умиление", "эмоции положительные");
-        insertDict(db, "tenderness", "[ˈtendənɪs]", "нежность", "эмоции положительные");
-        insertDict(db, "triumph", "[ˈtraɪəmf]", "ликование ", "эмоции положительные");
-        insertDict(db, "trust", "[trʌst]", "доверие", "эмоции положительные");
-    }
-
-    // заполняем основную таблицу-словарь при переходе из версии 24
-    private void updateDictFrom24(SQLiteDatabase db) {
-        insertExitState(db, DB.DATE_TRIAL_STATS, "");
-        insertExitState(db, DB.DATE_BG_COLOR, "");
-        insertExitState(db, DB.DATE_LEARNING_METHOD, "");
-        insertExitState(db, DB.DATE_LANGUAGE, "");
-        insertExitState(db, DB.DATE_LANG_WORD_AMOUNT, "");
-        ContentValues cv = new ContentValues();
-        cv.put(DB.C_EW_RUSTRANSLATE, "сэндвич, бутерброд");
-        db.update(DB.T_ENGWORDS, cv, DB.C_EW_ENGWORD + "='sandwich'", null);
-        insertDict(db, "borsch", "[bɔːʃ]", "борщ", "еда2");
-        insertDict(db, "buckwheat", "[ˈbʌkwiːt]", "гречка", "еда2");
-        insertDict(db, "cookies", "[ˈkʊkɪz]", "печенье", "еда2");
-        insertDict(db, "nut", "[nʌt]", "орех", "еда2");
-        insertDict(db, "pastry", "[ˈpeɪstrɪ]", "кондитерские изделия, пироженое", "еда2");
-        insertDict(db, "puree", "[ˈpjʊəreɪ]", "пюре", "еда2");
-        insertDict(db, "rassolnik", "[ˈrəsɒnɪk]", "рассольник", "еда2");
-        insertDict(db, "sauce", "[sɔːs]", "соус", "еда2");
-        insertDict(db, "sour cream", "[ˈsaʊə kriːm]", "сметана", "еда2");
-    }
-
     // заполняем основную таблицу-словарь при переходе из версии 26
     private void updateDictFrom26(SQLiteDatabase db) {
         ContentValues cv = new ContentValues();
@@ -3187,6 +3083,22 @@ public class DBHelper extends SQLiteOpenHelper {
         cv.put(DB.C_EW_CATEGORY, "инструменты столярные");
         db.update(DB.T_ENGWORDS, cv, DB.C_EW_ENGWORD + "='file' AND " + DB.C_EW_CATEGORY
                 + "='инструменты столярные, прочее2'", null);
+    }
+
+    // заполняем основную таблицу-словарь при переходе из версии 31
+    private void updateDictFrom31(SQLiteDatabase db) {
+        db.execSQL("ALTER TABLE " + DB.T_LESSON + " ADD COLUMN " + DB.C_L_LESSON_ID + " integer");
+        db.beginTransaction();
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put(DB.C_L_LESSON_ID, System.currentTimeMillis() / 1000);
+            db.update(DB.T_LESSON, cv, null, null);
+            insertExitState(db, DB.LEARNING_LESSONS_HISTORY, "1");
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+
     }
 
 

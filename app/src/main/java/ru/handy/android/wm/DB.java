@@ -3,6 +3,7 @@ package ru.handy.android.wm;
 import static ru.handy.android.wm.setting.Utils.listToStr;
 import static ru.handy.android.wm.setting.Utils.strToList;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -12,12 +13,10 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Random;
 
 import ru.handy.android.wm.learning.Category;
 import ru.handy.android.wm.learning.Word;
-import ru.handy.android.wm.setting.Utils;
 
 public class DB {
 
@@ -28,11 +27,12 @@ public class DB {
     public static final String C_EW_TRANSCRIPTION = "ew_transcription";
     public static final String C_EW_RUSTRANSLATE = "ew_rustranslate";
     public static final String C_EW_CATEGORY = "ew_category";
-    public static final String C_EW_HISTORY = "ew_history";
-    // таблица с тек. уроком
+    public static final String C_EW_HISTORY = "ew_history"; // порядковый номер в истории последных запросов в Словаре
+    // таблица с тек. уроком и всеми прошлыми уроками (если стоит соответсвующая галкав настройках)
     public static final String T_LESSON = "lesson";
-    public static final String C_L_ID = "_id";
-    public static final String C_L_ENGWORD_ID = "l_engword_id"; // id слова
+    public static final String C_L_ID = "_id"; // id записи в таблице
+    public static final String C_L_LESSON_ID = "l_lesson_id"; // id урока (у тек. урока самый большой id). В секундах от 01.01.1970, чтобы можно было перевести в дату
+    public static final String C_L_ENGWORD_ID = "l_engword_id"; // id слова из таблицы T_ENGWORDS
     public static final String C_L_ENGWORD = "l_engword";
     public static final String C_L_TRANSCRIPTION = "l_transcription";
     public static final String C_L_RUSTRANSLATE = "l_rustranslate";
@@ -68,6 +68,8 @@ public class DB {
     public static final String LEARNING_AMOUNT_WORDS = "learningAmountWords";
     // показывать кнопку "не знаю" в обучалке: 0-не показывать, 1-показывать
     public static final String LEARNING_SHOW_DONTKNOW = "learningShowDontKnow";
+    // сохранять или нет историю по всем незаконченным урокам: 0-нет, 1-да
+    public static final String LEARNING_LESSONS_HISTORY = "learningLessonsHistory";
     // что было введено в поле поиска в словаре
     public static final String SEARCH_WORD = "searchWord";
     // английские слова будут произноситься по американски или британски (0-американский, 1-британский)
@@ -82,10 +84,8 @@ public class DB {
     public static final String AMOUNT_DONATE = "amount_donate";
     // какой фон выбран? по умолчанию - 1. Предложено 15 цветов
     public static final String BG_COLOR = "bgColor";
-    // признак старой бесплатной БД: 1 - старая бесплатная БД, 0 - новая БД с платными настройками
-    public static final String OLD_FREE_DB = "oldFreeDb";
-    // дата начала бесплатного месячного периода для статистики
-    public static final String DATE_TRIAL_STATS = "dateTrialStats";
+    // дата начала бесплатного месячного периода для статистики (с 32 версии не актуальный функционал
+    /*public static final String DATE_TRIAL_STATS = "dateTrialStats";
     // дата начала бесплатного месячного периода для смены цвета фона
     public static final String DATE_BG_COLOR = "dateBgColor";
     // дата начала бесплатного месячного периода для смены метода обучения
@@ -93,7 +93,7 @@ public class DB {
     // дата начала бесплатного месячного периода для смены языка обучения
     public static final String DATE_LANGUAGE = "dateLanguage";
     // дата начала бесплатного месячного периода для кол-ва слов, показываемых при обучении
-    public static final String DATE_LANG_WORD_AMOUNT = "dateLangWordAmount";
+    public static final String DATE_LANG_WORD_AMOUNT = "dateLangWordAmount";*/
     // скрипт для создания основной таблицы-словаря со всеми словами
     public static final String T_ENGWORDS_CREATE = "create table " + T_ENGWORDS
             + " (" + C_EW_ID + " integer primary key autoincrement, "
@@ -102,7 +102,7 @@ public class DB {
             + C_EW_HISTORY + " integer);";
     // скрипт для создания таблицы, в которой храняться данные по текущему уроку
     public static final String T_LESSON_CREATE = "create table " + T_LESSON
-            + " (" + C_L_ID + " integer primary key autoincrement, "
+            + " (" + C_L_ID + " integer primary key autoincrement, " + C_L_LESSON_ID + " integer, "
             + C_L_ENGWORD_ID + " integer, " + C_L_ENGWORD + " text, "
             + C_L_TRANSCRIPTION + " text, " + C_L_RUSTRANSLATE + " text, "
             + C_L_CATEGORY + " text, " + C_L_LEARNING_TYPE_COPML + " integer default 0, "
@@ -120,7 +120,7 @@ public class DB {
             + " text, " + C_ES_VALUE + " text);";
 
     private static final String DB_NAME = "ewdb";
-    private static final int DB_VERSION = 31; // 13 - первая версия с платными настройками
+    private static final int DB_VERSION = 32; // 13 - первая версия с платными настройками, 32 - версия, где убрал isFromOldDB
     private final Context mCtx;
 
     private DBHelper mDBHelper;
@@ -173,6 +173,7 @@ public class DB {
      *
      * @return ArrayList<String> с перечнем категорий
      */
+    @SuppressLint("Range")
     public ArrayList<String> getCategories() {
         Cursor cursor = mDB.query(true, T_ENGWORDS, new String[]{C_EW_CATEGORY}, null,
                 null, null, null, C_EW_CATEGORY, null);
@@ -204,6 +205,7 @@ public class DB {
      *
      * @return ArrayList<Category> массив с перечнем классов категорий (названия и кол-во)
      */
+    @SuppressLint("Range")
     public ArrayList<Category> getClassCategories() {
         ArrayList<Category> classCats = new ArrayList<>();
         ArrayList<String> cats = getCategories();
@@ -307,17 +309,17 @@ public class DB {
     /**
      * Получает слова из таблицы engwords по категории
      *
-     * @param category - категория, к которой может относится слово
+     * @param categories - категория(и), к которой может относится слово
      * @return ArrayList<Word> - список слов с данной категорией
      */
-    public ArrayList<Word> getWordsByCategory(String category) {
-        return getWordList("SELECT * FROM " + T_ENGWORDS + " WHERE " + getWhereClauseForCategory(category) + " ORDER BY LOWER(" + C_EW_ENGWORD + ")");
+    public ArrayList<Word> getWordsByCategory(String categories) {
+        return getWordList("SELECT * FROM " + T_ENGWORDS + " WHERE " + getWhereClauseForCategory(categories) + " ORDER BY LOWER(" + C_EW_ENGWORD + ")");
     }
 
-    private String getWhereClauseForCategory(String category) {
+    private String getWhereClauseForCategory(String categories) {
         StringBuilder whereClause = new StringBuilder();
-        if (category != null) {
-            String[] arr = category.split(",");
+        if (categories != null) {
+            String[] arr = categories.split(",");
             for (String cat : arr) {
                 String c = cat.trim().replace("'", "''");
                 if (c.equals("")) {
@@ -365,7 +367,8 @@ public class DB {
         cv.put(C_EW_RUSTRANSLATE, rusTranslate);
         cv.put(C_EW_CATEGORY, category);
         long idWord = mDB.insert(T_ENGWORDS, null, cv);
-        String strCats = getCategoryLesson(); // выбранные категории для текущего урока
+        // таблицу T_LESSON решил обновлять при обновлении таблицы T_ENGWORDS
+        /*String strCats = getCategoryCurLesson(); // выбранные категории для текущего урока
         String[] arr = strCats.split(",");
         ArrayList<String> cats = new ArrayList<>();
         for (String cat : arr) {
@@ -386,7 +389,7 @@ public class DB {
             cv.put(C_L_RUSTRANSLATE, rusTranslate);
             cv.put(C_L_CATEGORY, strCats);
             mDB.insert(T_LESSON, null, cv);
-        }
+        }*/
         return idWord;
     }
 
@@ -430,33 +433,25 @@ public class DB {
     }
 
     /**
-     * удалить все записи из T_ENGWORDS
+     * удалить все записи из какой-либо таблицы
      */
     public int delAll(String table) {
         return mDB.delete(table, null, null);
     }
 
     /**
-     * Получение случайных наборов слов в данном количестве из базы с данной
-     * категорией
+     * Формирование урока путем рандомного формирования слов данной категории(й)
      *
-     * @param categories     категории, по которым нужно получить случайные слова. Если =
-     *                       null, то берет по всем категориям
-     * @param rightWord      правильное слово, которое должен отгадать пользователь (может
-     *                       быть null)
-     * @param countOfChoice  количество получаемых слов
+     * @param categories     категории, по которым формируется урок
      * @param isOnlyMistakes брать только слова с ошибками (true) или все (false)
      * @return ArrayList<Word> массив слов
      */
-    public ArrayList<Word> getRandomWords(String categories, Word rightWord, int countOfChoice, boolean isOnlyMistakes) {
+    @SuppressLint("Range")
+    public ArrayList<Word> getLessonForCat(String categories, boolean isOnlyMistakes) {
         ArrayList<Word> allWords = new ArrayList<>();
         Cursor c;
         if (categories != null) {
             c = getDataByCategory(categories, isOnlyMistakes);
-            if (c.getCount() < countOfChoice && c.getCount() != 0) {
-                c.close();
-                c = getAllWords();
-            }
         } else {
             c = getAllWords();
         }
@@ -466,52 +461,63 @@ public class DB {
                         c.getString(c.getColumnIndex(C_EW_ENGWORD)),
                         c.getString(c.getColumnIndex(C_EW_TRANSCRIPTION)),
                         c.getString(c.getColumnIndex(C_EW_RUSTRANSLATE)));
-                if (rightWord == null || !rightWord.equals(word)
-                        || !rightWord.getEngWord().equals(word.getEngWord())
-                        || !rightWord.getRusTranslate().equals(word.getRusTranslate()))
-                    allWords.add(word);
+                allWords.add(word);
             } while (c.moveToNext());
             c.close();
         }
         ArrayList<Word> resWords = new ArrayList<>();
         Random randGen = new Random();
-        int countAllWords = allWords.size();
-        int count = rightWord == null ? countOfChoice : countOfChoice - 1;
-        while (resWords.size() < count) {
-            if (allWords.size() > 0) {
-                int rand = randGen.nextInt(allWords.size());
-                resWords.add(allWords.get(rand));
-                allWords.remove(rand);
-            } else {
-                resWords.add(new Word(0, "", "", ""));
-            }
-        }
-        if (rightWord != null) {
-            int rand = randGen.nextInt(Math.max(1, Math.min(countAllWords, countOfChoice)));
-            resWords.add(rand, rightWord);
+        while (allWords.size() > 0) {
+            int rand = randGen.nextInt(allWords.size());
+            resWords.add(allWords.get(rand));
+            allWords.remove(rand);
         }
         return resWords;
     }
 
     /**
-     * Получение всех случайных наборов слов из базы с данной категорией
+     * Получение случайных наборов слов в данном количестве из базы из урока
      *
-     * @param categories     категория, по кот. нужно получить слова в случайном порядке
-     * @param isOnlyMistakes - брать только слова с ошибками (true) или все (false)
+     * @param categories    категории, по которым нужно получить случайные слова. Если =
+     *                      null, то берет по всем категориям
+     * @param rightWord     правильное слово, которое должен отгадать пользователь (может
+     *                      быть null)
+     * @param countOfChoice количество получаемых слов
      * @return ArrayList<Word> массив слов
      */
-    public ArrayList<Word> getRandomWords(String categories, boolean isOnlyMistakes) {
-        return getRandomWords(categories, null, getDataByCategory(categories, isOnlyMistakes).getCount(), isOnlyMistakes);
-    }
-
-    /**
-     * Получение всех случайных наборов слов из базы с данной категорией
-     *
-     * @param categories категория, по кот. нужно получить слова в случайном порядке
-     * @return ArrayList<Word> массив слов
-     */
-    public ArrayList<Word> getRandomWords(String categories) {
-        return getRandomWords(categories, null, getDataByCategory(categories).getCount(), false);
+    @SuppressLint("Range")
+    public ArrayList<Word> getRandomWords(String categories, Word rightWord, int countOfChoice) {
+        ArrayList<Word> resWords = new ArrayList<>();
+        if (rightWord != null) {
+            ArrayList<Word> allWords = getAllWordsInCurLesson();
+            if (allWords.size() < countOfChoice) {
+                allWords = getWordList("SELECT * FROM " + T_ENGWORDS);
+            }
+            for (int i = 0; i < allWords.size(); i++) {
+                if (rightWord.equals(allWords.get(i)) ||
+                        (rightWord.getEngWord().equals(allWords.get(i).getEngWord()) &&
+                                rightWord.getRusTranslate().equals(allWords.get(i).getRusTranslate()))) {
+                    allWords.remove(i);
+                    break;
+                }
+            }
+            Random randGen = new Random();
+            while (resWords.size() < countOfChoice - 1) {
+                if (allWords.size() > 0) {
+                    int rand = randGen.nextInt(allWords.size());
+                    resWords.add(allWords.get(rand));
+                    allWords.remove(rand);
+                } else {
+                    resWords.add(new Word(0, "", "", ""));
+                }
+            }
+            resWords.add(randGen.nextInt(countOfChoice), rightWord);
+        } else {
+            while (resWords.size() < countOfChoice) {
+                resWords.add(new Word(0, "", "", ""));
+            }
+        }
+        return resWords;
     }
 
     /**
@@ -520,6 +526,7 @@ public class DB {
      * @param categories - категория, к которой может относится слово
      * @return массив из трех чисел (кол-во удаленных категорий, кол-во удаленных слов этих категорий, кол-во проапдейченных слов с категориями)
      */
+    @SuppressLint("Range")
     public int[] deleteCategories(String categories) {
         //список со всеми категориями
         List<String> cats = strToList(categories, ",", true);
@@ -562,6 +569,7 @@ public class DB {
      *
      * @param id - id слова в таблице C_EW_HISTORY
      */
+    @SuppressLint("Range")
     public void setHistory(Long id) {
         ContentValues cv = new ContentValues();
         if (id != null) {
@@ -583,10 +591,11 @@ public class DB {
 
     /**
      * в столбце категорий таблицы со словами одна категория заменяется на другую (просто ищутся совпадения)
+     *
      * @param oldName старое название катгории
      * @param newName новое название катгории
      */
-    public void categoryRename (String oldName, String newName) {
+    public void categoryRename(String oldName, String newName) {
         // если меняется категория на пустую, то нужно удалить возможные запятые перед и после нее
         // (если в слове было несколько категорий)
         if (!oldName.equals("") && newName.equals("")) {
@@ -618,62 +627,69 @@ public class DB {
      */
 
     /**
-     * получение сохраненного урока из БД (все, что еще не пройдено)
+     * получение последнего сохраненного урока из БД (все, что еще не пройдено)
      *
      * @return список слов из урока
      */
-    public ArrayList<Word> getLesson() {
+    public ArrayList<Word> getCurLesson() {
         String sqlQuery = "SELECT * FROM " + T_LESSON + " AS l1 WHERE (l1."
                 + C_L_RESULT + " = 0 OR l1." + C_L_RESULT + " IS NULL OR l1."
                 + C_L_LEARNING_TYPE_COPML + ">0 OR l1." + C_L_REPEAT_NUMBER_COPML + ">0) AND l1."
-                + C_L_ORDINAL + " <> 0 ORDER BY l1." + C_L_ORDINAL;
+                + C_L_ORDINAL + " <> 0 AND l1." + C_L_LESSON_ID + "=(SELECT MAX("
+                + C_L_LESSON_ID + ") FROM " + T_LESSON + ") ORDER BY l1." + C_L_ORDINAL;
         return getWordList(sqlQuery);
     }
 
     /**
-     * получение всех слов из сохраненного урока в БД
+     * получение всех слов из сохраненного последнего урока в БД
      *
      * @return список всех слов из урока
      */
-    public ArrayList<Word> getAllWordsInLesson() {
-        String sqlQuery = "SELECT * FROM " + T_LESSON + " AS l1 ORDER BY l1."
-                + C_L_ID;
+    public ArrayList<Word> getAllWordsInCurLesson() {
+        String sqlQuery = "SELECT * FROM " + T_LESSON + " AS l1 WHERE l1." + C_L_LESSON_ID
+                + "=(SELECT MAX(" + C_L_LESSON_ID + ") FROM " + T_LESSON + ") ORDER BY l1." + C_L_ID;
         return getWordList(sqlQuery);
     }
 
     /**
-     * получение всех отгаданных слов из сохраненного урока в БД
+     * получение всех отгаданных слов из последнего сохраненного урока в БД
      *
      * @return список всех отгаданных слов из урока
      */
-    public ArrayList<Word> getRightWordsInLesson() {
+    public ArrayList<Word> getRightWordsInCurLesson() {
         String sqlQuery = "SELECT * FROM " + T_LESSON + " AS l1 WHERE l1."
-                + C_L_RESULT + " = 1 ORDER BY l1." + C_L_ID;
+                + C_L_RESULT + " = 1 AND l1." + C_L_LESSON_ID + "=(SELECT MAX("
+                + C_L_LESSON_ID + ") FROM " + T_LESSON + ") ORDER BY l1." + C_L_ID;
         return getWordList(sqlQuery);
     }
 
     /**
-     * получение всех не правильно отгаданных слов из сохраненного урока в БД
+     * получение всех не правильно отгаданных слов из последнего сохраненного урока в БД
      *
      * @return список всех не правильно отгаданных слов из урока
      */
-    public ArrayList<Word> getAllWrongWordsInLesson() {
+    public ArrayList<Word> getAllWrongWordsInCurLesson() {
         String sqlQuery = "SELECT * FROM " + T_LESSON + " AS l1 WHERE l1."
-                + C_L_RESULT + " = 0 ORDER BY l1." + C_L_ID;
+                + C_L_RESULT + " = 0 AND l1." + C_L_LESSON_ID + "=(SELECT MAX("
+                + C_L_LESSON_ID + ") FROM " + T_LESSON + ") ORDER BY l1." + C_L_ID;
         return getWordList(sqlQuery);
     }
 
     /**
-     * получение не правильно отгаданных слов до тек. слова из сохр. урока в БД
+     * получение не правильно отгаданных слов до тек. слова из последнего сохр. урока в БД
      *
      * @return список не правильно отгаданных слов до тек. слова из урока
      */
-    public ArrayList<Word> getWrongWords() {
+    @SuppressLint("Range")
+    public ArrayList<Word> getCurWrongWords() {
         String sqlQuery = "SELECT * FROM " + T_LESSON + " AS l1 WHERE l1."
-                + C_L_RESULT + " = 0 AND l1." + C_L_ORDINAL + " = 0 ORDER BY l1." + C_L_ID;
+                + C_L_RESULT + " = 0 AND l1." + C_L_ORDINAL + " = 0 AND l1."
+                + C_L_LESSON_ID + "=(SELECT MAX(" + C_L_LESSON_ID + ") FROM "
+                + T_LESSON + ") ORDER BY l1." + C_L_ID;
         return getWordList(sqlQuery);
     }
 
+    @SuppressLint("Range")
     private ArrayList<Word> getWordList(String sqlQuery) {
         String id = C_L_ENGWORD_ID;
         String engWord = C_L_ENGWORD;
@@ -706,13 +722,16 @@ public class DB {
     }
 
     /**
-     * получение категории, по которой строился урок Lesson
+     * получение категории, по текущему уроку в T_LESSON
      *
      * @return категория
      */
-    public String getCategoryLesson() {
+    @SuppressLint("Range")
+    public String getCategoryCurLesson() {
         String cat = "";
-        Cursor c = mDB.query(T_LESSON, null, null, null, null, null, null);
+        Cursor c = mDB.query(T_LESSON, null
+                , C_L_LESSON_ID + "=(SELECT MAX(" + C_L_LESSON_ID + ") FROM " + T_LESSON + ")"
+                , null, null, null, null);
         if (c.moveToFirst()) {
             cat = c.getString(c.getColumnIndex(C_L_CATEGORY));
         }
@@ -724,7 +743,7 @@ public class DB {
     }
 
     /**
-     * получение номера текущего повторения данного слова в уроке Lesson при комплексном обучении
+     * получение номера текущего повторения данного слова в текущем уроке Lesson при комплексном обучении
      *
      * @param curWord - текущее слово, у которого нужно узнать номер текущей повторения слова
      * @return - номер текущей повторения слова
@@ -733,7 +752,9 @@ public class DB {
         if (curWord == null) return 0;
         int curRep = 0;
         Cursor c = mDB.query(T_LESSON, new String[]{DB.C_L_REPEAT_NUMBER_COPML}
-                , DB.C_L_ENGWORD_ID + "=" + curWord.getId(), null, null, null, null);
+                , DB.C_L_ENGWORD_ID + "=" + curWord.getId() + " AND "
+                        + C_L_LESSON_ID + "=(SELECT MAX(" + C_L_LESSON_ID + ") FROM " + T_LESSON + ")"
+                , null, null, null, null);
         if (c.moveToFirst()) {
             curRep = c.getInt(0);
         }
@@ -751,7 +772,9 @@ public class DB {
         if (curWord == null) return 0;
         int curType = 0;
         Cursor c = mDB.query(T_LESSON, new String[]{DB.C_L_LEARNING_TYPE_COPML}
-                , DB.C_L_ENGWORD_ID + "=" + curWord.getId(), null, null, null, null);
+                , DB.C_L_ENGWORD_ID + "=" + curWord.getId() + " AND "
+                        + C_L_LESSON_ID + "=(SELECT MAX(" + C_L_LESSON_ID + ") FROM " + T_LESSON + ")"
+                , null, null, null, null);
         if (c.moveToFirst()) {
             curType = c.getInt(0);
         }
@@ -760,15 +783,18 @@ public class DB {
     }
 
     /**
-     * получение результата отгадывания данного слова в уроке Lesson
+     * получение результата отгадывания данного слова в текущем уроке Lesson
      *
      * @param word - слово, у которого нужно посмотреть результат
      * @return 1 - слово было отгадано, 0 - слово было не правильно отгадано, null - слово еще не отгадывалось
      */
-    public Integer getResult(Word word) {
+    @SuppressLint("Range")
+    public Integer getResultInCurLesson(Word word) {
         Integer res = null;
         Cursor c = mDB.query(T_LESSON, null,
-                C_L_ENGWORD_ID + "=" + word.getId(), null, null, null, null);
+                C_L_ENGWORD_ID + "=" + word.getId() + " AND "
+                        + C_L_LESSON_ID + "=(SELECT MAX(" + C_L_LESSON_ID + ") FROM " + T_LESSON + ")"
+                , null, null, null, null);
         if (c.moveToFirst()) {
             try {
                 res = Integer.valueOf(c.getString(c.getColumnIndex(C_L_RESULT)));
@@ -780,21 +806,56 @@ public class DB {
     }
 
     /**
+     * удаление из таблицы T_LESSON всех слов данной категории(й)
+     *
+     * @param category - категория(и) словая которой удаляются
+     * @return - количество удаленных записей
+     */
+    public int delCatLesson(String category) {
+        return mDB.delete(T_LESSON, C_L_CATEGORY + "='" + category + "'", null);
+    }
+
+    /**
+     * удаление всех уроков кроме текущего
+     */
+    public void delLessonWithoutCur() {
+        mDB.delete(T_LESSON, C_L_LESSON_ID + "<(SELECT MAX(" + C_L_LESSON_ID + ") FROM " + T_LESSON + ")", null);
+        ContentValues cv = new ContentValues();
+        cv.put(C_L_LESSON_ID, System.currentTimeMillis() / 1000);
+        mDB.update(T_LESSON, cv, null, null);
+    }
+
+
+    /**
      * Добавление записи в таблицу действующего урока Lesson
      *
-     * @param idEngWord     - id англиского слова
-     * @param engWord       - англиское слово
-     * @param transcription - транскрипция англйского слова
-     * @param rusTranslate  - русский перевод
-     * @param category      - категория слова
-     * @param result        - результат урока: null - слово еще не отгадывалось, 0 - не
-     *                      отгадал, 1 - отгадал
-     * @param current       - текущее слово (1), все остальные слова - 0
+     * @param isLessonsHistory - сохраняется в T_LESSON все незавершенные уроки (true) или только последний урок (false)
+     * @param idEngWord        - id англиского слова
+     * @param engWord          - англиское слово
+     * @param transcription    - транскрипция англйского слова
+     * @param rusTranslate     - русский перевод
+     * @param category         - категория слова
+     * @param result           - результат урока: null - слово еще не отгадывалось, 0 - не
+     *                         отгадал, 1 - отгадал
+     * @param current          - текущее слово (1), все остальные слова - 0
      */
-    public void addRecLesson(int idEngWord, String engWord,
+    @SuppressLint("Range")
+    public void addRecLesson(boolean isLessonsHistory, int idEngWord, String engWord,
                              String transcription, String rusTranslate, String category,
                              Integer result, int current) {
+        // если созраняется только послед. урок, то C_L_LESSON_ID = System.currentTimeMillis()/1000, т.к. предварительно вся таблица очищается
+        long lessonId = System.currentTimeMillis() / 1000;
+        // если сохраняются все незавершенные уроки, то определяется, какой C_L_LESSON_ID нужно ставить
+        if (isLessonsHistory) {
+            Cursor c = mDB.rawQuery("SELECT " + C_L_LESSON_ID + " FROM " + T_LESSON
+                    + " WHERE " + C_L_CATEGORY + "='" + category + "'", null);
+            if (c.moveToFirst()) {
+                lessonId = c.getInt(0);
+            }
+            c.close();
+        }
         ContentValues cv = new ContentValues();
+        cv.put(C_L_LESSON_ID, lessonId);
         cv.put(C_L_ENGWORD_ID, idEngWord);
         cv.put(C_L_ENGWORD, engWord);
         cv.put(C_L_TRANSCRIPTION, transcription);
@@ -806,19 +867,56 @@ public class DB {
     }
 
     /**
-     * установление результата отгадывания слова в уроке Lesson
+     * Находит id урока по категории, если он есть, и -1, если не найден
+     *
+     * @param categories - категория(и) по которой ищется урок
+     * @return - id урока или -1, если урок не найден
+     */
+    public int getLessonIdByCategory(String categories) {
+        int lessonId = -1;
+        if (categories != null) {
+            Cursor c = mDB.rawQuery("SELECT " + C_L_LESSON_ID + " FROM " + T_LESSON
+                    + " WHERE " + C_L_CATEGORY + "='" + categories + "'", null);
+            if (c.moveToFirst()) {
+                try {
+                    lessonId = c.getInt(0);
+                } catch (Exception ex) {
+                }
+            }
+            c.close();
+        }
+        return lessonId;
+    }
+
+    /**
+     * делает урок данной категории текущим, т.е. C_L_LESSON_ID делает максимальным
+     *
+     * @param categories - категория(и), которая становится текущим уроком
+     * @return - кол-во обновленных записей
+     */
+    public int changeLessonIdByCategory(String categories) {
+        long lessonId = getLessonIdByCategory(categories);
+        long newLessonId = System.currentTimeMillis() / 1000;
+        ContentValues cv = new ContentValues();
+        cv.put(C_L_LESSON_ID, newLessonId);
+        return mDB.update(T_LESSON, cv, C_L_LESSON_ID + "=" + lessonId, null);
+    }
+
+    /**
+     * установление результата отгадывания слова в текущем уроке Lesson
      *
      * @param word   - слово, на котором нужно отразить результат урока
      * @param result - результат (1 - слово отгадано, 0 - нет)
      */
-    public void setResult(Word word, int result) {
+    public void setResultCurLesson(Word word, int result) {
         ContentValues cv = new ContentValues();
         cv.put(C_L_RESULT, result);
-        mDB.update(T_LESSON, cv, C_L_ENGWORD_ID + " = " + word.getId(), null);
+        mDB.update(T_LESSON, cv, C_L_ENGWORD_ID + "=" + word.getId() + " AND "
+                + C_L_LESSON_ID + "=(SELECT MAX(" + C_L_LESSON_ID + ") FROM " + T_LESSON + ")", null);
     }
 
     /**
-     * установление номера текущей попытки по данному слову в уроке Lesson
+     * установление номера текущей попытки по данному слову в текущем уроке Lesson
      *
      * @param word            - слово, на котором нужно установить текущую попытку
      * @param curRepeatNumber - текущая попытка для установления
@@ -826,11 +924,12 @@ public class DB {
     public void setCurRepeatNumber(Word word, int curRepeatNumber) {
         ContentValues cv = new ContentValues();
         cv.put(C_L_REPEAT_NUMBER_COPML, curRepeatNumber);
-        mDB.update(T_LESSON, cv, C_L_ENGWORD_ID + " = " + word.getId(), null);
+        mDB.update(T_LESSON, cv, C_L_ENGWORD_ID + " = " + word.getId() + " AND "
+                + C_L_LESSON_ID + "=(SELECT MAX(" + C_L_LESSON_ID + ") FROM " + T_LESSON + ")", null);
     }
 
     /**
-     * установление текущего типа обучения в комплексном обучении в уроке Lesson
+     * установление текущего типа обучения в комплексном обучении в текущем уроке Lesson
      *
      * @param word            - слово, на котором нужно установить текущий тип обучения
      * @param curLearningType - текущий тип обучения в комплексном обучении: 0-отгадывание из из русс. перевода, 1-отгадывание из англ. перевода, 2-написание англ. слова
@@ -838,11 +937,12 @@ public class DB {
     public void setCurLearningType(Word word, int curLearningType) {
         ContentValues cv = new ContentValues();
         cv.put(C_L_LEARNING_TYPE_COPML, curLearningType);
-        mDB.update(T_LESSON, cv, C_L_ENGWORD_ID + " = " + word.getId(), null);
+        mDB.update(T_LESSON, cv, C_L_ENGWORD_ID + " = " + word.getId() + " AND "
+                + C_L_LESSON_ID + "=(SELECT MAX(" + C_L_LESSON_ID + ") FROM " + T_LESSON + ")", null);
     }
 
     /**
-     * установление установление порядкового номера слова в Lesson
+     * установление порядкового номера слова в текущем уроке Lesson
      *
      * @param word   - слово, для которого устанавливается порядковый номер (если null, то устанавливается для всех слов урока)
      * @param number - порядковый номер урока (если 0, значит исключается из урока)
@@ -850,7 +950,27 @@ public class DB {
     public void setNumberInLesson(Word word, int number) {
         ContentValues cv = new ContentValues();
         cv.put(C_L_ORDINAL, number);
-        mDB.update(T_LESSON, cv, word == null ? null : C_L_ENGWORD_ID + " = " + word.getId(), null);
+        mDB.update(T_LESSON, cv, (word == null ? "" : C_L_ENGWORD_ID + " = " + word.getId() + " AND ")
+                + C_L_LESSON_ID + "=(SELECT MAX(" + C_L_LESSON_ID + ") FROM " + T_LESSON + ")", null);
+    }
+
+    /**
+     * удаляет все уроки кроме текущего урока старше определенного кол-ва дней
+     *
+     * @param delDays - кол-во дней старше которых уроки удаляются
+     * @return - кол0во удаленных записей
+     */
+    public int delOldLessons(int delDays) {
+        // id урока, меньше которого все нужно удалять
+        long idMinLesson = System.currentTimeMillis() / 1000 - ((long) delDays * 24 * 60 * 60);
+        long idCurLesson = 0; // id текущего урока
+        Cursor c = mDB.rawQuery("SELECT MAX(" + C_L_LESSON_ID + ") FROM " + T_LESSON, null);
+        if (c.moveToFirst()) {
+            idCurLesson = c.getInt(0);
+        }
+        c.close();
+        return mDB.delete(T_LESSON, C_L_LESSON_ID + "<>" + idCurLesson
+                + " AND " + C_L_LESSON_ID + "<" + idMinLesson, null);
     }
 
     /*
@@ -866,6 +986,7 @@ public class DB {
      *
      * @return получение списка категорий с количеством правильных и неправильных ответов из таблицы Statistics
      */
+    @SuppressLint("Range")
     public ArrayList<Category> getCategoryStats() {
         ArrayList<Category> categoryStats = new ArrayList<>();
         String sqlQuery = "SELECT " + C_S_CATEGORY + ", SUM(" + C_S_AMOUNT_RIGHT + ") AS right1, SUM(" +
@@ -895,6 +1016,7 @@ public class DB {
      * @param is_right правильно или нет дан ответ
      * @return кол-во обновленных записей
      */
+    @SuppressLint("Range")
     public int updateStat(Word word, String category, boolean is_right) {
         int amountUpdate = 0;
         ArrayList<String> cats = new ArrayList<>();
@@ -951,6 +1073,7 @@ public class DB {
      * @param variable название переменной, значение которой нужно вернуть
      * @return значение переменной
      */
+    @SuppressLint("Range")
     public String getValueByVariable(String variable) {
         try {
             Cursor c = mDB.query(T_EXITSTATE, null, C_ES_VARIABLE + "=?",

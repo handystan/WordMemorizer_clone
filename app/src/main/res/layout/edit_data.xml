@@ -29,8 +29,8 @@
             android:layout_height="wrap_content"
             android:layout_above="@+id/llKeyboardVeiew"
             android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
             android:background="#00000000">
 
             <LinearLayout
@@ -78,8 +78,8 @@
                         android:id="@+id/rlDownload"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="5dp"
                         android:background="@drawable/bord_layout"
+                        android:padding="5dp"
                         android:theme="@style/AppThemeBase1">
 
                         <TextView
@@ -132,8 +132,8 @@
                             android:id="@+id/cbDelete"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentStart="true"
                             android:layout_below="@+id/etFileDownload"
+                            android:layout_alignParentStart="true"
                             android:background="#00000000"
                             android:checked="true"
                             android:text="@string/delete_data"
@@ -246,8 +246,8 @@
                             android:id="@+id/cbOnlyChoseCat"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentStart="true"
                             android:layout_below="@+id/etSemicolon"
+                            android:layout_alignParentStart="true"
                             android:background="#00000000"
                             android:checked="false"
                             android:text="@string/only_chose_category"
@@ -272,7 +272,7 @@
             android:id="@+id/llKeyboardVeiew"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
+            android:layout_above="@+id/llAdMobData"
             android:layout_alignParentStart="true"
             android:layout_alignParentEnd="true">
 
@@ -282,6 +282,22 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:visibility="gone" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llAdMobData"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true">
+
+            <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/avBottomBannerData"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                ads:adSize="SMART_BANNER"
+                ads:adUnitId="@string/id_bottom_banner_data" />
         </LinearLayout>
 
     </RelativeLayout>

@@ -1,5 +1,6 @@
 package ru.handy.android.wm.learning;
 
+import android.annotation.SuppressLint;
 import android.database.Cursor;
 
 import java.util.ArrayList;
@@ -16,27 +17,45 @@ public class Fixing {
     private DB db;
     private String categories = ""; // массив категорий
 
-    // массив слов, участвующий в обучении
-    private ArrayList<Word> lesson;
-    // массив слов, с неправильными ответами
-    private ArrayList<Word> wrongAnswers = new ArrayList<>();
+    private ArrayList<Word> lesson; // массив слов, участвующий в обучении
+    private ArrayList<Word> wrongAnswers = new ArrayList<>(); // массив слов, с неправильными ответами
     private int cur; // текущая позиция в массиве слов
     private int amountWords = 0; // кол-во слов в уроке
     private int amountWrongWords = 0; // кол-во не отгаданных слов в уроке
     private int amountRightWords = 0; // кол-во отгаданных слов в уроке
 
     /**
-     * @param _db            - база данных
-     * @param cat            - категория слов, по которой будет проходить урок
-     * @param fromDB         - 1 - подкачиваем из БД, 0 - формируем урок заново
-     * @param isOnlyMistakes - показывать только слова с ошибками (true) или все (false)
+     * @param _db               - база данных
+     * @param cat               - категория слов, по которой будет проходить урок (если null, то просто берем текущий урок)
+     * @param forceUpdateLesson - если true, то в любом случае обновлять урок, а не брать его из истории
+     * @param isOnlyMistakes    - показывать только слова с ошибками (true) или все (false)
      */
-    public Fixing(DB _db, String cat, int fromDB, boolean isOnlyMistakes) {
+    public Fixing(DB _db, String cat, boolean forceUpdateLesson, boolean isOnlyMistakes) {
         db = _db;
         cur = 0;
-        if (fromDB == 0) {
+        String lesHist = db.getValueByVariable(DB.LEARNING_LESSONS_HISTORY);
+        boolean isLessonsHistory = (lesHist == null || lesHist.equals("1"));
+        int lessonId = db.getLessonIdByCategory(cat); // id урока по категории, если такой найдется
+        if (cat == null  //если просто нужно выбрать текущий урок
+                || isLessonsHistory && lessonId > -1 && !forceUpdateLesson && !isOnlyMistakes) {
+            if (cat != null) {
+                db.changeLessonIdByCategory(cat);
+            }
+            lesson = db.getCurLesson();
+            if (lesson.size() != 0) {
+                wrongAnswers = db.getCurWrongWords();
+                categories = db.getCategoryCurLesson();
+                amountWords = db.getAllWordsInCurLesson().size();
+                amountWrongWords = db.getAllWrongWordsInCurLesson().size();
+                amountRightWords = db.getRightWordsInCurLesson().size();
+            }
+        } else {
+            /*if (!isLessonsHistory //если не стоит галка с историей всех незавершенных уроков, то просто очищаем T_LESSON и записываем туда новый урок
+                    || lessonId == -1 // или если в T_LESSON нет незавершенного обучения с данной категорией, то в T_LESSON просто добавляется урок
+                    || (lessonId > -1 && forceUpdateLesson) // если в любом случае нужно урок загрузить заново, а не брать его из истории
+                    || isOnlyMistakes) { // если из Статистики запускаются категории только с ошибками, то урок в любом случае запускается заново, т.к. набор слов там всегда новый*/
             categories = cat;
-            lesson = db.getRandomWords(categories, isOnlyMistakes); // список слов
+            lesson = db.getLessonForCat(categories, isOnlyMistakes); // список слов
             wrongAnswers = new ArrayList<>();
             amountWords = lesson.size();
             amountWrongWords = 0;
@@ -44,9 +63,13 @@ public class Fixing {
             // записываем слова урока в БД
             db.beginTransaction();
             try {
-                db.delAll(DB.T_LESSON);
+                if (!isLessonsHistory) { // без истории по незаверш. урокам T_LESSON всегда обнуляем
+                    db.delAll(DB.T_LESSON);
+                } else if (lessonId > -1 && forceUpdateLesson || isOnlyMistakes) { //
+                    db.delCatLesson(categories);
+                }
                 for (int i = 0; i < lesson.size(); i++) {
-                    db.addRecLesson(lesson.get(i).getId(), lesson.get(i)
+                    db.addRecLesson(isLessonsHistory, lesson.get(i).getId(), lesson.get(i)
                             .getEngWord(), lesson.get(i).getTranscription(), lesson
                             .get(i).getRusTranslate(), categories, null, i + 1);
                 }
@@ -56,25 +79,16 @@ public class Fixing {
             } finally {
                 db.endTransaction();
             }
-        } else {
-            lesson = db.getLesson();
-            if (lesson.size() != 0) {
-                wrongAnswers = db.getWrongWords();
-                categories = db.getCategoryLesson();
-                amountWords = db.getAllWordsInLesson().size();
-                amountWrongWords = db.getAllWrongWordsInLesson().size();
-                amountRightWords = db.getRightWordsInLesson().size();
-            }
         }
     }
 
     /**
      * @param _db    - база данных
      * @param cat    - категория слов, по которой будет проходить урок
-     * @param fromDB - 1 - подкачиваем из БД, 0 - формируем урок заново
+     * @param forceUpdateLesson - если true, то в любом случае обновлять урок, а не брать его из истории
      */
-    public Fixing(DB _db, String cat, int fromDB) {
-        this(_db, cat, fromDB, false);
+    public Fixing(DB _db, String cat, boolean forceUpdateLesson) {
+        this(_db, cat, forceUpdateLesson, false);
     }
 
     public Word getCurWord() {
@@ -107,7 +121,7 @@ public class Fixing {
         answer.add(null); // 2 - записываются раличные сообщения или null, если это неокончание урока
         db.beginTransaction();
         try {
-            Integer prevRes = db.getResult(lesson.get(cur));
+            Integer prevRes = db.getResultInCurLesson(lesson.get(cur));
             // сначала определяем отгадано слово или нет в зависимости о типа обучения (отгадывания или написания слова
             String lt = db.getValueByVariable(DB.LEARNING_TYPE);
             int learningType = lt == null ? 0 : Integer.parseInt(lt); // тип обучения (0, 1 или 2)
@@ -121,10 +135,10 @@ public class Fixing {
             if (!isRight) {
                 if (prevRes == null || prevRes == 1) {
                     amountWrongWords++;
-                    db.setResult(lesson.get(cur), 0);
+                    db.setResultCurLesson(lesson.get(cur), 0);
                 }
                 if ((curRepeatNumberCompl == 0 && curLearningTypeCompl == 0)
-                        || ((!(curRepeatNumberCompl == 0) || !(curLearningTypeCompl == 0)) && prevRes == 1)) {
+                        || ((curRepeatNumberCompl != 0 || curLearningTypeCompl != 0) && prevRes == 1)) {
                     wrongAnswers.add(lesson.get(cur));
                 }
                 if (prevRes != null && prevRes == 1) amountRightWords--;
@@ -134,7 +148,7 @@ public class Fixing {
                     amountWrongWords--;
                 }
                 if ((isForceTrue && (prevRes == null || prevRes == 0)) || (curLearningTypeCompl == 0 && curRepeatNumberCompl == 0)) {
-                    db.setResult(lesson.get(cur), 1);
+                    db.setResultCurLesson(lesson.get(cur), 1);
                     amountRightWords++;
                 }
                 if (isForceTrue && wrongAnswers.size() > 0 && selectedWord.equals(wrongAnswers.get(wrongAnswers.size() - 1))) {
@@ -168,7 +182,7 @@ public class Fixing {
                 if (wrongAnswers.size() == 0) { // окончание урока без ошибок
                     // сообщение
                     answer.set(2, new Word(0, "Урок успешно пройден. Можно выбрать другую категорию.", "", ""));
-                    db.delAll(DB.T_LESSON);
+                    db.delCatLesson(categories);
                 } else { // окончание урока с ошибками
                     Random randGen = new Random();
                     while (wrongAnswers.size() > 0) {
@@ -199,6 +213,7 @@ public class Fixing {
      * @param selectedWord - написанное слово
      * @return отгадано слова (true) или нет (false)
      */
+    @SuppressLint("Range")
     private boolean isRightAnswer(Word selectedWord) {
         boolean isEngFixing = db.getValueByVariable(DB.LEARNING_LANGUAGE).equals("0");
         String lt = db.getValueByVariable(DB.LEARNING_TYPE);

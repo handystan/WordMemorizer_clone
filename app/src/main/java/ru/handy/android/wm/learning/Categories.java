@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.database.sqlite.SQLiteException;
 import android.graphics.PorterDuff;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
@@ -13,19 +14,26 @@ import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.ArrayList;
@@ -45,12 +53,16 @@ public class Categories extends AppCompatActivity implements OnClickListener, On
     public static String NEW_CATEGORIES = "NEW_CATEGORIES";
     private static final int CM_EDIT_ID = 0; // идентификатор пункта контекстного меню по редактированию названия категории
     private int fromAct; // из какого activity вызывается (0 - Learning, 1 - Dictionary, 2 - EditData
+    private String message; // сообщение об окончании урока
     private GlobApp app;
     private EditText etInputWord;
     private ListView lvCategories;
     private Button bChooseCat;
     private CheckBox cbSelectAll;
     private CategoryAdapter cAdapter;
+    private RelativeLayout rlCategories;
+    private LinearLayout llAdMobCategories;
+    private AdView avBottomBannerCategories;
     private DB db;
     private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
@@ -60,6 +72,7 @@ public class Categories extends AppCompatActivity implements OnClickListener, On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.categories);
         fromAct = getIntent().getIntExtra("fromAct", 0);
+        message = getIntent().getStringExtra("message");
 
         app = (GlobApp) getApplication(); // получаем доступ к приложению
         mFBAnalytics = app.getFBAnalytics(); // получение экземпляра FirebaseAnalytics
@@ -70,13 +83,47 @@ public class Categories extends AppCompatActivity implements OnClickListener, On
         db = app.getDb(); // открываем подключение к БД
 
         // устанавливаем toolbar и actionbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar bar = getSupportActionBar();
         if (bar != null) {
             bar.setDisplayHomeAsUpEnabled(true);
             bar.setDisplayShowHomeEnabled(true);
         }
+
+        String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
+        int amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
+        rlCategories = findViewById(R.id.rlCategories);
+        llAdMobCategories = findViewById(R.id.llAdMobCategories);
+        avBottomBannerCategories = findViewById(R.id.avBottomBannerCategories);
+        // инициализация AdMob для рекламы
+        MobileAds.initialize(this, initializationStatus ->
+                Log.d("myLogs", "AdMob in " + getClass().getSimpleName() + " is initialized"));
+        AdRequest adRequest = new AdRequest.Builder().build();
+        // загружаем баннерную рекламу
+        avBottomBannerCategories.loadAd(adRequest);
+        ViewGroup.LayoutParams params = llAdMobCategories.getLayoutParams();
+        if (amountDonate > 0) {
+            params.height = 0;
+            Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName() + " без отображения");
+        } else {
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName());
+        }
+        llAdMobCategories.setLayoutParams(params);
+        if (amountDonate <= 0) {
+            //если приложение еще не оплачено, то ставим Listener, чтобы показывать рекламу, когда нет клавиатуры и не показывать, когда клавитура есть
+            rlCategories.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                Rect rect = new Rect();
+                v.getWindowVisibleDisplayFrame(rect);
+                int screenHeight = v.getRootView().getHeight();
+                int keypadHeight = screenHeight - rect.bottom;
+                ViewGroup.LayoutParams params1 = llAdMobCategories.getLayoutParams();
+                params1.height = (keypadHeight > screenHeight * 0.15) ? 0 : ViewGroup.LayoutParams.WRAP_CONTENT;
+                llAdMobCategories.setLayoutParams(params1);
+            });
+        }
+
         // устанавливаем цвет фона и шрифта для toolbar
         Utils.colorizeToolbar(this, toolbar);
         // устанавливаем цвет стрелки "назад" в toolbar
@@ -86,10 +133,22 @@ public class Categories extends AppCompatActivity implements OnClickListener, On
             bar.setHomeAsUpIndicator(upArrow);
         }
 
-        lvCategories = (ListView) findViewById(R.id.lvCategories);
-        cbSelectAll = (CheckBox) findViewById(R.id.cbSelectAll);
-        bChooseCat = (Button) findViewById(R.id.bChooseCat);
-        etInputWord = (EditText) findViewById(R.id.etInputWord);
+        // обраотка кнопки Назад
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (message != null && message.equals(s(R.string.success))) {
+                    Toast.makeText(getApplicationContext(), s(R.string.need_category), Toast.LENGTH_SHORT).show();
+                } else {
+                    finish();
+                }
+            }
+        });
+
+        lvCategories = findViewById(R.id.lvCategories);
+        cbSelectAll = findViewById(R.id.cbSelectAll);
+        bChooseCat = findViewById(R.id.bChooseCat);
+        etInputWord = findViewById(R.id.etInputWord);
         bChooseCat.setOnClickListener(this);
         lvCategories.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
         // если категории вызываются из обучения, то кнопку для выбора всех категорий делаем не видимой
@@ -196,7 +255,7 @@ public class Categories extends AppCompatActivity implements OnClickListener, On
                             finish();
                         } catch (SQLiteException e) {
                             //обработка ошибки, когда выбрано слишком много категорий
-                            if (e.getMessage().startsWith("Expression tree is too large")) {
+                            if (Objects.requireNonNull(e.getMessage()).startsWith("Expression tree is too large")) {
                                 Toast.makeText(getApplicationContext(), s(R.string.to_much_categories), Toast.LENGTH_LONG).show();
                             } else {
                                 e.printStackTrace();
@@ -294,6 +353,10 @@ public class Categories extends AppCompatActivity implements OnClickListener, On
     public boolean onOptionsItemSelected(MenuItem item) {
         // Операции для выбранного пункта меню
         if (item.getItemId() == android.R.id.home) {
+            if (message != null && message.equals(s(R.string.success))) {
+                Toast.makeText(getApplicationContext(), s(R.string.need_category), Toast.LENGTH_SHORT).show();
+                return false;
+            }
             finish();
             return true;
         }

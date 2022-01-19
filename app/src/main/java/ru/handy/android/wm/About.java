@@ -16,6 +16,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import ru.handy.android.wm.learning.Learning;
@@ -26,6 +29,8 @@ public class About extends AppCompatActivity implements View.OnClickListener {
     private GlobApp app;
     private TextView mTextView;
     private int amountClick = 0; // количество нажатий на текстовое поле
+    private LinearLayout llAdMobAbout;
+    private AdView avBottomBannerAbout;
     private DB db;
     private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
@@ -42,6 +47,26 @@ public class About extends AppCompatActivity implements View.OnClickListener {
             app.openActEvent(arrClName[arrClName.length - 1]);
         }
         db = app.getDb(); // открываем подключение к БД
+
+        String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
+        int amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
+        avBottomBannerAbout = findViewById(R.id.avBottomBannerAbout);
+        llAdMobAbout = findViewById(R.id.llAdMobAbout);
+        // инициализация AdMob для рекламы
+        MobileAds.initialize(this, initializationStatus ->
+                Log.d("myLogs", "AdMob in " + getClass().getSimpleName() + " is initialized"));
+        AdRequest adRequest = new AdRequest.Builder().build();
+        // загружаем баннерную рекламу
+        avBottomBannerAbout.loadAd(adRequest);
+        ViewGroup.LayoutParams params = llAdMobAbout.getLayoutParams();
+        if (amountDonate > 0) {
+            params.height = 0;
+            Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName() + " без отображения");
+        } else {
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName());
+        }
+        llAdMobAbout.setLayoutParams(params);
 
         // устанавливаем toolbar и actionbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -90,27 +115,23 @@ public class About extends AppCompatActivity implements View.OnClickListener {
                 int amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
                 amountDonate = amountDonate == 0 ? 1 : 0;
                 db.updateRecExitState(DB.AMOUNT_DONATE, amountDonate + "");
-                if (amountDonate == 0) {
+                /*if (amountDonate == 0) { //  (с 32 версии не актуальный функционал
                     db.updateRecExitState(DB.DATE_TRIAL_STATS, "");
                     db.updateRecExitState(DB.DATE_BG_COLOR, "");
                     db.updateRecExitState(DB.DATE_LEARNING_METHOD, "");
                     db.updateRecExitState(DB.DATE_LANGUAGE, "");
                     db.updateRecExitState(DB.DATE_LANG_WORD_AMOUNT, "");
-                }
-                Learning learning = app.getLearning();
-                learning.setAmountDonate(amountDonate);
-                LinearLayout llAdMob = learning.getLlAdMob();
-                ViewGroup.LayoutParams params = llAdMob.getLayoutParams();
-                params.height = amountDonate == 0 ? LinearLayout.LayoutParams.WRAP_CONTENT : 0;
-                llAdMob.setLayoutParams(params);
+                }*/
+                ViewGroup.LayoutParams params = llAdMobAbout.getLayoutParams();
                 if (amountDonate > 0) {
-                    learning.loadAdMob(true, false); // загрузка только баннерной рекламы
-                    learning.setInterstitialAd(null);
+                    params.height = 0;
+                    Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName() + " без отображения");
                 } else {
-                    learning.loadAdMob(true, true); // загрузка баннерной и полноэкранной рекламы
+                    params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                    Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName());
                 }
+                llAdMobAbout.setLayoutParams(params);
                 amountClick = 0;
-
             }
         }
     }

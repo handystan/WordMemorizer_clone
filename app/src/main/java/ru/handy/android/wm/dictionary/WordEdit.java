@@ -3,17 +3,23 @@ package ru.handy.android.wm.dictionary;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.PorterDuff;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
@@ -22,6 +28,9 @@ import androidx.appcompat.widget.AppCompatMultiAutoCompleteTextView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.ArrayList;
@@ -45,6 +54,9 @@ public class WordEdit extends AppCompatActivity {
     private ArrayList<String> categories;
     private ArrayList<String> lastCategories;
     private CustomKeyboard keyboard;
+    private RelativeLayout rlWordEdit;
+    private LinearLayout llAdMobWordEdit;
+    private AdView avBottomBannerWordEdit;
     private DB db;
     private long id = 0; // не 0 - редактирование, 0 - добавление записи
     private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
@@ -68,13 +80,47 @@ public class WordEdit extends AppCompatActivity {
                 R.xml.mykeyboard);
 
         // устанавливаем toolbar и actionbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar bar = getSupportActionBar();
         if (bar != null) {
             bar.setDisplayHomeAsUpEnabled(true);
             bar.setDisplayShowHomeEnabled(true);
         }
+
+        String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
+        int amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
+        rlWordEdit = findViewById(R.id.rlWordEdit);
+        llAdMobWordEdit = findViewById(R.id.llAdMobWordEdit);
+        avBottomBannerWordEdit = findViewById(R.id.avBottomBannerWordEdit);
+        // инициализация AdMob для рекламы
+        MobileAds.initialize(this, initializationStatus ->
+                Log.d("myLogs", "AdMob in " + getClass().getSimpleName() + " is initialized"));
+        AdRequest adRequest = new AdRequest.Builder().build();
+        // загружаем баннерную рекламу
+        avBottomBannerWordEdit.loadAd(adRequest);
+        ViewGroup.LayoutParams params = llAdMobWordEdit.getLayoutParams();
+        if (amountDonate > 0) {
+            params.height = 0;
+            Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName() + " без отображения");
+        } else {
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName());
+        }
+        llAdMobWordEdit.setLayoutParams(params);
+        if (amountDonate <= 0) {
+            //если приложение еще не оплачено, то ставим Listener, чтобы показывать рекламу, когда нет клавиатуры и не показывать, когда клавитура есть
+            rlWordEdit.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                Rect rect = new Rect();
+                v.getWindowVisibleDisplayFrame(rect);
+                int screenHeight = v.getRootView().getHeight();
+                int keypadHeight = screenHeight - rect.bottom;
+                ViewGroup.LayoutParams params1 = llAdMobWordEdit.getLayoutParams();
+                params1.height = (keypadHeight > screenHeight * 0.15) ? 0 : ViewGroup.LayoutParams.WRAP_CONTENT;
+                llAdMobWordEdit.setLayoutParams(params1);
+            });
+        }
+
         // устанавливаем цвет фона и шрифта для toolbar
         Utils.colorizeToolbar(this, toolbar);
         // устанавливаем цвет стрелки "назад" в toolbar
@@ -85,10 +131,10 @@ public class WordEdit extends AppCompatActivity {
         }
 
         // получаем поля
-        etEngWord = (EditText) findViewById(R.id.etEngWord);
-        etTrascrip = (EditText) findViewById(R.id.etTrascrip);
-        etTranslate = (EditText) findViewById(R.id.etTranslate);
-        bSave = (Button) findViewById(R.id.bSave);
+        etEngWord = findViewById(R.id.etEngWord);
+        etTrascrip = findViewById(R.id.etTrascrip);
+        etTranslate = findViewById(R.id.etTranslate);
+        bSave = findViewById(R.id.bSave);
         etTrascrip.setOnTouchListener((v, event) -> {
             InputMethodManager imm = (InputMethodManager) WordEdit.this.getSystemService(
                     WordEdit.INPUT_METHOD_SERVICE);
@@ -104,7 +150,7 @@ public class WordEdit extends AppCompatActivity {
         categories = db.getCategories();
         lastCategories = new ArrayList<>();
         lastCategories.addAll(categories);
-        LinearLayout llMACTV = (LinearLayout) findViewById(R.id.llMACTV);
+        LinearLayout llMACTV = findViewById(R.id.llMACTV);
         LinearLayout.LayoutParams lParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -173,7 +219,7 @@ public class WordEdit extends AppCompatActivity {
             imm.hideSoftInputFromWindow(mactvCategory.getWindowToken(), 0);
         }
         Intent intent = new Intent();
-        String strCats = db.getCategoryLesson(); // выбранные категории для текущего урока
+        String strCats = db.getCategoryCurLesson(); // выбранные категории для текущего урока
         String[] arr = strCats.split(",");
         ArrayList<String> cats = new ArrayList<>();
         for (String cat : arr) {
@@ -233,8 +279,7 @@ public class WordEdit extends AppCompatActivity {
     }
 
     private void changeAdapter() {
-        ArrayList<String> newCategories = new ArrayList<>();
-        newCategories.addAll(categories);
+        ArrayList<String> newCategories = new ArrayList<>(categories);
         String[] arr = mactvCategory.getText().toString().split(",");
         for (String category : arr) {
             category = category.trim();

@@ -27,7 +27,7 @@ import ru.handy.android.wm.R;
 public class LearningSetting extends Fragment {
 
     private GlobApp app;
-    private Pay pay; // класс для обработки платежей
+    //private Pay pay; // класс для обработки платежей
     private View learningTab;
     private RadioButton rbChoiceLearning;
     private RadioButton rbWritingLearning;
@@ -42,6 +42,7 @@ public class LearningSetting extends Fragment {
     private LinearLayout llAmountWords;
     private Spinner sAmountWords;
     private CheckBox cbShowDontKnow;
+    private CheckBox cbLessonsHistory;
     private DB db;
     private int learningType = 0;
     private int repeatsAmount = 2;
@@ -50,6 +51,7 @@ public class LearningSetting extends Fragment {
     private boolean isShowTranscr = true;
     private int amountWords = 8;
     private boolean isShowDontKnow = true;
+    private boolean isLessonsHistory = true; // сохранять ли историю всех незаконченных уроков: true-сохранять, false- сохранять историю только последнего урока
 
     public LearningSetting() {
     }
@@ -70,19 +72,20 @@ public class LearningSetting extends Fragment {
         app = (GlobApp) getActivity().getApplication(); // получаем доступ к приложению
         db = app.getDb(); // открываем подключение к БД
 
-        rbChoiceLearning = (RadioButton) learningTab.findViewById(R.id.rbChoiceLearning);
-        rbWritingLearning = (RadioButton) learningTab.findViewById(R.id.rbWritingLearning);
-        rbComplexLearning = (RadioButton) learningTab.findViewById(R.id.rbComplexLearning);
-        llRepeatsAmount = (LinearLayout) learningTab.findViewById(R.id.llRepeatsAmount);
-        sRepeatsAmount = (Spinner) learningTab.findViewById(R.id.sRepeatsAmount);
-        cbSpeak = (CheckBox) learningTab.findViewById(R.id.cbSpeak);
-        llEngOrRus = (LinearLayout) learningTab.findViewById(R.id.llEngOrRus);
-        rbEng = (RadioButton) learningTab.findViewById(R.id.rbEng);
-        rbRus = (RadioButton) learningTab.findViewById(R.id.rbRus);
-        cbShowTranscr = (CheckBox) learningTab.findViewById(R.id.cbShowTranscr);
-        llAmountWords = (LinearLayout) learningTab.findViewById(R.id.llAmountWords);
-        sAmountWords = (Spinner) learningTab.findViewById(R.id.sAmountWords);
-        cbShowDontKnow = (CheckBox) learningTab.findViewById(R.id.cbShowDontKnow);
+        rbChoiceLearning = learningTab.findViewById(R.id.rbChoiceLearning);
+        rbWritingLearning = learningTab.findViewById(R.id.rbWritingLearning);
+        rbComplexLearning = learningTab.findViewById(R.id.rbComplexLearning);
+        llRepeatsAmount = learningTab.findViewById(R.id.llRepeatsAmount);
+        sRepeatsAmount = learningTab.findViewById(R.id.sRepeatsAmount);
+        cbSpeak = learningTab.findViewById(R.id.cbSpeak);
+        llEngOrRus = learningTab.findViewById(R.id.llEngOrRus);
+        rbEng = learningTab.findViewById(R.id.rbEng);
+        rbRus = learningTab.findViewById(R.id.rbRus);
+        cbShowTranscr = learningTab.findViewById(R.id.cbShowTranscr);
+        llAmountWords = learningTab.findViewById(R.id.llAmountWords);
+        sAmountWords = learningTab.findViewById(R.id.sAmountWords);
+        cbShowDontKnow = learningTab.findViewById(R.id.cbShowDontKnow);
+        cbLessonsHistory = learningTab.findViewById(R.id.cbLessonsHistory);
         // установка типа обучения
         if (db.getValueByVariable(DB.LEARNING_TYPE) == null
                 || db.getValueByVariable(DB.LEARNING_TYPE).equals("0")) {
@@ -99,8 +102,6 @@ public class LearningSetting extends Fragment {
             learningType = 2;
             llEngOrRus.setVisibility(View.GONE);
         }
-        Log.d("myLogs", "learningType in LearningSetting= " + learningType);
-        Log.d("myLogs", "learningSetting in LearningSetting= " + this);
         Spannable span = new SpannableString(s(R.string.complex_learning) + s(R.string.complex_description));
         int fontSize = (int) (rbComplexLearning.getTextSize() * 0.65);
         span.setSpan(new AbsoluteSizeSpan(fontSize, false), s(R.string.complex_learning).length()
@@ -219,25 +220,28 @@ public class LearningSetting extends Fragment {
             }
         });
         // показывать кнопку "Не знаю" или нет
-        if (db.getValueByVariable(DB.LEARNING_SHOW_DONTKNOW) == null
-                || db.getValueByVariable(DB.LEARNING_SHOW_DONTKNOW).equals("1")) {
-            cbShowDontKnow.setChecked(true);
-            isShowDontKnow = true;
-        } else {
-            cbShowDontKnow.setChecked(false);
-            isShowDontKnow = false;
-        }
+        String showDontKnow = db.getValueByVariable(DB.LEARNING_SHOW_DONTKNOW);
+        cbShowDontKnow.setChecked(showDontKnow == null || showDontKnow.equals("1"));
+        isShowDontKnow = showDontKnow == null || showDontKnow.equals("1");
         cbShowDontKnow.setOnCheckedChangeListener((buttonView, isChecked) -> {
             isShowDontKnow = isChecked;
-            db.updateRecExitState(DB.LEARNING_SHOW_DONTKNOW,
-                    isShowDontKnow ? "1" : "0");
+            db.updateRecExitState(DB.LEARNING_SHOW_DONTKNOW, isShowDontKnow ? "1" : "0");
+        });
+        // сохранять историю всех незаконченных уроков или нет
+        String lesHist = db.getValueByVariable(DB.LEARNING_LESSONS_HISTORY);
+        cbLessonsHistory.setChecked(lesHist == null || lesHist.equals("1"));
+        isLessonsHistory = lesHist == null || lesHist.equals("1");
+        cbLessonsHistory.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isLessonsHistory = isChecked;
+            db.updateRecExitState(DB.LEARNING_LESSONS_HISTORY, isLessonsHistory ? "1" : "0");
+            if (!isLessonsHistory) {
+                db.delLessonWithoutCur();
+            }
         });
 
         String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
         int amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
-        String fromOldDB = db.getValueByVariable(DB.OLD_FREE_DB);
-        boolean isFromOldDB = !(fromOldDB == null || fromOldDB.equals("0"));
-        if (!isFromOldDB && amountDonate == 0) pay = new Pay(getActivity());
+        //if (amountDonate == 0) pay = app.getPay(app));
         return learningTab;
     }
 
@@ -377,6 +381,15 @@ public class LearningSetting extends Fragment {
     }
 
     /**
+     * получение информации о том, нужно ли сохранять историю по всем незакоченным урокам
+     *
+     * @return true - нужно, false - не нужно (только по последнему уроку)
+     */
+    public boolean isLessonsHistory() {
+        return isLessonsHistory;
+    }
+
+    /**
      * меняет кол-во слов для выбора
      */
     public void setAmountWords() {
@@ -399,7 +412,6 @@ public class LearningSetting extends Fragment {
 
     @Override
     public void onDestroyView() {
-        if (pay != null) pay.close();
         super.onDestroyView();
         Log.d("myLogs", "onDestroyView LearningSetting");
     }

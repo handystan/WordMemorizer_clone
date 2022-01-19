@@ -11,6 +11,7 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
@@ -21,6 +22,7 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
@@ -30,15 +32,22 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
@@ -49,6 +58,7 @@ import ru.handy.android.wm.About;
 import ru.handy.android.wm.DB;
 import ru.handy.android.wm.GlobApp;
 import ru.handy.android.wm.Help;
+import ru.handy.android.wm.NoAd;
 import ru.handy.android.wm.R;
 import ru.handy.android.wm.Thanks;
 import ru.handy.android.wm.learning.Categories;
@@ -67,8 +77,12 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
     private EditText etInputWord;
     private TextView tvNoWords;
     private LinearLayout llLetters;
+    private LinearLayout llAdMobDict;
+    private RelativeLayout rlDict;
+    private AdView avBottomBannerDict;
     private final ArrayList<Button> bLetters = new ArrayList<>();
     private FloatingActionButton fab;
+    private Menu menu;
     private DB db;
     private SimpleCursorAdapter scAdapter;
     // перечен англ. букв, с помощью которых будет делаться перемотка списка
@@ -81,7 +95,9 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
     private boolean isSearchRule1 = true; // правила поиска: true-по начальным буквам слова, false-по буквам с любой части слова
     private boolean isShowHistory = false; // показывать историю, когда строка поиска пустая: true-да, false-нет
     private int llLettersHeight = 0; // высота layout, в которой будут кнопки с буквами
+    private int llAdMobHeight = 0; // высота layout c Admod, в которой в которой располагается реклама
     private int lastBGColor = 100; // цвет фона для запоминания
+    private int amountDonate = 0; // показывает сумму, которую пользователь пожертвовал разработчику
     private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
     /**
@@ -101,6 +117,18 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
             app.openActEvent(arrClName[arrClName.length - 1]);
         }
         db = app.getDb(); // открываем подключение к БД
+        String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
+        amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
+
+        avBottomBannerDict = findViewById(R.id.avBottomBannerDict);
+        llAdMobDict = findViewById(R.id.llAdMobDict);
+        rlDict = findViewById(R.id.rlDict);
+        // инициализация AdMob для рекламы
+        MobileAds.initialize(this, initializationStatus ->
+                Log.d("myLogs", "AdMob in " + getClass().getSimpleName() + " is initialized"));
+        AdRequest adRequest = new AdRequest.Builder().build();
+        // загружаем баннерную рекламу
+        avBottomBannerDict.loadAd(adRequest);
 
         // устанавливаем toolbar и actionbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -193,7 +221,7 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
             public void afterTextChanged(Editable s) {
                 // получаем новый курсор с данными
                 Dictionary.this.getLoaderManager().getLoader(0).forceLoad();
-                llLetters.setVisibility(etInputWord.getText().length() == 0 ? View.VISIBLE : View.INVISIBLE);
+                llLetters.setVisibility(!isShowHistory && etInputWord.getText().length() == 0 ? View.VISIBLE : View.INVISIBLE);
             }
         });
 
@@ -204,28 +232,6 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
         etInputWord.setText(searchWord == null ? "" : searchWord);
 
         lvWords.setOnItemClickListener((parent, view, position, id) -> record(id, WordDescription.class));
-
-        // определяем высоту layout, в которой будут кнопки с буквами и показываем из только, если экран вертикально расположен и слова показываются не из истории
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT && !isShowHistory) {
-            lvWords.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-                @Override
-                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                    if (v.getHeight() > (oldBottom - oldTop)) {
-                        llLettersHeight = v.getHeight();
-                    } else {
-                        lvWords.removeOnLayoutChangeListener(this);
-                        if (etInputWord.getText().length() == 0) {
-                            llLetters.setVisibility(View.VISIBLE);
-                            LayoutParams params = (LayoutParams) bLetters.get(0).getLayoutParams();
-                            params.height = (llLettersHeight / (isEnglSearch ? 26 : 28));
-                            for (int i = 0; i < bLetters.size(); i++) {
-                                bLetters.get(i).setLayoutParams(params);
-                            }
-                        }
-                    }
-                }
-            });
-        }
         // при скроллинге отмечаем букву, на которой сейчас находится listView
         lvWords.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
@@ -234,6 +240,7 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
             }
 
             @Override
+            @SuppressLint("Range")
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
                 Cursor c = (Cursor) scAdapter.getItem(firstVisibleItem);
                 if (c != null && c.getCount() > 0) {
@@ -297,6 +304,7 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
         }
     }
 
+    @SuppressLint("Range")
     private int[] getLetterIndexes() {
         String[] letters = isEnglSearch ? engLetters : rusLetters;
         int[] lettersIndexes = new int[letters.length];
@@ -390,9 +398,12 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
         getMenuInflater().inflate(R.menu.main, menu);
         menu.setGroupVisible(R.id.group_delete_category, true);
         menu.setGroupVisible(R.id.group_action_settings, true);
+        menu.setGroupVisible(R.id.group_clear_hist, isShowHistory);
         menu.setGroupVisible(R.id.group_help, true);
+        menu.setGroupVisible(R.id.group_no_ad, amountDonate <= 0);
         menu.setGroupVisible(R.id.group_donate, true);
         menu.setGroupVisible(R.id.group_about, true);
+        this.menu = menu;
         return true;
     }
 
@@ -410,10 +421,15 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
             intent1.putExtra("idsetting", 1);
             // 0 означает класс Settings
             startActivityForResult(intent1, 0);
+        } else if (item.getItemId() == R.id.clear_history) { // очистка истории последних запросов
+            db.setHistory(null);
+            setAdapter();
         } else if (item.getItemId() == R.id.help) { // вызов помощи
             Intent intent2 = new Intent(this, Help.class);
             intent2.putExtra("idhelp", 1);
             startActivity(intent2);
+        } else if (item.getItemId() == R.id.no_ad) { // вызов страницы с отключением рекламы
+            startActivity(new Intent(this, NoAd.class));
         } else if (item.getItemId() == R.id.donate) { // вызов страницы с благодарностью
             startActivity(new Intent(this, Thanks.class));
         } else if (item.getItemId() == R.id.about) { // вызов страницы О программе
@@ -430,6 +446,7 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
      * @param id            - идентификатор в таблице английских слов
      * @param activityClass - класс для вызываемого Activity
      */
+    @SuppressLint("Range")
     private void record(long id, Class<? extends AppCompatActivity> activityClass) {
         Cursor cursor = db.getWordById(id);
         Intent intent = new Intent(this, activityClass);
@@ -538,50 +555,95 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
                     .getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.showSoftInput(etInputWord, 0);
             if (etInputWord.requestFocus())
-                getWindow()
-                        .setSoftInputMode(
-                                WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+                getWindow().setSoftInputMode(
+                        WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
             etInputWord.selectAll();
             getLoaderManager().getLoader(0).forceLoad();
         }
-        // определяем высоту layout, в которой будут кнопки с буквами и показываем из только, если экран вертикально расположен и слова показываются не из истории
-        // если еще не была вычислена высота LinearLayout llLettersHeight
-        if (llLettersHeight == 0 && getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT && !isShowHistory) {
-            lvWords.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-                @Override
-                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                    if (v.getHeight() > (oldBottom - oldTop)) {
+        //показываем рекламу или нет
+        String amountDonateStr = db != null ? db.getValueByVariable(DB.AMOUNT_DONATE) : null;
+        amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
+        ViewGroup.LayoutParams params = llAdMobDict.getLayoutParams();
+        if (amountDonate > 0) {
+            params.height = 0;
+            Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName() + " без отображения");
+        } else {
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName());
+        }
+        llAdMobDict.setLayoutParams(params);
+        // определяем высоту layout, в которой будут кнопки с буквами и показываем их только, если экран вертикально расположен и слова показываются не из истории
+        lvWords.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    if (v.getHeight() > (oldBottom - oldTop) && v.getHeight() > llLettersHeight) {
                         llLettersHeight = v.getHeight();
                     } else {
                         lvWords.removeOnLayoutChangeListener(this);
-                        if (etInputWord.getText().length() == 0) {
+                        if (!isShowHistory && etInputWord.getText().length() == 0) {
                             llLetters.setVisibility(View.VISIBLE);
                             LayoutParams params = (LayoutParams) bLetters.get(0).getLayoutParams();
                             params.height = (llLettersHeight / (isEnglSearch ? 26 : 28));
                             for (int i = 0; i < bLetters.size(); i++) {
                                 bLetters.get(i).setLayoutParams(params);
                             }
+                        } else {
+                            llLetters.setVisibility(View.INVISIBLE);
+                        }
+                    }
+                } else {
+                    llLetters.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
+        setLetters(); //устанавливаем русские или английские в зависимости от настройки
+        if (amountDonate <= 0) {
+            // в зависимости от изменения размере llAdMobDict меняем высоту букв для llLetters
+            llAdMobDict.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    if (llAdMobHeight != v.getHeight() && (bottom - top) != (oldBottom - oldTop)) {
+                        llAdMobHeight = bottom - top;
+                        llLettersHeight = llLettersHeight - v.getHeight();
+                        llAdMobDict.removeOnLayoutChangeListener(this);
+                        lvWords.removeOnLayoutChangeListener(this);
+                        if (!isShowHistory && etInputWord.getText().length() == 0
+                                && getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                            llLetters.setVisibility(View.VISIBLE);
+                            LayoutParams params = (LayoutParams) bLetters.get(0).getLayoutParams();
+                            params.height = (llLettersHeight / (isEnglSearch ? 26 : 28));
+                            for (int i = 0; i < bLetters.size(); i++) {
+                                bLetters.get(i).setLayoutParams(params);
+                            }
+                        } else {
+                            llLetters.setVisibility(View.INVISIBLE);
                         }
                     }
                 }
             });
-        } else if (llLettersHeight > 0 && getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT && !isShowHistory) {
-            LayoutParams params = (LayoutParams) bLetters.get(0).getLayoutParams();
-            params.height = (llLettersHeight / (isEnglSearch ? 26 : 28));
-            for (int i = 0; i < bLetters.size(); i++) {
-                bLetters.get(i).setLayoutParams(params);
-            }
-            llLetters.setVisibility(etInputWord.getText().length() == 0 ? View.VISIBLE : View.INVISIBLE);
-        } else if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE || isShowHistory) {
-            llLetters.setVisibility(View.INVISIBLE);
+            //если приложение еще не оплачено, то ставим Listener, чтобы показывать рекламу, когда нет клавиатуры и не показывать, когда клавитура есть
+            rlDict.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                Rect rect = new Rect();
+                v.getWindowVisibleDisplayFrame(rect);
+                int screenHeight = v.getRootView().getHeight();
+                int keypadHeight = screenHeight - rect.bottom;
+                ViewGroup.LayoutParams params1 = llAdMobDict.getLayoutParams();
+                params1.height = (keypadHeight > screenHeight * 0.15 || amountDonate > 0) ? 0 : ViewGroup.LayoutParams.WRAP_CONTENT;
+                llAdMobDict.setLayoutParams(params1);
+            });
         }
-        setLetters(); //устанавливаем русские или английские в зависимости от настройки
+
         String strColor = db.getValueByVariable(DB.BG_COLOR);
         int bGColor = strColor == null ? 1 : Integer.parseInt(strColor);
         if (lastBGColor != 100 && lastBGColor != bGColor) {
             lastBGColor = bGColor;
             recreate();
             Log.d("myLogs", "onResume Learning recreate");
+        }
+        if (menu != null) {
+            menu.setGroupVisible(R.id.group_clear_hist, isShowHistory);
+            menu.setGroupVisible(R.id.group_no_ad, amountDonate <= 0);
         }
         super.onResume();
     }

@@ -29,7 +29,7 @@ import ru.handy.android.wm.R;
 public class OtherSetting extends Fragment implements OnClickListener {
 
     private GlobApp app;
-    private Pay pay; // класс для обработки платежей
+    //private Pay pay; // класс для обработки платежей
     private FragmentActivity act;
     private View otherTab;
     private RadioButton rbUS;
@@ -76,9 +76,7 @@ public class OtherSetting extends Fragment implements OnClickListener {
         buttons.get(bgColor - 1).setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.btn_check_on_disable, 0, 0);
         String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
         amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
-        String fromOldDB = db.getValueByVariable(DB.OLD_FREE_DB);
-        boolean isFromOldDB = !(fromOldDB == null || fromOldDB.equals("0"));
-        if (!isFromOldDB && amountDonate == 0) pay = new Pay(act);
+        //if (amountDonate == 0) pay = app.getPay(app);
         rbUS = (RadioButton) otherTab.findViewById(R.id.rbUS);
         rbUK = (RadioButton) otherTab.findViewById(R.id.rbUK);
         String pronun = db.getValueByVariable(DB.PRONUNCIATION_USUK);
@@ -151,7 +149,9 @@ public class OtherSetting extends Fragment implements OnClickListener {
                 bgColor = 15;
                 break;
         }
-        Utils.mainAlertForPay(DB.DATE_BG_COLOR, this, pay, db);
+        changeColor("");
+        // убираем из платных функций изменение метода обучения
+        //Utils.mainAlertForPay(DB.DATE_BG_COLOR, this, pay, db);
     }
 
     /**
@@ -168,11 +168,10 @@ public class OtherSetting extends Fragment implements OnClickListener {
             buttons.get(bgColor - 1).setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.btn_check_on_disable, 0, 0);
             db.updateRecExitState(DB.BG_COLOR, bgColor + "");
             if (!itemSKU.equals("")) {
-                amountDonate += itemSKU.equals(Pay.ITEM_SKU_1dol) ? 50 :
-                        (itemSKU.equals(Pay.ITEM_SKU_2dol) ? 100 :
-                                (itemSKU.equals(Pay.ITEM_SKU_5dol) ? 250 :
-                                        (itemSKU.equals(Pay.ITEM_SKU_10dol) ? 500 :
-                                                (itemSKU.equals(Pay.ITEM_SKU_99rub) ? 99 : 0))));
+                amountDonate += itemSKU.equals(Pay.ITEM_SKU_249rub) ? 249 :
+                        (itemSKU.equals(Pay.ITEM_SKU_499rub) ? 499 :
+                                (itemSKU.equals(Pay.ITEM_SKU_999rub) ? 999 :
+                                        (itemSKU.equals(Pay.ITEM_SKU_249rub_noad) ? 249 : 0)));
                 db.updateRecExitState(DB.AMOUNT_DONATE, amountDonate + "");
                 Log.d("myLogs", "Всего оплачено пользователем " + db.getValueByVariable(DB.AMOUNT_DONATE));
             }
@@ -190,7 +189,6 @@ public class OtherSetting extends Fragment implements OnClickListener {
 
     @Override
     public void onDestroyView() {
-        if (pay != null) pay.close();
         super.onDestroyView();
         Log.d("myLogs", "onDestroyView OtherSetting");
     }

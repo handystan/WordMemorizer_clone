@@ -20,7 +20,7 @@
                 android:id="@+id/tvLearningType"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
+                android:layout_marginStart="20dp"
                 android:background="#00000000"
                 android:text="@string/learning_type"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
@@ -29,7 +29,7 @@
                 android:id="@+id/rgLearningType"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
+                android:layout_marginStart="20dp"
                 android:background="#00000000">
 
                 <RadioButton
@@ -65,15 +65,15 @@
                     android:layout_width="fill_parent"
                     android:layout_height="1dp"
                     android:layout_marginBottom="10dp"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginRight="20dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"
                     android:background="#888888" />
 
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dp"
+                    android:layout_marginStart="20dp"
                     android:background="#00000000">
 
                     <Spinner
@@ -99,8 +99,8 @@
                 android:layout_width="fill_parent"
                 android:layout_height="1dp"
                 android:layout_marginBottom="10dp"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:layout_marginTop="10dp"
                 android:background="#888888" />
 
@@ -108,7 +108,7 @@
                 android:id="@+id/cbSpeak"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
+                android:layout_marginStart="20dp"
                 android:background="#00000000"
                 android:text="@string/speak_eng_word" />
 
@@ -123,8 +123,8 @@
                     android:layout_width="fill_parent"
                     android:layout_height="1dp"
                     android:layout_marginBottom="10dp"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginRight="20dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"
                     android:background="#888888" />
 
@@ -132,7 +132,7 @@
                     android:id="@+id/tvEngOrRus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dp"
+                    android:layout_marginStart="20dp"
                     android:background="#00000000"
                     android:text="@string/learning_words"
                     android:textAppearance="?android:attr/textAppearanceMedium" />
@@ -141,7 +141,7 @@
                     android:id="@+id/rgEngOrRus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dp"
+                    android:layout_marginStart="20dp"
                     android:background="#00000000">
 
                     <RadioButton
@@ -164,8 +164,8 @@
                 android:layout_width="fill_parent"
                 android:layout_height="1dp"
                 android:layout_marginBottom="10dp"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:layout_marginTop="10dp"
                 android:background="#888888" />
 
@@ -173,7 +173,7 @@
                 android:id="@+id/cbShowTranscr"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
+                android:layout_marginStart="20dp"
                 android:background="#00000000"
                 android:text="@string/show_transcr" />
 
@@ -188,15 +188,15 @@
                     android:layout_width="fill_parent"
                     android:layout_height="1dp"
                     android:layout_marginBottom="10dp"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginRight="20dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"
                     android:background="#888888" />
 
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dp"
+                    android:layout_marginStart="20dp"
                     android:background="#00000000">
 
                     <Spinner
@@ -222,8 +222,8 @@
                 android:layout_width="fill_parent"
                 android:layout_height="1dp"
                 android:layout_marginBottom="10dp"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:layout_marginTop="10dp"
                 android:background="#888888" />
 
@@ -231,9 +231,26 @@
                 android:id="@+id/cbShowDontKnow"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
+                android:layout_marginStart="20dp"
                 android:background="#00000000"
                 android:text="@string/show_dont_know" />
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginTop="10dp"
+                android:background="#888888" />
+
+            <CheckBox
+                android:id="@+id/cbLessonsHistory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:background="#00000000"
+                android:text="@string/save_lessons_history" />
 
         </LinearLayout>
     </ScrollView>

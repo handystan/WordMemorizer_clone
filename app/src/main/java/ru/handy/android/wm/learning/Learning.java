@@ -47,7 +47,6 @@ import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
@@ -56,6 +55,7 @@ import ru.handy.android.wm.BuildConfig;
 import ru.handy.android.wm.DB;
 import ru.handy.android.wm.GlobApp;
 import ru.handy.android.wm.Help;
+import ru.handy.android.wm.NoAd;
 import ru.handy.android.wm.R;
 import ru.handy.android.wm.Thanks;
 import ru.handy.android.wm.dictionary.Dictionary;
@@ -63,6 +63,7 @@ import ru.handy.android.wm.downloads.EditData;
 import ru.handy.android.wm.setting.Pay;
 import ru.handy.android.wm.setting.Settings;
 import ru.handy.android.wm.setting.Utils;
+import ru.handy.android.wm.statistics.Statistics;
 
 public class Learning extends AppCompatActivity implements OnClickListener, OnTouchListener {
 
@@ -87,6 +88,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
     private ArrayList<Button> buttons = new ArrayList<>();
     private DB db;
     private Fixing fixing; // класс, в котором хранится информация по текущему уроку с данной категорией
+    private final int OLD_DAYS = 30; // после скольки дней нужно удалять уроки
     private ArrayList<Word> words; // список слов, которые проставляются на кнопках
     private Word curWord; // текущее отгадываемое слово
     private Word wrongWord = null; // неверное выбранное слово
@@ -98,13 +100,13 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
     private boolean isShowTrancr = true; // показывать ли транскрипцию в "закреплении": true-да, false-нет
     private int amountWords = 6; // кол-во слов для отгадывания
     private boolean isShowDontKnow = true; // показывать ли кнопку "Не знаю": true-показывать, false-не показывать
+    private boolean isLessonsHistory = true; // сохранять ли историю всех незаконченных уроков: true-сохранять, false- сохранять историю только последнего урока
     private boolean isWaitTouch = false;// показывает в каком состоянии находится обучалка: true-выбран неверный ответ, ждут прикосновения, false-обычный режим (нужно для сохранения состояния при повороте экрана)
     private int repeatsAmountCompl = 2; // кол-во повторений (только для комплексного обучения (для случая, когда learningType=2))
     //    private int curRepeatNumberCompl = 0; // номер текущего повторение данного слова
     private int curLearningTypeCompl = 0; // текущий тип обучения в комплексном обучении: 0-отгадывание из из русс. перевода, 1-отгадывание из англ. перевода, 2-написание англ. слова
     private DialogLearning dl = null;// диалоговое окно с сообщением
     private Word message = null; // сообщение либо о полном окончании урока, либо об окончании с ошибками
-    private boolean isFromOldDB = false; //показывает приложение было установлено еще до введения платных функций или нет
     private int amountDonate = 0; // показывает сумму, которую пользователь пожертвовал разработчику
     private int lastBGColor = 100; // цвет фона для запоминания
     private InterstitialAd interstitialAd; // местраничная плолноэкранная реклама (у меня после полностью сделанного урока)
@@ -127,17 +129,10 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         super.onCreate(savedInstanceState);
         setContentView(R.layout.learning_md);
         Log.d("myLogs", "onCreate Learning");
-        String fromOldDB = db.getValueByVariable(DB.OLD_FREE_DB);
-        isFromOldDB = !(fromOldDB == null || fromOldDB.equals("0"));
         String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
         amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
 
-        // инициализация AdMob для рекламы
-        MobileAds.initialize(this, initializationStatus -> Log.d("myLogs", "AdMob is initialized"));
-        AdRequest adRequest = new AdRequest.Builder().build();
-        // загружаем баннерную рекламу
         avBottomBannerLearning = findViewById(R.id.avBottomBannerLearning);
-        avBottomBannerLearning.loadAd(adRequest);
 
         // устанавливаем toolbar и actionbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -155,7 +150,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         //проверяем не прошел ли бесплатный 7 дневный период по типу обучения. Если да, то возвращаем в базовый тип обучения
         /*String strStartDate = db.getValueByVariable(DB.DATE_LEARNING_METHOD);
         Date startDate = strStartDate == null || strStartDate.equals("") ? null : Date.valueOf(strStartDate);
-        if (!isFromOldDB && amountDonate == 0 && startDate != null && learningType != 0) {
+        if (amountDonate == 0 && startDate != null && learningType != 0) {
             long dif = (System.currentTimeMillis() - startDate.getTime()) / (1000 * 60 * 60 * 24);
             Log.d("myLogs", "dif = " + dif);
             if (dif > 7) { // и если закончились бесплатные 7 дней
@@ -173,7 +168,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         //проверяем не прошел ли бесплатный 7 дневный период по кол-ву слов в обучении. Если да, то возвращаем в базовый
         /*strStartDate = db.getValueByVariable(DB.DATE_LANG_WORD_AMOUNT);
         startDate = strStartDate == null || strStartDate.equals("") ? null : Date.valueOf(strStartDate);
-        if (!isFromOldDB && amountDonate == 0 && startDate != null && amountWords != 8) {
+        if (amountDonate == 0 && startDate != null && amountWords != 8) {
             long dif = (System.currentTimeMillis() - startDate.getTime()) / (1000 * 60 * 60 * 24);
             Log.d("myLogs", "dif = " + dif);
             if (dif > 7) { // и если закончились бесплатные 7 дней
@@ -183,6 +178,9 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         }*/
         String showTrancr = db.getValueByVariable(DB.LEARNING_SHOW_DONTKNOW);
         isShowDontKnow = (showTrancr == null || showTrancr.equals("1"));
+
+        String lesHist = db.getValueByVariable(DB.LEARNING_LESSONS_HISTORY);
+        isLessonsHistory = (lesHist == null || lesHist.equals("1"));
 
         svChoice = findViewById(R.id.svChoice);
         svWriteWord = findViewById(R.id.svWriteWord);
@@ -285,14 +283,14 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         if (lang == null) {
             db.updateRecExitState(DB.LEARNING_LANGUAGE, "0");
             isEngFixing = true;
-            fixing = new Fixing(db, s(R.string.berries), 0);
+            fixing = new Fixing(db, s(R.string.berries), false);
             // если не в первый раз, то урок берется из БД
         } else {
             isEngFixing = lang.equals("0");
             //проверяем не прошел ли бесплатный 7 дневный период по языку обучения. Если да, то возвращаем в базовый
             /*strStartDate = db.getValueByVariable(DB.DATE_LANGUAGE);
             startDate = strStartDate == null || strStartDate.equals("") ? null : Date.valueOf(strStartDate);
-            if (!isFromOldDB && amountDonate == 0 && startDate != null && !isEngFixing) {
+            if (amountDonate == 0 && startDate != null && !isEngFixing) {
                 long dif = (System.currentTimeMillis() - startDate.getTime()) / (1000 * 60 * 60 * 24);
                 Log.d("myLogs", "dif = " + dif);
                 if (dif > 7) { // и если закончились бесплатные 7 дней
@@ -301,8 +299,12 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                 }
             }*/
             ivSound.setVisibility(isEngFixing ? View.VISIBLE : View.GONE);
-            // загружаем урок из БД
-            fixing = new Fixing(db, null, 1);
+            // загружаем текущий урок из БД
+            fixing = new Fixing(db, null, false);
+        }
+        // смотрим есть уроки сроком больше 30 дней (если есть, то удаляем их, чтобы не засоряли БД)
+        if (isLessonsHistory) {
+            db.delOldLessons(OLD_DAYS);
         }
 
         bCategory.setOnClickListener(this);
@@ -343,12 +345,11 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
 
         // показываем или скрываем строку с баннерной рекламой
         llAdMob = findViewById(R.id.llAdMob);
-        pay = new Pay(this);
+        pay = app.getPay(app);
         if (amountDonate == 0) { //если в БД нет инфы о покупках, на всякий случай смотрим в Google play
             try {
                 new Thread() {
                     public void run() {
-                        pay = new Pay(Learning.this);
                         int amount = pay.amountOfPurchased();
                         for (int i = 0; i < 100; i++) {
                             if (amount != -1) {
@@ -381,12 +382,12 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
             }
         }
         Log.i("myLogs", "amountDonate = " + amountDonate);
-        if (isFromOldDB || amountDonate > 0) {
+        if (amountDonate > 0) {
             ViewGroup.LayoutParams params = llAdMob.getLayoutParams();
             params.height = 0;
             llAdMob.setLayoutParams(params);
             loadAdMob(true, false); // загружаем только баннерную рекламу
-            Log.i("myLogs", "loadAdMob - загрузка только баннерной рекламы");
+            Log.i("myLogs", "loadAdMob - загрузка только баннерной рекламы без отображения");
         } else {
             loadAdMob(true, true);
             Log.i("myLogs", "loadAdMob - загрузка баннерной и полноэкранной рекламы");
@@ -403,14 +404,14 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
             app.otherEvent(s(R.string.theme) + "_" + bGColor,
                     pronun.equals("0") ? s(R.string.US_eng) : s(R.string.UK_eng));
             // устанавливаем пользовательские свойства
-            mFBAnalytics.setUserProperty("from_free_old_db", isFromOldDB ? "Y" : "N"); // пользователь из старых бесплатных версий приложения или нет
             mFBAnalytics.setUserProperty("is_paid", amountDonate == 0 ? "N" : "Y"); // оплачено приложение пользователем или нет
             mFBAnalytics.setUserProperty("app_version", BuildConfig.VERSION_NAME + " (" + BuildConfig.VERSION_CODE + ")"); // наименование и номер версии приложения, установленное у пользователя
-            mFBAnalytics.setUserProperty("date_trial_stats", db.getValueByVariable(DB.DATE_TRIAL_STATS)); // дата начала пробного периода по статистике
+            // с 32 версии не актуальный функционал
+            /*mFBAnalytics.setUserProperty("date_trial_stats", db.getValueByVariable(DB.DATE_TRIAL_STATS)); // дата начала пробного периода по статистике
             mFBAnalytics.setUserProperty("date_trial_learning_type", db.getValueByVariable(DB.DATE_LEARNING_METHOD)); // дата начала пробного периода по другим методам обучения
             mFBAnalytics.setUserProperty("date_trial_language", db.getValueByVariable(DB.DATE_LANGUAGE)); // дата начала пробного периода по смене языка обучения
             mFBAnalytics.setUserProperty("date_trial_word_amount", db.getValueByVariable(DB.DATE_LANG_WORD_AMOUNT)); // дата начала пробного периода по кол-ву слов для выбора
-            mFBAnalytics.setUserProperty("date_trial_bgcolor", db.getValueByVariable(DB.DATE_BG_COLOR)); // дата начала пробного периода по цвету фона
+            mFBAnalytics.setUserProperty("date_trial_bgcolor", db.getValueByVariable(DB.DATE_BG_COLOR)); // дата начала пробного периода по цвету фона*/
         }
     }
 
@@ -438,6 +439,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         menu.setGroupVisible(R.id.group_action_settings, true);
         menu.setGroupVisible(R.id.group_help, true);
         menu.setGroupVisible(R.id.group_data, true);
+        menu.setGroupVisible(R.id.group_no_ad, amountDonate <= 0);
         menu.setGroupVisible(R.id.group_donate, true);
         menu.setGroupVisible(R.id.group_about, true);
         menu.setGroupVisible(R.id.group_exit, true);
@@ -453,7 +455,10 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                 startActivity(new Intent(this, Dictionary.class));
                 return true;
             case R.id.statistics:
-                Utils.mainAlertForPay(DB.DATE_TRIAL_STATS, this, pay, db);
+                // 3 означает класс Statistics
+                startActivityForResult(new Intent(this, Statistics.class), 3);
+                // убираем из платных функций изменение метода обучения
+                //Utils.mainAlertForPay(DB.DATE_TRIAL_STATS, this, pay, db);
                 return true;
             case R.id.action_settings:
                 Intent intent1 = new Intent(this, Settings.class);
@@ -469,9 +474,13 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
             case R.id.data:
                 startActivity(new Intent(this, EditData.class));
                 return true;
+            case R.id.no_ad:
+                // 4 означает класс NoAd
+                startActivity(new Intent(this, NoAd.class));
+                return true;
             case R.id.donate:
                 // 2 означает класс Thanks
-                startActivityForResult(new Intent(this, Thanks.class), 2);
+                startActivity(new Intent(this, Thanks.class));
                 return true;
             case R.id.about:
                 startActivity(new Intent(this, About.class));
@@ -487,7 +496,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
     /**
      * инициализируем AdMob и загружаем баннерную и межстраничную рекламу
      *
-     * @param isBanner выполнять загрузку баннера или нет
+     * @param isBanner         выполнять загрузку баннера или нет
      * @param isInterstitialAd выполнять загрузку InterstitialAd или нет
      */
     public void loadAdMob(boolean isBanner, boolean isInterstitialAd) {
@@ -496,12 +505,10 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
             // инициализация AdMob для рекламы
             MobileAds.initialize(this, initializationStatus -> Log.d("myLogs", "AdMob is initialized"));
             // загружаем баннерную рекламу
-            avBottomBannerLearning = findViewById(R.id.avBottomBannerLearning);
             avBottomBannerLearning.loadAd(adRequest);
         }
-
         if (isInterstitialAd) {
-            InterstitialAd.load(this, s(R.string.id_interstitial_lesson_end_test), adRequest,
+            InterstitialAd.load(this, s(R.string.id_interstitial_lesson_end_real), adRequest,
                     new InterstitialAdLoadCallback() {
                         @Override
                         public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
@@ -576,7 +583,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                         curWord.getEngWord() + (isShowTrancr ? " " + curWord.getTranscription() : ""));
                 // список слов не обновляем, если только что был поворот экрана или вернулся экран с настройками
                 if (isRefreshWords) {
-                    words = db.getRandomWords(fixing.getCategories(), curWord, amountWords, false);
+                    words = db.getRandomWords(fixing.getCategories(), curWord, amountWords);
                 }
             } else {
                 if (android.os.Build.VERSION.SDK_INT >= 23) {
@@ -586,7 +593,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                 }
                 tvCheckedWord.setText(R.string.no_category);
                 bKnow.setVisibility(View.GONE);
-                words = db.getRandomWords("", curWord, amountWords, false);
+                words = db.getRandomWords("", curWord, amountWords);
                 checkedEngWord = "";
             }
             for (int i = 0; i < Math.min(amountWords, words.size()); i++) {
@@ -629,8 +636,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                                     Learning.this.getIntent().putExtra(Categories.NEW_CATEGORIES, ""));
                             // отправляем в Firebase инфу о том, что полностью пройден урок
                             if (mFBAnalytics != null) {
-                                app.finishedLessonsEvent(amountDonate > 0 || isFromOldDB ?
-                                        s(R.string.paid) : s(R.string.not_paid));
+                                app.finishedLessonsEvent(amountDonate > 0 ? s(R.string.paid) : s(R.string.not_paid));
                             }
                             // показываем межстраничную рекламу после окончания урока
                             if (interstitialAd != null) {
@@ -638,6 +644,9 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                             } else {
                                 Intent intent = new Intent(this, Categories.class);
                                 intent.putExtra("fromAct", 0); // 0 - запуск из Learning
+                                if (message != null) { //если есть сообщение об окончании урока
+                                    intent.putExtra("message", message.getEngWord());
+                                }
                                 startActivityForResult(intent, GET_CATEGORIES);
                             }
                         }
@@ -656,7 +665,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
     public void onClick(View v) {
         // обработка нажатия строки с количеством слов
         if (v.getId() == tvAmountWords.getId() || v.getId() == llDownLearning.getId()) {
-            startActivity(new Intent(this, CategoreWordsList.class));
+            startActivityForResult(new Intent(this, CategoryWordsList.class), 5);
             return;
         }
         // обработка нажатия кнопки с категориями
@@ -754,7 +763,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
             new Thread(() -> db.updateStat(curWord, fixing.getCategories(), finalRightWord == null)).start();
             // отправляем в Firebase инфу с настройками по обучению
             if (mFBAnalytics != null) {
-                app.learningEvent(amountDonate > 0 || isFromOldDB ? s(R.string.paid) : s(R.string.not_paid),
+                app.learningEvent(amountDonate > 0 ? s(R.string.paid) : s(R.string.not_paid),
                         fixing.getCategories(),
                         learningType == 0 ? s(R.string.choice_learning) : (learningType == 1 ? s(R.string.write_learning) : s(R.string.complex_learning)),
                         isSpeak ? s(R.string.learning_speak) : s(R.string.not_learning_speak),
@@ -762,6 +771,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                         isShowDontKnow ? s(R.string.show_dont_know) : s(R.string.not_show_dont_know),
                         isEngFixing ? s(R.string.learning_eng_words) : s(R.string.learning_rus_words),
                         Integer.toString(amountWords), Integer.toString(repeatsAmountCompl),
+                        isLessonsHistory ? s(R.string.save_lessons_history) : s(R.string.no_save_lessons_history),
                         rightWord == null ? s(R.string.right_answer) : s(R.string.wrong_answer));
             }
         } else {
@@ -902,7 +912,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                     ivSound.setVisibility(isEngFixing ? View.VISIBLE : View.GONE);
                     String trancr = db.getValueByVariable(DB.LEARNING_SHOW_TRANSCR);
                     isShowTrancr = (trancr == null || trancr.equals("1"));
-                    fixing = new Fixing(db, categories, 0, isOnlyMistakes);
+                    fixing = new Fixing(db, categories, false, isOnlyMistakes);
                     showWords();
                     setTextAmountWords();
                     if (fixing.getCurWord() == null) {
@@ -942,18 +952,17 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                 setShowTrancr(data.getBooleanExtra("isShowTranscr", true));
                 setAmountWords(data.getIntExtra("amountWords", 8));
                 setShowDontKnow(data.getBooleanExtra("isShowDontKnow", true));
+                isLessonsHistory = data.getBooleanExtra("isLessonsHistory", true);
                 showWords(false);
-            } else if (requestCode == 2) { // если вернулся результат с оплатой из Thanks
-                amountDonate = data.getIntExtra("amountDonate", 0);
-                if (amountDonate > 0) {
-                    ViewGroup.LayoutParams params = llAdMob.getLayoutParams();
-                    params.height = 0;
-                    llAdMob.setLayoutParams(params);
-                    interstitialAd = null;
+            } else if (requestCode == 5) { // если вернулся результат с возможным обновлением урока из CategoryWordsList
+                boolean isUpdatedLesson = data.getBooleanExtra("isUpdatedLesson", false);
+                if (isUpdatedLesson) {
+                    fixing = new Fixing(db, fixing.getCategories(), true, false);
+                    showWords();
+                    setTextAmountWords();
                 }
             }
         } else if (resultCode == AppCompatActivity.RESULT_CANCELED) {
-            // do nothing
         }
     }
 
@@ -1083,6 +1092,21 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
             recreate();
             Log.d("myLogs", "onResume Learning recreate");
         }
+        //показываем рекламу или нет
+        String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
+        amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
+        ViewGroup.LayoutParams params = llAdMob.getLayoutParams();
+        if (amountDonate > 0) {
+            params.height = 0;
+            interstitialAd = null;
+        } else {
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            loadAdMob(true, true); // загрузка баннерной и полноэкранной рекламы
+        }
+        llAdMob.setLayoutParams(params);
+        if (menu != null) {
+            menu.setGroupVisible(R.id.group_no_ad, amountDonate <= 0);
+        }
         super.onResume();
     }
 
@@ -1099,7 +1123,6 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         Log.d("myLogs", "onDestroy Learning");
         // закрываем подключение при выходе
         app.closeDb();
-        if (pay != null) pay.close();
         super.onDestroy();
     }
 

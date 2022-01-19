@@ -53,14 +53,53 @@
                     android:layout_marginTop="10dp"
                     android:background="#00000000">
 
-                    <Spinner
-                        android:id="@+id/sDonate"
+                    <SeekBar
+                        android:id="@+id/sbDonate"
+                        style="@style/Widget.AppCompat.SeekBar.Discrete"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentTop="true"
-                        android:layout_marginEnd="10dp"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginTop="10dp"
                         android:layout_toStartOf="@+id/bDonate"
-                        android:background="#00000000" />
+                        android:background="#00000000"
+                        android:max="2"
+                        android:progress="0" />
+
+                    <TextView
+                        android:id="@+id/tv0"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/sbDonate"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginTop="-5dp"
+                        android:background="#00000000"
+                        android:text="249руб"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                        android:textColor="#EC407A" />
+
+                    <TextView
+                        android:id="@+id/tv1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/sbDonate"
+                        android:layout_alignEnd="@+id/sbDonate"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginTop="-5dp"
+                        android:background="#00000000"
+                        android:gravity="center"
+                        android:text="499руб"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+                    <TextView
+                        android:id="@+id/tv2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/sbDonate"
+                        android:layout_alignEnd="@+id/sbDonate"
+                        android:layout_marginTop="-5dp"
+                        android:background="#00000000"
+                        android:text="999руб"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
                     <Button
                         android:id="@+id/bDonate"

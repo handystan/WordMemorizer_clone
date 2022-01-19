@@ -22,6 +22,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
@@ -30,6 +31,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,6 +42,9 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.documentfile.provider.DocumentFile;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.io.BufferedReader;
@@ -69,6 +74,7 @@ import ru.handy.android.wm.CustomKeyboard;
 import ru.handy.android.wm.DB;
 import ru.handy.android.wm.GlobApp;
 import ru.handy.android.wm.Help;
+import ru.handy.android.wm.NoAd;
 import ru.handy.android.wm.R;
 import ru.handy.android.wm.Thanks;
 import ru.handy.android.wm.learning.Categories;
@@ -82,30 +88,31 @@ public class EditData extends AppCompatActivity {
     private static final int REQUEST_SAVE = 1;
     private static final int GET_CAT_UPLOAD_XLS = 2;
     private static final int GET_CAT_UPLOAD_TXT = 3;
-    LinearLayout llPayInformation;
-    Button bPay;
-    Button bOpenDialog;
-    Button bSaveDialog;
-    Button bDownload;
-    Button bUpload;
-    EditText etOpenFileName;
-    EditText etSaveFileName;
-    CheckBox cbDelete;
-    CheckBox cbOnlyChoseCat;
-    Spinner sFileType;
-    EditText etSemicolon;
-    TextView tvSemicolon;
-    ImageView ivShare1;
-    ImageView ivShare2;
-    CustomKeyboard keyboard;
-    DB db;
-    Learning learning = null;
+    private LinearLayout llPayInformation;
+    private Button bPay;
+    private Button bOpenDialog;
+    private Button bSaveDialog;
+    private Button bDownload;
+    private Button bUpload;
+    private EditText etOpenFileName;
+    private EditText etSaveFileName;
+    private CheckBox cbDelete;
+    private CheckBox cbOnlyChoseCat;
+    private Spinner sFileType;
+    private EditText etSemicolon;
+    private TextView tvSemicolon;
+    private ImageView ivShare1;
+    private ImageView ivShare2;
+    private LinearLayout llAdMobData;
+    private AdView avBottomBannerData;
+    private CustomKeyboard keyboard;
+    private Menu menu;
+    private DB db;
+    private Learning learning = null;
     private Uri uriDownloadFile; // uri загружаемого файла
     private Uri uriUploadFile; // uri выгружаемого файла
     private GlobApp app;
-    private Pay pay;
-    private int amountDonate = 0;
-    private boolean isFromOldDB = false;
+    private int amountDonate = 0; // показывает сумму, которую пользователь пожертвовал разработчику
     private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
     @SuppressLint("InflateParams")
@@ -162,14 +169,24 @@ public class EditData extends AppCompatActivity {
 
         String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
         amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
-        String fromOldDB = db.getValueByVariable(DB.OLD_FREE_DB);
-        isFromOldDB = fromOldDB != null && !fromOldDB.equals("0");
-        if (isFromOldDB || amountDonate > 0) { // если старая БД или приложение оплачено, то скрываем layout с предложением оплаты
+
+        avBottomBannerData = findViewById(R.id.avBottomBannerData);
+        llAdMobData = findViewById(R.id.llAdMobData);
+        // инициализация AdMob для рекламы
+        MobileAds.initialize(this, initializationStatus ->
+                Log.d("myLogs", "AdMob in " + getClass().getSimpleName() + " is initialized"));
+        AdRequest adRequest = new AdRequest.Builder().build();
+        // загружаем баннерную рекламу
+        avBottomBannerData.loadAd(adRequest);
+
+        // это уже не актуально, так как это убрал из платных функций
+        llPayInformation.getLayoutParams().height = 0;
+        /*if (amountDonate > 0) { // если старая БД или приложение оплачено, то скрываем layout с предложением оплаты
             llPayInformation.getLayoutParams().height = 0;
         } else { // если новая БД и приложение не оплачено, то показываем layout с предложением оплаты
-            pay = new Pay(this);
+            pay = app.getPay(app);
             bPay.setOnClickListener(v -> Utils.alertForPay("", EditData.this, pay, db, false));
-        }
+        }*/
 
         // адаптер для типа файла
         String[] spinnerData = {s(R.string.spinner_xls),
@@ -423,9 +440,10 @@ public class EditData extends AppCompatActivity {
                     args = new ArrayList<>();
                 }
                 // если приложение не оплачено, то позволяем вставить только 10 строк
-                if (!isFromOldDB && amountDonate == 0 && j == 9 && sb.indexOf("INSERT") != -1) {
+                // это уже не актуально, так как это убрал из платных функций
+                /*if (amountDonate == 0 && j == 9 && sb.indexOf("INSERT") != -1) {
                     break;
-                }
+                }*/
             }
             if (sb.indexOf("INSERT") != -1) {
                 db.execSQL(sb.toString(), args.toArray());
@@ -460,6 +478,7 @@ public class EditData extends AppCompatActivity {
      * @param categories перечень категорий, которые нужно выгружать в файл (если null, то выгружаются все категории)
      * @return количество выгруженных строк
      */
+    @SuppressLint("Range")
     private int writeXlsFile(Uri fileUri, String categories) {
         Cursor c = null;
         WritableWorkbook wb = null;
@@ -621,9 +640,10 @@ public class EditData extends AppCompatActivity {
                         args = new ArrayList<>();
                     }
                     // если приложение не оплачено, то позволяем вставить только 10 строк
-                    if (!isFromOldDB && amountDonate == 0 && (r - intWrongRow) == 11 && sb.indexOf("INSERT") != -1) {
+                    // это уже не актуально, так как это убрал из платных функций
+                    /*if (amountDonate == 0 && (r - intWrongRow) == 11 && sb.indexOf("INSERT") != -1) {
                         break;
-                    }
+                    }*/
                 }
                 if (sb.indexOf("INSERT") != -1)
                     db.execSQL(sb.toString(), args.toArray());
@@ -679,6 +699,7 @@ public class EditData extends AppCompatActivity {
      * @param categories перечень категорий, которые нужно выгружать в файл (если null, то выгружаются все категории)
      * @return количество выгруженных строк
      */
+    @SuppressLint("Range")
     private int writeTxtFile(Uri fileUri, String categories) {
         Cursor c = null;
         BufferedWriter bw = null;
@@ -810,8 +831,10 @@ public class EditData extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         menu.setGroupVisible(R.id.group_help, true);
+        menu.setGroupVisible(R.id.group_no_ad, amountDonate <= 0);
         menu.setGroupVisible(R.id.group_donate, true);
         menu.setGroupVisible(R.id.group_about, true);
+        this.menu = menu;
         return true;
     }
 
@@ -831,6 +854,8 @@ public class EditData extends AppCompatActivity {
             Intent intent = new Intent(this, Help.class);
             intent.putExtra("idhelp", 2);
             startActivity(intent);
+        } else if (item.getItemId() == R.id.no_ad) { // вызов страницы с отключением рекламы
+            startActivity(new Intent(this, NoAd.class));
         } else if (item.getItemId() == R.id.donate) { // вызов страницы с благодарностью
             startActivity(new Intent(this, Thanks.class));
         } else if (item.getItemId() == R.id.about) { // вызов страницы О программе
@@ -858,6 +883,22 @@ public class EditData extends AppCompatActivity {
 
     @Override
     public void onResume() {
+        //показываем рекламу или нет
+        String amountDonateStr = db != null ? db.getValueByVariable(DB.AMOUNT_DONATE) : null;
+        amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
+        ViewGroup.LayoutParams params = llAdMobData.getLayoutParams();
+        if (amountDonate > 0) {
+            params.height = 0;
+            Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName() + " без отображения");
+        } else {
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName());
+        }
+        llAdMobData.setLayoutParams(params);
+
+        if (menu != null) {
+            menu.setGroupVisible(R.id.group_no_ad, amountDonate <= 0);
+        }
         super.onResume();
     }
 
@@ -876,6 +917,5 @@ public class EditData extends AppCompatActivity {
         }
         Log.d("myLogs", "onDestroy EditData");
         super.onDestroy();
-        if (pay != null) pay.close();
     }
 }

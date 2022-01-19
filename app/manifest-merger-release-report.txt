@@ -96,7 +96,7 @@ ADDED from AndroidManifest.xml:50:9
 		ADDED from AndroidManifest.xml:52:13
 	android:name
 		ADDED from AndroidManifest.xml:51:13
-activity#ru.handy.android.wm.learning.CategoreWordsList
+activity#ru.handy.android.wm.learning.CategoryWordsList
 ADDED from AndroidManifest.xml:55:9
 	android:label
 		ADDED from AndroidManifest.xml:57:13

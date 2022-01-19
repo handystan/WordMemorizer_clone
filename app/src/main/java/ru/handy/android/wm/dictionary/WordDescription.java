@@ -16,11 +16,17 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
+import ru.handy.android.wm.DB;
 import ru.handy.android.wm.GlobApp;
 import ru.handy.android.wm.R;
 import ru.handy.android.wm.setting.Utils;
@@ -28,11 +34,14 @@ import ru.handy.android.wm.setting.Utils;
 public class WordDescription extends AppCompatActivity implements OnClickListener {
 
     private GlobApp app;
+    private DB db;
     private TextView tvDictEngWord;
     private TextView tvTrascrip;
     private TextView tvRusTrasclate;
     private TextView tvCategory;
     private ImageView ivSound;
+    private LinearLayout llAdMobWordDescr;
+    private AdView avBottomBannerWordDescr;
     private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
     @SuppressLint("ClickableViewAccessibility")
@@ -42,7 +51,7 @@ public class WordDescription extends AppCompatActivity implements OnClickListene
         setContentView(R.layout.word);
 
         // устанавливаем toolbar и actionbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar bar = getSupportActionBar();
         if (bar != null) {
@@ -65,12 +74,33 @@ public class WordDescription extends AppCompatActivity implements OnClickListene
             String[] arrClName = this.getClass().toString().split("\\.");
             app.openActEvent(arrClName[arrClName.length - 1]);
         }
+        db = app.getDb(); // открываем подключение к БД
 
-        tvDictEngWord = (TextView) findViewById(R.id.tvDictEngWord);
-        tvTrascrip = (TextView) findViewById(R.id.tvTrascrip);
-        tvRusTrasclate = (TextView) findViewById(R.id.tvRusTrasclate);
-        tvCategory = (TextView) findViewById(R.id.tvCategory);
-        ivSound = (ImageView) findViewById(R.id.ivSound);
+        String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
+        int amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
+        avBottomBannerWordDescr = findViewById(R.id.avBottomBannerWordDescr);
+        llAdMobWordDescr = findViewById(R.id.llAdMobWordDescr);
+        // инициализация AdMob для рекламы
+        MobileAds.initialize(this, initializationStatus ->
+                Log.d("myLogs", "AdMob in " + getClass().getSimpleName() + " is initialized"));
+        AdRequest adRequest = new AdRequest.Builder().build();
+        // загружаем баннерную рекламу
+        avBottomBannerWordDescr.loadAd(adRequest);
+        ViewGroup.LayoutParams params = llAdMobWordDescr.getLayoutParams();
+        if (amountDonate > 0) {
+            params.height = 0;
+            Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName() + " без отображения");
+        } else {
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName());
+        }
+        llAdMobWordDescr.setLayoutParams(params);
+
+        tvDictEngWord = findViewById(R.id.tvDictEngWord);
+        tvTrascrip = findViewById(R.id.tvTrascrip);
+        tvRusTrasclate = findViewById(R.id.tvRusTrasclate);
+        tvCategory = findViewById(R.id.tvCategory);
+        ivSound = findViewById(R.id.ivSound);
         ivSound.setOnClickListener(this);
         final Drawable defBackground = ivSound.getBackground(); // фон по умолчанию для кнопки с озвучки
         ivSound.setOnTouchListener((v, event) -> {
@@ -78,11 +108,7 @@ public class WordDescription extends AppCompatActivity implements OnClickListene
                     || event.getAction() == MotionEvent.ACTION_MOVE) {
                 ivSound.setBackgroundResource(R.color.bright_blue);
             } else {
-                if (android.os.Build.VERSION.SDK_INT >= 16) {
-                    ivSound.setBackground(defBackground);
-                } else {
-                    ivSound.setBackgroundDrawable(defBackground);
-                }
+                ivSound.setBackground(defBackground);
             }
             return false;
         });
