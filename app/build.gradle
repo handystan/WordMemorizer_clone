@@ -16,8 +16,8 @@ android {
         applicationId "ru.handy.android.wm"
         minSdkVersion 21
         targetSdkVersion 31
-        versionCode 32
-        versionName "2.9"
+        versionCode 34
+        versionName "2.11"
     }
     buildTypes {
         release {

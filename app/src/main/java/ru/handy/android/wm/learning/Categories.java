@@ -1,5 +1,7 @@
 package ru.handy.android.wm.learning;
 
+import static ru.handy.android.wm.setting.Utils.strToList;
+
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.database.sqlite.SQLiteException;
@@ -38,6 +40,8 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 import ru.handy.android.wm.DB;
@@ -203,10 +207,15 @@ public class Categories extends AppCompatActivity implements OnClickListener, On
         });
         // затем в отдельном потоке отображаем и кол-во слов в каждой категории
         new Thread(() -> {
+            //категории с указанем кол-ва отгаданных и неотгаданных слов (из T_STATISTICS)
+            HashMap<String, Category> rightWordsInCats = db.getRightWordsInCats();
             final ArrayList<Category> newCategories = db.getClassCategories();
             if (newCategories != null) {
                 for (int i = 0; i < categories.size(); i++) {
+                    String cat = categories.get(i).getName();
                     categories.get(i).setAmount(newCategories.get(i).getAmount());
+                    categories.get(i).setAmountRight(rightWordsInCats.get(cat) == null ? 0 : rightWordsInCats.get(cat).getAmountRight());
+                    categories.get(i).setAmountWrong(rightWordsInCats.get(cat) == null ? 0 : rightWordsInCats.get(cat).getAmountWrong());
                 }
                 runOnUiThread(() -> {
                     cAdapter.notifyDataSetChanged(); // обновляем адаптер
@@ -247,10 +256,23 @@ public class Categories extends AppCompatActivity implements OnClickListener, On
                     .setMessage(s(R.string.delete_category_words))
                     .setPositiveButton(s(R.string.yes), (dialog, which) -> {
                         try {
-                            int[] res = db.deleteCategories(catsStr);
+                            // проверяем, нужно ли обновлять интерфейс в тек. уроке (есть ли в тек. уроке удаляемые категории)
+                            List<String> cats = strToList(catsStr, ",", true);
+                            List<String> catsInCurLesson = strToList(db.getCategoryCurLesson(), ",", true);
+                            boolean inCurLesson = false;
+                            for (String cat : cats) {
+                                inCurLesson = catsInCurLesson.contains(cat);
+                            }
+                            db.removeStats(catsStr); // удаляем катгории из T_STATISTICS
+                            db.deleteCategories(DB.T_LESSON, catsStr); // удаляем катгории из T_LESSON
+                            // удаляем катгории из T_ENGWORDS
+                            int[] res = db.deleteCategories(DB.T_ENGWORDS, catsStr);
                             intent.putExtra("categoriesAmount", res[0]);
                             intent.putExtra("deletedWordsAmount", res[1]);
                             intent.putExtra("updateWordsAmount", res[2]);
+                            if (inCurLesson) { // нужно ли обновлять интерфейс текущеш-го урока
+                                app.getLearning().updateLesson(db.getCategoryCurLesson(), true, false, 0);
+                            }
                             setResult(RESULT_OK, intent);
                             finish();
                         } catch (SQLiteException e) {
@@ -316,7 +338,9 @@ public class Categories extends AppCompatActivity implements OnClickListener, On
             builder.setPositiveButton(R.string.ok, (dialog, which) -> {
                 // запускаем изменение имени категории только, если старое и новое имя отличаются
                 if (!catName.equals(etCatRename.getText().toString())) {
-                    db.categoryRename(catName, etCatRename.getText().toString()); // обновляем имяктаегории в БД
+                    db.categoryRename(DB.T_ENGWORDS, catName, etCatRename.getText().toString()); // обновляем категории в T_ENGWORDS
+                    db.categoryRename(DB.T_LESSON, catName, etCatRename.getText().toString()); // обновляем категории в T_LESSON
+                    db.updateCatInStats(catName, etCatRename.getText().toString()); // обновляем категории в T_STATISTICS
                     ArrayList<Category> cats = cAdapter.getCategories();
                     // если новое имя совпадает с каким сущствующим, то находится его id в списке
                     int idExist = cAdapter.getIdByCatName(etCatRename.getText().toString());
@@ -332,6 +356,10 @@ public class Categories extends AppCompatActivity implements OnClickListener, On
                     }
                     Collections.sort(cats); // сортируем обновленный список категорий
                     cAdapter.notifyDataSetChanged();
+                    // если изменилась наименование категории в тек. уроке, то в интерфейсе обновляем кнопку с категорией
+                    if (db.getCategoryCurLesson().contains(etCatRename.getText().toString())) {
+                        app.getLearning().updateLesson(null, false, false, 2);
+                    }
                     Toast.makeText(getApplicationContext(), s(R.string.success_of_rename_category), Toast.LENGTH_LONG).show();
                 } else {
                     Toast.makeText(getApplicationContext(), s(R.string.no_rename_category), Toast.LENGTH_LONG).show();

@@ -48,6 +48,7 @@ import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import ru.handy.android.wm.About;
@@ -60,6 +61,12 @@ import ru.handy.android.wm.R;
 import ru.handy.android.wm.Thanks;
 import ru.handy.android.wm.dictionary.Dictionary;
 import ru.handy.android.wm.downloads.EditData;
+import ru.handy.android.wm.learning.Categories;
+import ru.handy.android.wm.learning.Category;
+import ru.handy.android.wm.learning.CategoryWordsList;
+import ru.handy.android.wm.learning.DialogLearning;
+import ru.handy.android.wm.learning.Fixing;
+import ru.handy.android.wm.learning.Word;
 import ru.handy.android.wm.setting.Pay;
 import ru.handy.android.wm.setting.Settings;
 import ru.handy.android.wm.setting.Utils;
@@ -302,7 +309,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
             // загружаем текущий урок из БД
             fixing = new Fixing(db, null, false);
         }
-        // смотрим есть уроки сроком больше 30 дней (если есть, то удаляем их, чтобы не засоряли БД)
+        // смотрим есть уроки сроком больше OLD_DAYS дней (если есть, то удаляем их, чтобы не засоряли БД)
         if (isLessonsHistory) {
             db.delOldLessons(OLD_DAYS);
         }
@@ -312,21 +319,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         tvAmountWords.setOnClickListener(this);
 
         curWord = fixing.getCurWord();
-        if (curWord == null) {
-            bCategory.setTextColor(Color.parseColor("darkgray"));
-            bCategory.setText(R.string.choose_category);
-        } else {
-            bCategory.setTextColor(Color.parseColor("black"));
-            Spannable span = new SpannableString(s(R.string.category)
-                    + "\n" + fixing.getCategories());
-            int fontSize = (int) (bCategory.getTextSize() * 0.7);
-            span.setSpan(new AbsoluteSizeSpan(fontSize, false), 0, 10,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            fontSize = (int) (bCategory.getTextSize() * 1.1);
-            span.setSpan(new AbsoluteSizeSpan(fontSize, false), 11, span.length(),
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            bCategory.setText(span);
-        }
+        setButtonCategory();
 
         // если был поворот экрана
         if (savedInstanceState != null) {
@@ -724,6 +717,8 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                 selectedWord = words.get(11);
                 break;
             case R.id.bDontKnow:
+                /*Map<Long, Category> catsMap = db.getCategoriesInLesson();
+                Log.d("myLogs", "catsMap = " + catsMap);*/
                 selectedWord = new Word(0, etAnswerWord.getText().toString(), "", etAnswerWord.getText().toString());
                 break;
             case R.id.bKnow:
@@ -912,23 +907,11 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                     ivSound.setVisibility(isEngFixing ? View.VISIBLE : View.GONE);
                     String trancr = db.getValueByVariable(DB.LEARNING_SHOW_TRANSCR);
                     isShowTrancr = (trancr == null || trancr.equals("1"));
-                    fixing = new Fixing(db, categories, false, isOnlyMistakes);
-                    showWords();
-                    setTextAmountWords();
-                    if (fixing.getCurWord() == null) {
-                        bCategory.setTextColor(Color.parseColor("darkgray"));
-                        bCategory.setText(R.string.choose_category);
+                    // если кол-во слов в катерии(ях) не совпадает с кол-вом слов в уроке из истории, то его принудительно обновляем
+                    if (db.getWordsByCategory(categories).size() != db.getWordsFromLessonByCats(categories).size()) {
+                        updateLesson(categories, true, isOnlyMistakes, 0);
                     } else {
-                        bCategory.setTextColor(Color.parseColor("black"));
-                        Spannable span = new SpannableString(s(R.string.category)
-                                + "\n" + fixing.getCategories());
-                        int fontSize = (int) (bCategory.getTextSize() * 0.7);
-                        span.setSpan(new AbsoluteSizeSpan(fontSize, false), 0, 10,
-                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        fontSize = (int) (bCategory.getTextSize() * 1.2);
-                        span.setSpan(new AbsoluteSizeSpan(fontSize, false), 11, span.length(),
-                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        bCategory.setText(span);
+                        updateLesson(categories, false, isOnlyMistakes, 0);
                     }
                     InputMethodManager imm = (InputMethodManager) this
                             .getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -957,9 +940,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
             } else if (requestCode == 5) { // если вернулся результат с возможным обновлением урока из CategoryWordsList
                 boolean isUpdatedLesson = data.getBooleanExtra("isUpdatedLesson", false);
                 if (isUpdatedLesson) {
-                    fixing = new Fixing(db, fixing.getCategories(), true, false);
-                    showWords();
-                    setTextAmountWords();
+                    updateLesson(fixing.getCategories(), true, false, 1);
                 }
             }
         } else if (resultCode == AppCompatActivity.RESULT_CANCELED) {
@@ -1019,6 +1000,26 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
     }
 
     /**
+     * метод, обновляющий урок и интрефейс урока
+     *
+     * @param categories        категории урока. Если null, то значит текущий урок
+     * @param forceUpdateLesson если true, то в любом случае обновлять урок, а не брать его из истории
+     * @param isOnlyMistakes    показывать только слова с ошибками (true) или все (false)
+     * @param kindOfUpdate      что нужно обновить: 0 - все обновляем, 1 - только слова и строку с кол-вом слов, 2 - только кнопку с категорией(ями)
+     */
+    public void updateLesson(String categories, boolean forceUpdateLesson, boolean isOnlyMistakes, int kindOfUpdate) {
+        fixing = new Fixing(db, categories, forceUpdateLesson, isOnlyMistakes);
+        curWord = fixing.getCurWord();
+        if (kindOfUpdate == 0 || kindOfUpdate == 2) {
+            setButtonCategory();
+        }
+        if (kindOfUpdate == 0 || kindOfUpdate == 1) {
+            showWords();
+            setTextAmountWords();
+        }
+    }
+
+    /**
      * установление параметра amountWords - кол-ва слов при отгадывании
      *
      * @param amountWords кол-во слов при отгадывании
@@ -1042,6 +1043,27 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         this.isShowDontKnow = isShowDontKnow;
         bDontKnow.setVisibility(isShowDontKnow ? View.VISIBLE : View.GONE);
         bKnow.setVisibility(isShowDontKnow && learningType == 2 ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * установление надписи на кнопке с категорией(ями)
+     */
+    private void setButtonCategory() {
+        if (curWord == null) {
+            bCategory.setTextColor(Color.parseColor("darkgray"));
+            bCategory.setText(R.string.choose_category);
+        } else {
+            bCategory.setTextColor(Color.parseColor("black"));
+            Spannable span = new SpannableString(s(R.string.category)
+                    + "\n" + fixing.getCategories());
+            int fontSize = (int) (bCategory.getTextSize() * 0.7);
+            span.setSpan(new AbsoluteSizeSpan(fontSize, false), 0, 10,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            fontSize = (int) (bCategory.getTextSize() * 1.2);
+            span.setSpan(new AbsoluteSizeSpan(fontSize, false), 11, span.length(),
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            bCategory.setText(span);
+        }
     }
 
     /**

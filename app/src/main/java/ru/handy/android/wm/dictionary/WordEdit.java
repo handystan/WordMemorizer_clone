@@ -1,5 +1,7 @@
 package ru.handy.android.wm.dictionary;
 
+import static ru.handy.android.wm.setting.Utils.strToList;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -34,6 +36,7 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import ru.handy.android.wm.CustomKeyboard;
@@ -203,13 +206,26 @@ public class WordEdit extends AppCompatActivity {
             transcr = transcr.concat("]");
         if (!transcr.equals("") && !transcr.startsWith("["))
             transcr = "[".concat(transcr);
-        if (id != 0) {
-            db.updateRecEngWord(id, etEngWord.getText().toString(), transcr,
+        if (id != 0) { // редактируем слово
+            // для редактирования сначала удаляем слово
+            if (db.delRecEngWord(id)) {
+                app.getLearning().updateLesson(db.getCategoryCurLesson(), false, false, 0);
+            }
+            // а потом его добавляем
+            db.addRecEngWord(id, etEngWord.getText().toString(), transcr,
                     etTranslate.getText().toString(), mmactv);
+            if (db.addWordInLessons(id, etEngWord.getText().toString(), transcr,
+                    etTranslate.getText().toString(), mmactv)) {
+                app.getLearning().updateLesson(db.getCategoryCurLesson(), false, false, 0);
+            }
             Toast.makeText(getApplicationContext(), s(R.string.word_is_changed), Toast.LENGTH_LONG).show();
-        } else {
-            id = db.addRecEngWord(etEngWord.getText().toString(), transcr,
+        } else { // добавляем слово
+            id = db.addRecEngWord(null, etEngWord.getText().toString(), transcr,
                     etTranslate.getText().toString(), mmactv);
+            if (db.addWordInLessons(id, etEngWord.getText().toString(), transcr,
+                    etTranslate.getText().toString(), mmactv)) {
+                app.getLearning().updateLesson(db.getCategoryCurLesson(), false, false, 0);
+            }
             Toast.makeText(getApplicationContext(), s(R.string.word_is_added), Toast.LENGTH_LONG).show();
         }
         if (keyboard != null && keyboard.isCustomKeyboardVisible()) {
@@ -219,12 +235,7 @@ public class WordEdit extends AppCompatActivity {
             imm.hideSoftInputFromWindow(mactvCategory.getWindowToken(), 0);
         }
         Intent intent = new Intent();
-        String strCats = db.getCategoryCurLesson(); // выбранные категории для текущего урока
-        String[] arr = strCats.split(",");
-        ArrayList<String> cats = new ArrayList<>();
-        for (String cat : arr) {
-            cats.add(cat.trim());
-        }
+        List<String> cats = strToList(db.getCategoryCurLesson(), ",", true);
         boolean inLesson = false; // переменная, показывающая входит слово в урок или нет
         for (String cat : cats) {
             if (mmactv.contains(cat)) {

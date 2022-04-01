@@ -79,7 +79,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.beginTransaction();
         try {
-            if (oldVersion <= 24 && newVersion == 32) { // версия 25 была тестовой
+            if (oldVersion <= 24 && newVersion == 34) { // версия 25 была тестовой
                 // сначала удаляем всю старую БД
                 Cursor c = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'", null);
                 while (c.moveToNext()) {
@@ -91,25 +91,25 @@ public class DBHelper extends SQLiteOpenHelper {
                 c.close();
                 // потом создаем новую БД
                 onCreate(db);
-            } else if (oldVersion == 26 && newVersion == 32) {
+            } else if (oldVersion == 26 && newVersion == 34) {
                 updateDictFrom26(db);
                 updateDictFrom27(db);
                 updateDictFrom28(db);
                 updateDictFrom30(db);
                 updateDictFrom31(db);
-            } else if (oldVersion == 27 && newVersion == 32) {
+            } else if (oldVersion == 27 && newVersion == 34) {
                 updateDictFrom27(db);
                 updateDictFrom28(db);
                 updateDictFrom30(db);
                 updateDictFrom31(db);
-            } else if (oldVersion == 28 && newVersion == 32) { // версия 29 не прошла цензуру Google
+            } else if (oldVersion == 28 && newVersion == 34) { // версия 29 не прошла цензуру Google
                 updateDictFrom28(db);
                 updateDictFrom30(db);
                 updateDictFrom31(db);
-            } else if (oldVersion == 30 && newVersion == 32) {
+            } else if (oldVersion == 30 && newVersion == 34) {
                 updateDictFrom30(db);
                 updateDictFrom31(db);
-            } else if (oldVersion == 31 && newVersion == 32) {
+            } else if (oldVersion == 31 && newVersion == 34) { // 32 и 33 не было, так как я восстанавливал код по ним
                 updateDictFrom31(db);
             }
             db.setTransactionSuccessful();

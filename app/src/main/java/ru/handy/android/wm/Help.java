@@ -131,7 +131,7 @@ public class Help extends AppCompatActivity {
                     } else if (w.equals("Словарь")) {
                         mTextView.setText(Html.fromHtml(""));
                         setTVText(R.string.helpForDict);
-                    } else if (w.equals("Данные")) {
+                    } else if (w.equals("Загрузка/выгрузка слов")) {
                         mTextView.setText(Html.fromHtml(""));
                         setTVText(R.string.helpForData);
                     } else if (w.equals("категорию") || w.equals("категории")

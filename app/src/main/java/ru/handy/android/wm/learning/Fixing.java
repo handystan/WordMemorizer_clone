@@ -55,7 +55,7 @@ public class Fixing {
                     || (lessonId > -1 && forceUpdateLesson) // если в любом случае нужно урок загрузить заново, а не брать его из истории
                     || isOnlyMistakes) { // если из Статистики запускаются категории только с ошибками, то урок в любом случае запускается заново, т.к. набор слов там всегда новый*/
             categories = cat;
-            lesson = db.getLessonForCat(categories, isOnlyMistakes); // список слов
+            lesson = db.createLessonForCat(categories, isOnlyMistakes); // список слов
             wrongAnswers = new ArrayList<>();
             amountWords = lesson.size();
             amountWrongWords = 0;
@@ -69,7 +69,7 @@ public class Fixing {
                     db.delCatLesson(categories);
                 }
                 for (int i = 0; i < lesson.size(); i++) {
-                    db.addRecLesson(isLessonsHistory, lesson.get(i).getId(), lesson.get(i)
+                    db.addWordInLesson(isLessonsHistory, lesson.get(i).getId(), lesson.get(i)
                             .getEngWord(), lesson.get(i).getTranscription(), lesson
                             .get(i).getRusTranslate(), categories, null, i + 1);
                 }

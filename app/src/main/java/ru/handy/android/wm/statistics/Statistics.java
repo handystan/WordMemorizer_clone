@@ -1,5 +1,7 @@
 package ru.handy.android.wm.statistics;
 
+import static ru.handy.android.wm.setting.Utils.strToList;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -28,6 +30,7 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import ru.handy.android.wm.About;
 import ru.handy.android.wm.DB;
@@ -36,6 +39,7 @@ import ru.handy.android.wm.Help;
 import ru.handy.android.wm.R;
 import ru.handy.android.wm.learning.Category;
 import ru.handy.android.wm.learning.CategoryAdapter;
+import ru.handy.android.wm.learning.Fixing;
 import ru.handy.android.wm.setting.Utils;
 
 public class Statistics extends AppCompatActivity implements View.OnClickListener {
@@ -114,7 +118,7 @@ public class Statistics extends AppCompatActivity implements View.OnClickListene
         bLearningAll = findViewById(R.id.bLearningAll);
 
         // получаем из БД список категорий с ошибками
-        categoryStats = db.getCategoryStats();
+        categoryStats = db.getCategoriesStats();
 
         //считаем кол-во правильных и неправильных ответов
         if (categoryStats.size() > 0) {
@@ -187,21 +191,67 @@ public class Statistics extends AppCompatActivity implements View.OnClickListene
             case android.R.id.home: // обрабатываем кнопку "назад" в ActionBar
                 super.onBackPressed();
                 return true;
-            case R.id.resetStat: // сбрасываем всю статистику
-                new AlertDialog.Builder(this)
-                        .setMessage(s(R.string.you_want_reset_stat))
-                        .setPositiveButton(s(R.string.yes), (dialog, which) -> {
-                            //удаляем статистику из БД и обновляем интерфейс
-                            new Thread(() -> db.removeStats()).start();
-                            tvRightAnswers.setText(String.format("%s0 (0%%)", s(R.string.right_answers)));
-                            tvWrongAnswers.setText(String.format("%s0 (0%%)", s(R.string.wrong_answers)));
-                            bLearningMistakes.setText(s(R.string.no_wrong_answers));
-                            lvChooseCat.setVisibility(View.GONE);
-                            bLearningAll.setVisibility(View.GONE);
-                        })
-                        .setNegativeButton(R.string.no, null)
-                        .create()
-                        .show();
+            case R.id.resetStat: // сбрасываем статистику и заодно незавершенные уроки
+                StringBuilder sb = new StringBuilder();
+                boolean allChecked = true; // переменная, чтобы определить, все категории выбраны или нет
+                for (Category c : cAdapter.getCategories()) {
+                    if (c.isChecked()) {
+                        sb.append(c.getName()).append(", ");
+                    } else {
+                        allChecked = false;
+                    }
+                }
+                if (sb.toString().equals("") || allChecked) { //если удаляем все катгории, то удаляем и все уроки
+                    new AlertDialog.Builder(this)
+                            .setMessage(s(R.string.reset_stat_all_cats))
+                            .setPositiveButton(s(R.string.yes), (dialog, which) -> {
+                                tvRightAnswers.setText(String.format("%s0 (0%%)", s(R.string.right_answers)));
+                                tvWrongAnswers.setText(String.format("%s0 (0%%)", s(R.string.wrong_answers)));
+                                bLearningMistakes.setText(s(R.string.no_wrong_answers));
+                                lvChooseCat.setVisibility(View.GONE);
+                                bLearningAll.setVisibility(View.GONE);
+                                db.delAll(DB.T_STATISTICS);
+                                db.delLessonWithoutCur();
+                                app.getLearning().updateLesson(db.getCategoryCurLesson()
+                                        , true, false, 0);
+                            })
+                            .setNegativeButton(R.string.no, null)
+                            .create()
+                            .show();
+                } else {
+                    String catsStr = sb.substring(0, sb.length() - 2);
+                    new AlertDialog.Builder(this)
+                            .setMessage(s(R.string.reset_stat_chosen_cats))
+                            .setPositiveButton(s(R.string.yes), (dialog, which) -> {
+                                // сначала обновляем Статистику (в БД и в интерфейсе)
+                                db.removeStats(catsStr);
+                                // получаем из БД список категорий с ошибками
+                                categoryStats = db.getCategoriesStats();
+                                int amountRight = categoryStats.get(categoryStats.size() - 1).getAmountRight();
+                                int amountWrong = categoryStats.get(categoryStats.size() - 1).getAmountWrong();
+                                int percentRight = Math.round(((float) amountRight) / (amountRight + amountWrong) * 100);
+                                int percentWrong = Math.round(((float) amountWrong) / (amountRight + amountWrong) * 100);
+                                tvRightAnswers.setText(String.format("%s%d (%d%%)", s(R.string.right_answers), amountRight, percentRight));
+                                tvWrongAnswers.setText(String.format("%s%d (%d%%)", s(R.string.wrong_answers), amountWrong, percentWrong));
+                                categoryStats.remove(categoryStats.size() - 1);
+                                cAdapter = new CategoryAdapter(this, categoryStats, true);
+                                lvChooseCat.setAdapter(cAdapter);
+                                // затем обновляем все уроки
+                                List<String> cats = strToList(catsStr, ",", true);
+                                for (String cat: cats) {
+                                    // если удаляется и текущий урок, то обновляем интерфейс тек. урока
+                                    if (cat.equals(db.getCategoryCurLesson())) {
+                                        app.getLearning().updateLesson(db.getCategoryCurLesson()
+                                                , true, false, 0);
+                                    } else {
+                                        db.delCatLesson(cat);
+                                    }
+                                }
+                            })
+                            .setNegativeButton(R.string.no, null)
+                            .create()
+                            .show();
+                }
                 return true;
             case R.id.help:
                 Intent intent = new Intent(this, Help.class);

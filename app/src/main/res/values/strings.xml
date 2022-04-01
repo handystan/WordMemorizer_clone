@@ -19,7 +19,7 @@
     <string name="success">Урок успешно пройден. Можно выбрать другую категорию.</string>
     <string name="save">сохранить</string>
     <string name="dictionary">Словарь</string>
-    <string name="data">Данные</string>
+    <string name="data">Загрузка/выгрузка слов</string>
     <string name="learning">обучение</string>
     <string name="location">Путь</string>
     <string name="cant_read_folder">нельзя открыть директорию!</string>
@@ -39,9 +39,12 @@
     <string name="semicolon">;</string>
     <string name="only_chose_category">только слова выбранных категорий</string>
     <string name="download_data">загрузить слова</string>
+    <string name="downloading">идет загрузка...</string>
     <string name="upload_data">выгрузить слова</string>
+    <string name="uploading">идет выгрузка...</string>
     <string name="amount_load_rows">Количество загруженных из файла строк</string>
     <string name="not_load_rows">Не загрузились строки № </string>
+    <string name="amount_not_load_rows">Количество не загруженных строк</string>
     <string name="must_be_utf8">Для правильного отображения символов у текстового файла кодировка желательна UTF-8.</string>
     <string name="template_in_help">Описание шаблона текстового файла см. в справке.</string>
     <string name="file_not_fit_template">Файл не соответствует шаблону.</string>
@@ -69,12 +72,15 @@
     <string name="choose_category_and_upload_file">Выбрать категорию и выгрузить файл</string>
     <string name="delete_category">Удалить категорию</string>
     <string name="delete_category_words">Удалить слова выбранных категорий?</string>
+    <string name="delete_word">Удалить выбранное слово?</string>
     <string name="choose_all_categories">выбрать все категории</string>
     <string name="chose">выбрано</string>
     <string name="category">категория:</string>
     <string name="ofWords">Слов</string>
     <string name="right">Верно</string>
     <string name="wrong">Не верно</string>
+    <string name="learned">Изучено</string>
+    <string name="from"> из </string>
     <string name="ok">OK</string>
     <string name="english">Aнглийский</string>
     <string name="russian">Русский</string>
@@ -140,7 +146,8 @@
     <string name="learning_with_all">Обучение со всеми словами</string>
     <string name="statistics">Статистика</string>
     <string name="reset_statistics">Сбросить статистику</string>
-    <string name="you_want_reset_stat">Сбросить статистику?</string>
+    <string name="reset_stat_chosen_cats">Сбросить статистику по выбранным категориям?</string>
+    <string name="reset_stat_all_cats">Сбросить статистику по всем категориям?</string>
     <string name="yes">Да</string>
     <string name="no">Нет</string>
     <string name="learning_type">Тип обучения:</string>
@@ -213,14 +220,14 @@
 <p></p>Для начала обучения нужно выбрать <a href=\'#\'>категорию(и)</a>&nbsp;слов,
 чтобы появились слова данной <a href=\'#\'>категории(й)</a>.
 <br>Есть 3 варианта обучения:
-<br>&nbsp;&nbsp;&nbsp;- отгадать верный перевод из предложенных вариантов или
+<br>&nbsp;&nbsp;&nbsp;- выбрать верный перевод из предложенных вариантов или
 <br>&nbsp;&nbsp;&nbsp;- написать (продиктовать) перевод или
 <br>&nbsp;&nbsp;&nbsp;- комплексный вариант: по каждому слову сначала предлагается выбор варианта из рус. перевода, потом выбор варианта из англ. перевода и наконец написание англ. перевода.
 <p></p>В настройках к обучению также можно:
-<br>&nbsp;&nbsp;&nbsp;- настроить отгадывание как английских, так и русских слов;
+<br>&nbsp;&nbsp;&nbsp;- настроить выбор как английских, так и русских слов;
 <br>&nbsp;&nbsp;&nbsp;- отображать либо скрывать транскрипцию;
-<br>&nbsp;&nbsp;&nbsp;- включить автоматическую озвучку английского слова после каждого отгадывания;
-<br>&nbsp;&nbsp;&nbsp;- изменять количество вариантов ответов при отгадывании слов;
+<br>&nbsp;&nbsp;&nbsp;- включить автоматическую озвучку английского слова после каждого выбора;
+<br>&nbsp;&nbsp;&nbsp;- изменять количество вариантов ответов при выборе слов;
 <br>&nbsp;&nbsp;&nbsp;- сохранять или стирать историю всех незаконченных уроков;
 <br>&nbsp;&nbsp;&nbsp;- изменять цвет фона;
 <br>&nbsp;&nbsp;&nbsp;- выбирать произношение английского слова (американское или британское).
@@ -231,8 +238,8 @@
 <br>Позволяет посмотреть количество правильных и не правильных ответов по каждой <a href=\'#\'>категории(й)</a>.
 <p><b><a href=\'#\'>Словарь</a></b>
 <br>Словарь, который позволяет быстро найти нужное слово, посмотреть его перевод и транскрипцию.
-<p><b><a href=\'#\'>Данные</a></b>
-<br>В этом разделе можно загружать и выгружать слова в словарь.
+<p><b><a href=\'#\'>Загрузка/выгрузка слов</a></b>
+<br>В этом разделе можно загружать слова из файла и выгружать их в файл.
     ]]>
     </string>
     <string name="helpForStat">
@@ -262,13 +269,13 @@
     </string>
     <string name="helpForData">
 <![CDATA[
-<p><b>Данные</b>
+<p><b>Загрузка/выгрузка слов</b>
 <br>Данный раздел позволяет загружать словарь из Excel-файла (расширение xls) или текстового файла определенного формата:
 <br>&nbsp;&nbsp;- 1 столбец: английское слово
 <br>&nbsp;&nbsp;- 2 столбец: транскрипция
 <br>&nbsp;&nbsp;- 3 столбец: русский перевод
 <br>&nbsp;&nbsp;- 4 столбец: категория.
-<br>Для текстового формата разделитель слов по умолчанию - \";\". Текстовые файлы нужно загружать с кодировкой UTF-8.
+<br>Для текстового формата разделитель слов по умолчанию - \";\".
 <p>Также он позволяет выгружать весь словарь (или слова только выбранных категорий) в Excel-файл или текстовый файл такого же формата.
 <p>Здесь же файл сразу можно отправить любому пользователю через любой установенный мессенджер или почтовую программу.
 <p><b>Совет:</b> для правильного отображения транскрипции рекомендуется пользоваться выгрузкой/загрузкой в Excel-файл.
@@ -289,7 +296,7 @@
     <string name="about_desc">
 <![CDATA[
 <p><big><b>WordMemorizer</b></big>
-<br>Версия 2.9 для версии Android 5.0 и выше.
+<br>Версия 2.11 для версии Android 5.0 и выше.
 <p><b>Производитель</b>
 <br>Handy Systems
 <p><b>e-mail</b>

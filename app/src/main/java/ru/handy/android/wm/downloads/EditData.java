@@ -31,7 +31,6 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,6 +46,8 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
+import org.mozilla.universalchardet.UniversalDetector;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
@@ -56,6 +57,7 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -66,9 +68,6 @@ import jxl.WorkbookSettings;
 import jxl.write.Label;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
-
-import org.mozilla.universalchardet.UniversalDetector;
-
 import ru.handy.android.wm.About;
 import ru.handy.android.wm.CustomKeyboard;
 import ru.handy.android.wm.DB;
@@ -79,7 +78,7 @@ import ru.handy.android.wm.R;
 import ru.handy.android.wm.Thanks;
 import ru.handy.android.wm.learning.Categories;
 import ru.handy.android.wm.learning.Learning;
-import ru.handy.android.wm.setting.Pay;
+import ru.handy.android.wm.learning.Word;
 import ru.handy.android.wm.setting.Utils;
 
 public class EditData extends AppCompatActivity {
@@ -261,11 +260,27 @@ public class EditData extends AppCompatActivity {
                 return;
             }
             if (fileName.endsWith(".xls")) {
-                readXlsFile(uriDownloadFile);
+                bDownload.setText(s(R.string.downloading));
+                new Thread() {
+                    public void run() {
+                        runOnUiThread(() -> {
+                            readXlsFile(uriDownloadFile);
+                            bDownload.setText(s(R.string.download_data));
+                        });
+                    }
+                }.start();
             } else if (fileName.endsWith(".xlsx") || fileName.endsWith(".xlsm") || fileName.endsWith(".xlsb")) {
                 Toast.makeText(getApplicationContext(), s(R.string.should_be_xls), Toast.LENGTH_LONG).show();
             } else {
-                readTxtFile(uriDownloadFile);
+                bDownload.setText(s(R.string.downloading));
+                new Thread() {
+                    public void run() {
+                        runOnUiThread(() -> {
+                            readTxtFile(uriDownloadFile);
+                            bDownload.setText(s(R.string.download_data));
+                        });
+                    }
+                }.start();
             }
         });
 
@@ -287,7 +302,15 @@ public class EditData extends AppCompatActivity {
                             intent.putExtra("fromAct", 2); // 2 - запуск из EditData
                             startActivityForResult(intent, GET_CAT_UPLOAD_XLS);
                         } else {
-                            writeXlsFile(uriUploadFile, null);
+                            bUpload.setText(s(R.string.uploading));
+                            new Thread() {
+                                public void run() {
+                                    runOnUiThread(() -> {
+                                        writeXlsFile(uriUploadFile, null);
+                                        bUpload.setText(s(R.string.upload_data));
+                                    });
+                                }
+                            }.start();
                         }
                     }
                 } else if (sFileType.getSelectedItemPosition() == 1) { // выгружается txt-файл
@@ -302,7 +325,15 @@ public class EditData extends AppCompatActivity {
                             intent.putExtra("fromAct", 2); // 2 - запуск из EditData
                             startActivityForResult(intent, GET_CAT_UPLOAD_TXT);
                         } else {
-                            writeTxtFile(uriUploadFile, null);
+                            bUpload.setText(s(R.string.uploading));
+                            new Thread() {
+                                public void run() {
+                                    runOnUiThread(() -> {
+                                        writeTxtFile(uriUploadFile, null);
+                                        bUpload.setText(s(R.string.upload_data));
+                                    });
+                                }
+                            }.start();
                         }
                     }
                 }
@@ -394,87 +425,103 @@ public class EditData extends AppCompatActivity {
     }
 
     /**
-     * Метод для чтения данных из экселевского файла, в котором создается строка
-     * вставки строки типа такой: insert into myTable (col1,col2) select aValue
-     * ,anotherValue union select moreValue,evenMoreValue union select...
+     * Метод для чтения данных из экселевского файла со следующей логикой:
+     * - если идет полное совпадение (англ. и рус. слово, транскрипция и категория), то слово остается без изменений)
+     * - если совпадает только англ. слово, то оно сначала удаляется из словаря, а потом добавляется из файла
+     * - если в словаре нет англ. слова из файла и стоит галка по удалению, то оно удаляется
      *
      * @param fileUri uri файла
      * @return количество загруженных строк
      */
     private int readXlsFile(Uri fileUri) {
-        Workbook w = null;
+        Workbook wb = null;
+        HashMap<String, Word> words = db.getAllWordsInHashMap(); // список всех слов из словаря
+        boolean refreshLearning = false; // переменная, показывающая, нужно ли обновлять интерфейс тек. урока
         try {
             db.beginTransaction();
-            if (cbDelete.isChecked())
-                db.delAll(DB.T_ENGWORDS);
             WorkbookSettings wbs = new WorkbookSettings();
             wbs.setEncoding("ISO-8859-1");
-            w = Workbook.getWorkbook(getContentResolver().openInputStream(fileUri), wbs);
-            Sheet sheet = w.getSheet(0);
-            StringBuilder sb = new StringBuilder();
-            ArrayList<String> args = new ArrayList<>();
-            int r = 1;
+            wb = Workbook.getWorkbook(getContentResolver().openInputStream(fileUri), wbs);
+            Sheet sheet = wb.getSheet(0);
+            int r = 0; // кол-во записанных из файла слов
             for (int j = 0; j < sheet.getRows(); j++) {
-                String engWord = sheet.getCell(0, j).getContents();
-                if (engWord != null && !engWord.equals("")) {
-                    if (sb.indexOf("INSERT") == -1) {
-                        sb.append("INSERT INTO ").append(DB.T_ENGWORDS)
-                                .append(" (").append(DB.C_EW_ENGWORD)
-                                .append(", ").append(DB.C_EW_TRANSCRIPTION)
-                                .append(", ").append(DB.C_EW_RUSTRANSLATE)
-                                .append(", ").append(DB.C_EW_CATEGORY)
-                                .append(") SELECT ?, ?, ?, ? ");
-                    } else {
-                        sb.append(" UNION SELECT ?, ?, ?, ? ");
-                    }
-                    for (int i = 0; i < 4; i++) {
-                        args.add(sheet.getCell(i, j).getContents());
-                        r++;
-                    }
+                // слово из файла
+                Word wFile = new Word(0, sheet.getCell(0, j).getContents(), sheet.getCell(1, j).getContents()
+                        , sheet.getCell(2, j).getContents(), sheet.getCell(3, j).getContents());
+                if (wFile.getEngWord() != null && !wFile.getEngWord().equals("")) {
+                    r++;
+                    // непосредственно добавление слова в словарь
+                    refreshLearning = addRecFromFile(words, wFile) || refreshLearning;
                 }
-                // такая порционность вставки строк нужна из-за того, что кол-во
-                // вставляемых параметров не должно быть больше 999
-                if (r % 995 >= 0 && r % 995 <= 3 && sb.indexOf("INSERT") != -1) {
-                    db.execSQL(sb.toString(), args.toArray());
-                    sb = new StringBuilder();
-                    args = new ArrayList<>();
+            }
+            Log.d("myLogs", "words.size() = " + words.size());
+            if (cbDelete.isChecked()) {
+                for (Word w : words.values()) {
+                    refreshLearning = db.delRecEngWord(w.getId()) || refreshLearning;
                 }
-                // если приложение не оплачено, то позволяем вставить только 10 строк
-                // это уже не актуально, так как это убрал из платных функций
-                /*if (amountDonate == 0 && j == 9 && sb.indexOf("INSERT") != -1) {
-                    break;
-                }*/
             }
-            if (sb.indexOf("INSERT") != -1) {
-                db.execSQL(sb.toString(), args.toArray());
+            if (refreshLearning) {
+                app.getLearning().updateLesson(db.getCategoryCurLesson(), false, false, 0);
             }
-            if (r > 1) {
+            if (r > 0) {
                 db.setTransactionSuccessful();
                 Toast.makeText(getApplicationContext(),
-                        s(R.string.amount_load_rows) + ": " + (r / 4),
-                        Toast.LENGTH_LONG).show();
+                        s(R.string.amount_load_rows) + ": " + r, Toast.LENGTH_LONG).show();
             }
             // отправляем в Firebase инфу по чтению слов из файла
             if (mFBAnalytics != null) {
-                app.readWriteFileEvent(GlobApp.READ_FILE, "xls", (r / 4) + "");
+                app.readWriteFileEvent(GlobApp.READ_FILE, "xls", r + "");
             }
-            return r / 4;
+            return r;
         } catch (Exception e) {
             Toast.makeText(getApplicationContext(), s(R.string.file_read_error) + "\n" +
                     e.getMessage(), Toast.LENGTH_LONG).show();
             e.printStackTrace();
         } finally {
             db.endTransaction();
-            if (w != null)
-                w.close();
+            if (wb != null)
+                wb.close();
         }
         return 0;
     }
 
     /**
+     * добавление одного слова в словарь
+     *
+     * @param words список всех слов из словаря
+     * @param wFile слово из файла
+     * @return
+     */
+    private boolean addRecFromFile(HashMap<String, Word> words, Word wFile) {
+        boolean refreshLearning = false; // переменная, показывающая, нужно ли обновлять интерфейс тек. урока
+        // если англ. слово из файла и словаря совпадают, но не совпадает транскрипция или рус. перевод или категория
+        if (words.containsKey(wFile.getEngWord())) {
+            Word wDict = words.get(wFile.getEngWord());
+            if (!wDict.getTranscription().equalsIgnoreCase(wFile.getTranscription())
+                    || !wDict.getRusTranslate().equalsIgnoreCase(wFile.getRusTranslate())
+                    || !wDict.getCategory().equalsIgnoreCase(wFile.getCategory())) {
+                // сначала удаляем слово из словаря
+                refreshLearning = db.delRecEngWord(wDict.getId()) || refreshLearning;
+                // и добавляем слово из файла
+                db.addRecEngWord((long) wDict.getId(), wFile.getEngWord(), wFile.getTranscription()
+                        , wFile.getRusTranslate(), wFile.getCategory());
+                refreshLearning = db.addWordInLessons(wDict.getId(), wFile.getEngWord(), wFile.getTranscription()
+                        , wFile.getRusTranslate(), wFile.getCategory()) || refreshLearning;
+            }
+            words.remove(wFile.getEngWord());
+        } else {
+            long id = db.addRecEngWord(null, wFile.getEngWord(), wFile.getTranscription()
+                    , wFile.getRusTranslate(), wFile.getCategory());
+            refreshLearning = db.addWordInLessons(id, wFile.getEngWord(), wFile.getTranscription()
+                    , wFile.getRusTranslate(), wFile.getCategory()) || refreshLearning;
+        }
+        return refreshLearning;
+    }
+
+    /**
      * Выгрузка словаря в экселевский файл с расширением xls
      *
-     * @param fileUri uri файла
+     * @param fileUri    uri файла
      * @param categories перечень категорий, которые нужно выгружать в файл (если null, то выгружаются все категории)
      * @return количество выгруженных строк
      */
@@ -545,9 +592,10 @@ public class EditData extends AppCompatActivity {
     }
 
     /**
-     * Метод для чтения данных из текстового файла, в котором создается строка
-     * вставки строки типа такой: insert into myTable (col1,col2) select aValue
-     * ,anotherValue union select moreValue,evenMoreValue union select...
+     * Метод для чтения данных из экселевского файла со следующей логикой:
+     * - если идет полное совпадение (англ. и рус. слово, транскрипция и категория), то слово остается без изменений)
+     * - если совпадает только англ. слово, то оно сначала удаляется из словаря, а потом добавляется из файла
+     * - если в словаре нет англ. слова из файла и стоит галка по удалению, то оно удаляется
      *
      * @param fileUri uri файла
      * @return количество загруженных строк
@@ -555,11 +603,10 @@ public class EditData extends AppCompatActivity {
     private int readTxtFile(Uri fileUri) {
         String row;
         BufferedReader br = null;
+        HashMap<String, Word> words = db.getAllWordsInHashMap(); // список всех слов из словаря
+        boolean refreshLearning = false; // переменная, показывающая, нужно ли обновлять интерфейс тек. урока
         try {
             db.beginTransaction();
-            if (cbDelete.isChecked()) {
-                db.delAll(DB.T_ENGWORDS);
-            }
             //определяем кодировку текстового файла
             String encoding = UniversalDetector.detectCharset(getContentResolver().openInputStream(fileUri));
             String adviceEncoding = "";
@@ -600,73 +647,53 @@ public class EditData extends AppCompatActivity {
                 // после определения разделителя получаем данные
                 br = new BufferedReader(new InputStreamReader(
                         getContentResolver().openInputStream(fileUri), charset));
-                StringBuilder sb = new StringBuilder();
-                ArrayList<String> args = new ArrayList<>();
                 StringBuilder sbRegex = new StringBuilder();
                 sbRegex.append("^([^").append(delimiter).append("]*)([").append(delimiter).append("])([^").append(delimiter).
                         append("]*)(\\2)([^").append(delimiter).append("]*)((\\2)([^").append(delimiter).append("]*))?$");
-                patt = Pattern
-                        .compile(sbRegex.toString());
+                patt = Pattern.compile(sbRegex.toString());
                 StringBuilder wrongRow = new StringBuilder();
                 int intWrongRow = 0;
-                int r = 1;
+                int r = 0;
                 while ((row = br.readLine()) != null) {
+                    r++;
                     Matcher match = patt.matcher(row);
-                    if (match.find()) {
-                        if (sb.indexOf("INSERT") == -1) {
-                            sb.append("INSERT INTO ").append(DB.T_ENGWORDS)
-                                    .append(" (").append(DB.C_EW_ENGWORD)
-                                    .append(", ").append(DB.C_EW_TRANSCRIPTION)
-                                    .append(", ").append(DB.C_EW_RUSTRANSLATE)
-                                    .append(", ").append(DB.C_EW_CATEGORY)
-                                    .append(") SELECT ?, ?, ?, ? ");
-                        } else {
-                            sb.append(" UNION SELECT ?, ?, ?, ? ");
-                        }
-                        args.add(match.group(1));
-                        args.add(match.group(3));
-                        args.add(match.group(5));
-                        args.add(match.group(8));
+                    if ((match.find() || !match.group(1).equals("")) && match.group(8) != null) {
+                        // слово из файла
+                        Word wFile = new Word(0, match.group(1), match.group(3), match.group(5), match.group(8));
+                        // непосредственно добавление слова в словарь
+                        refreshLearning = addRecFromFile(words, wFile) || refreshLearning;
                     } else {
                         wrongRow.append(wrongRow.toString().equals("") ? "" : ", ").append(r);
                         intWrongRow++;
                     }
-                    r++;
-                    // такая порционность вставки строк нужна из-за того, что кол-во
-                    // вставляемых параметров не должно быть больше 999
-                    if ((r - intWrongRow) % 249 == 0 && sb.indexOf("INSERT") != -1) {
-                        db.execSQL(sb.toString(), args.toArray());
-                        sb = new StringBuilder();
-                        args = new ArrayList<>();
-                    }
-                    // если приложение не оплачено, то позволяем вставить только 10 строк
-                    // это уже не актуально, так как это убрал из платных функций
-                    /*if (amountDonate == 0 && (r - intWrongRow) == 11 && sb.indexOf("INSERT") != -1) {
-                        break;
-                    }*/
                 }
-                if (sb.indexOf("INSERT") != -1)
-                    db.execSQL(sb.toString(), args.toArray());
-                if (intWrongRow < r - intWrongRow) {
+                Log.d("myLogs", "words.size() = " + words.size());
+                if (cbDelete.isChecked()) {
+                    for (Word w : words.values()) {
+                        refreshLearning = db.delRecEngWord(w.getId()) || refreshLearning;
+                    }
+                }
+                if (refreshLearning) {
+                    app.getLearning().updateLesson(db.getCategoryCurLesson(), false, false, 0);
+                }
+                if (intWrongRow < (r - intWrongRow)) {
                     db.setTransactionSuccessful();
-                    if (wrongRow.toString().equals("")) {
-                        Toast.makeText(getApplicationContext(),
-                                s(R.string.amount_load_rows) + ": " + (r - intWrongRow - 1)
-                                        + adviceEncoding,
-                                Toast.LENGTH_LONG).show();
+                    if (intWrongRow == 0) {
+                        Toast.makeText(getApplicationContext(), s(R.string.amount_load_rows)
+                                + ": " + (r - intWrongRow) + adviceEncoding, Toast.LENGTH_LONG).show();
                     } else {
+                        String notLoad = intWrongRow < 10 ? s(R.string.not_load_rows) + wrongRow
+                                : s(R.string.amount_not_load_rows) + ": " + intWrongRow;
                         Toast.makeText(getApplicationContext(),
-                                s(R.string.amount_load_rows) + ": " + (r - intWrongRow - 1)
-                                        + "\r\n" + s(R.string.not_load_rows)
-                                        + wrongRow + ".\r\n"
-                                        + s(R.string.template_in_help),
+                                s(R.string.amount_load_rows) + ": " + (r - intWrongRow) + "\r\n" + notLoad
+                                        + ".\r\n" + s(R.string.template_in_help),
                                 Toast.LENGTH_LONG).show();
                     }
                     // отправляем в Firebase инфу по чтению слов из файла
                     if (mFBAnalytics != null) {
-                        app.readWriteFileEvent(GlobApp.READ_FILE, "txt", (r - intWrongRow - 1) + "");
+                        app.readWriteFileEvent(GlobApp.READ_FILE, "txt", (r - intWrongRow) + "");
                     }
-                    return r - 1;
+                    return r;
                 } else {
                     Toast.makeText(getApplicationContext(),
                             s(R.string.file_not_fit_template) + " " + "\r\n"
@@ -695,7 +722,7 @@ public class EditData extends AppCompatActivity {
     /**
      * Выгрузка словаря в экселевский текстовый файл
      *
-     * @param fileUri uri файла
+     * @param fileUri    uri файла
      * @param categories перечень категорий, которые нужно выгружать в файл (если null, то выгружаются все категории)
      * @return количество выгруженных строк
      */

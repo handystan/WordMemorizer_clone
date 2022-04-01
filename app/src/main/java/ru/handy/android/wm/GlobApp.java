@@ -228,7 +228,7 @@ public class GlobApp extends Application {
     /**
      * Gets open {@link Pay}
      *
-     * @return
+     * @return pay
      */
     synchronized public Pay getPay(GlobApp app) {
         if (pay == null) {

@@ -1,6 +1,9 @@
 package ru.handy.android.wm.dictionary;
 
+import static ru.handy.android.wm.setting.Utils.strToList;
+
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
 import android.content.CursorLoader;
@@ -9,6 +12,7 @@ import android.content.Loader;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteException;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
@@ -53,6 +57,8 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 import ru.handy.android.wm.About;
 import ru.handy.android.wm.DB;
@@ -359,10 +365,19 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
                 record(0, WordEdit.class);
                 return true;
             case CM_DELETE_ID: // удаляем запись
-                db.delRecEngWord(idItem);
-                // получаем новый курсор с данными
-                getLoaderManager().getLoader(0).forceLoad();
-                Toast.makeText(getApplicationContext(), s(R.string.word_is_deleted), Toast.LENGTH_LONG).show();
+                new AlertDialog.Builder(this)
+                        .setMessage(s(R.string.delete_word))
+                        .setPositiveButton(s(R.string.yes), (dialog, which) -> {
+                            if (db.delRecEngWord(idItem)) {
+                                app.getLearning().updateLesson(db.getCategoryCurLesson(), false, false, 0);
+                            }
+                            Toast.makeText(getApplicationContext(), s(R.string.word_is_deleted), Toast.LENGTH_LONG).show();
+                            // получаем новый курсор с данными
+                            getLoaderManager().getLoader(0).forceLoad();
+                        })
+                        .setNegativeButton(R.string.cancel, null)
+                        .create()
+                        .show();
                 return true;
             default:
                 return super.onContextItemSelected(item);

@@ -12,8 +12,11 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.TreeMap;
 
 import ru.handy.android.wm.learning.Category;
 import ru.handy.android.wm.learning.Word;
@@ -28,7 +31,7 @@ public class DB {
     public static final String C_EW_RUSTRANSLATE = "ew_rustranslate";
     public static final String C_EW_CATEGORY = "ew_category";
     public static final String C_EW_HISTORY = "ew_history"; // порядковый номер в истории последных запросов в Словаре
-    // таблица с тек. уроком и всеми прошлыми уроками (если стоит соответсвующая галкав настройках)
+    // таблица с тек. уроком и всеми прошлыми уроками (если стоит соответсвующая галка в настройках)
     public static final String T_LESSON = "lesson";
     public static final String C_L_ID = "_id"; // id записи в таблице
     public static final String C_L_LESSON_ID = "l_lesson_id"; // id урока (у тек. урока самый большой id). В секундах от 01.01.1970, чтобы можно было перевести в дату
@@ -36,7 +39,7 @@ public class DB {
     public static final String C_L_ENGWORD = "l_engword";
     public static final String C_L_TRANSCRIPTION = "l_transcription";
     public static final String C_L_RUSTRANSLATE = "l_rustranslate";
-    public static final String C_L_CATEGORY = "l_category"; // категория(и) (для всех слов один перечень категорий
+    public static final String C_L_CATEGORY = "l_category"; // категория(и) (для всех слов урока один перечень категорий)
     public static final String C_L_LEARNING_TYPE_COPML = "l_learning_type_compl"; // для компл. обучения: 0-отгадывание из из русс. перевода, 1-отгадывание из англ. перевода, 2-написание англ. слова
     public static final String C_L_REPEAT_NUMBER_COPML = "l_repeat_number_compl"; // для компл. обучения порядковый номер повторения (начинается с 0)
     public static final String C_L_RESULT = "l_result"; // отгадано ли слово: 1 - отгадано, 0 - нет, null - еще не отгадывалось
@@ -120,7 +123,7 @@ public class DB {
             + " text, " + C_ES_VALUE + " text);";
 
     private static final String DB_NAME = "ewdb";
-    private static final int DB_VERSION = 32; // 13 - первая версия с платными настройками, 32 - версия, где убрал isFromOldDB
+    private static final int DB_VERSION = 34; // 13 - первая версия с платными настройками, 32 - версия, где убрал isFromOldDB
     private final Context mCtx;
 
     private DBHelper mDBHelper;
@@ -178,8 +181,8 @@ public class DB {
         Cursor cursor = mDB.query(true, T_ENGWORDS, new String[]{C_EW_CATEGORY}, null,
                 null, null, null, C_EW_CATEGORY, null);
         if (cursor != null) {
+            ArrayList<String> list = new ArrayList<>();
             if (cursor.moveToFirst()) {
-                ArrayList<String> list = new ArrayList<>();
                 do {
                     String str = "";
                     if (!cursor.isNull(cursor.getColumnIndex(C_EW_CATEGORY))) {
@@ -194,16 +197,16 @@ public class DB {
                 } while (cursor.moveToNext());
                 cursor.close();
                 Collections.sort(list, Category::compare2Strings);
-                return list;
             }
+            return list;
         }
         return null;
     }
 
     /**
-     * Получение всех классов категорий (названий и кол-во слов в каждой категории
+     * Получение всех классов категорий (названий и кол-во слов в каждой категории)
      *
-     * @return ArrayList<Category> массив с перечнем классов категорий (названия и кол-во)
+     * @return ArrayList<Category> массив с перечнем классов категорий (названия и кол-во слов в каждой категории)
      */
     @SuppressLint("Range")
     public ArrayList<Category> getClassCategories() {
@@ -235,8 +238,29 @@ public class DB {
      * @return Cursor с данными
      */
     public Cursor getAllWords() {
-        return mDB
-                .query(T_ENGWORDS, null, null, null, null, null, C_EW_ENGWORD);
+        return mDB.query(T_ENGWORDS, null, null, null, null, null, C_EW_ENGWORD);
+    }
+
+    /**
+     * получение списка всех слов в словаре в HasMap, где ключом является англ. слово
+     *
+     * @return список слов HashMap<String, Word>, где ключ англ. слово, причем если англ. слово
+     * встречается несколько раз, то берется более позднее
+     */
+    @SuppressLint("Range")
+    public HashMap<String, Word> getAllWordsInHashMap() {
+        HashMap<String, Word> hashWords = new HashMap<>();
+        Cursor c = mDB.query(T_ENGWORDS, new String[]{C_EW_ID, C_EW_ENGWORD, C_EW_TRANSCRIPTION, C_EW_RUSTRANSLATE
+                , C_EW_CATEGORY}, null, null, null, null, C_EW_ID);
+        if (c.moveToFirst()) {
+            do {
+                Word word = new Word(c.getInt(0), c.getString(1)
+                        , c.getString(2), c.getString(3), c.getString(4));
+                hashWords.put(c.getString(1), word);
+            } while (c.moveToNext());
+        }
+        c.close();
+        return hashWords;
     }
 
     /**
@@ -283,27 +307,59 @@ public class DB {
     }
 
     /**
-     * Получает данные из таблицы engwords по категории
+     * Получает данные из таблицы T_ENGWORDS или T_LESSON по категории
      *
-     * @param category       - категория, к которой может относится слово
+     * @param table          - таблица, по которой получаем курсор
+     * @param categories     - категория(и), к которой может относится слово
      * @param isOnlyMistakes - показывать только слова с ошибками (true) или все (false)
      * @return Cursor с данными
      */
-    public Cursor getDataByCategory(String category, boolean isOnlyMistakes) {
+    public Cursor getDataByCategory(String categories, String table, boolean isOnlyMistakes) {
+        String colId = table.equals(T_ENGWORDS) ? C_EW_ID : C_L_ENGWORD_ID;
+        String colEngWord = table.equals(T_ENGWORDS) ? C_EW_ENGWORD : C_L_ENGWORD;
+        String colCat = table.equals(T_ENGWORDS) ? C_EW_CATEGORY : C_L_CATEGORY;
         String sqlQuery;
         if (isOnlyMistakes) {
-            sqlQuery = "SELECT t1.* FROM (SELECT * FROM " + T_ENGWORDS + " WHERE " +
-                    getWhereClauseForCategory(category) + ") t1, " + T_STATISTICS + " t2 WHERE t1." +
-                    C_EW_ID + "=t2." + C_S_ID_WORD + " AND t2." + C_S_AMOUNT_WRONG + ">0 ORDER BY t1." + C_EW_ENGWORD;
+            sqlQuery = "SELECT t1.* FROM (SELECT * FROM " + table + " WHERE " +
+                    getWhereClauseForCategory(categories, colCat) + ") t1, " + T_STATISTICS + " t2 WHERE t1." +
+                    colId + "=t2." + C_S_ID_WORD + " AND t2." + C_S_AMOUNT_WRONG + ">0 ORDER BY t1." + colEngWord;
         } else {
-            sqlQuery = "SELECT * FROM " + T_ENGWORDS + " WHERE " + getWhereClauseForCategory(category)
-                    + " ORDER BY " + C_EW_ENGWORD;
+            sqlQuery = "SELECT * FROM " + table + " WHERE " + getWhereClauseForCategory(categories, colCat)
+                    + " ORDER BY " + colEngWord;
         }
         return mDB.rawQuery(sqlQuery, null);
     }
 
-    public Cursor getDataByCategory(String category) {
-        return getDataByCategory(category, false);
+    /**
+     * Получает данные из таблицы T_ENGWORDS по категории
+     *
+     * @param categories     - категория(и), к которой может относится слово
+     * @param isOnlyMistakes - показывать только слова с ошибками (true) или все (false)
+     * @return Cursor с данными
+     */
+    public Cursor getDataByCategory(String categories, boolean isOnlyMistakes) {
+        return getDataByCategory(categories, T_ENGWORDS, isOnlyMistakes);
+    }
+
+    /**
+     * Получает данные из таблицы T_ENGWORDS или T_LESSON по категории
+     *
+     * @param table      - таблица, по которой получаем курсор
+     * @param categories - категория(и), к которой может относится слово
+     * @return Cursor с данными
+     */
+    public Cursor getDataByCategory(String categories, String table) {
+        return getDataByCategory(categories, table, false);
+    }
+
+    /**
+     * Получает данные из таблицы T_ENGWORDS по категории
+     *
+     * @param categories - категория(и), к которой может относится слово
+     * @return Cursor с данными
+     */
+    public Cursor getDataByCategory(String categories) {
+        return getDataByCategory(categories, T_ENGWORDS, false);
     }
 
     /**
@@ -317,30 +373,34 @@ public class DB {
     }
 
     private String getWhereClauseForCategory(String categories) {
+        return getWhereClauseForCategory(categories, C_EW_CATEGORY);
+    }
+
+    private String getWhereClauseForCategory(String categories, String column) {
         StringBuilder whereClause = new StringBuilder();
         if (categories != null) {
             String[] arr = categories.split(",");
             for (String cat : arr) {
                 String c = cat.trim().replace("'", "''");
                 if (c.equals("")) {
-                    whereClause.append(C_EW_CATEGORY).append("='' OR ");
+                    whereClause.append(column).append("='' OR ");
                 } else {
-                    whereClause.append(C_EW_CATEGORY).append("='").append(c).append("' OR ")
-                            .append(C_EW_CATEGORY).append(" LIKE '").append(c).append(",%' OR ")
-                            .append(C_EW_CATEGORY).append(" LIKE '").append(c).append(" ,%' OR ")
-                            .append(C_EW_CATEGORY).append(" LIKE '").append(c).append("  ,%' OR ")
-                            .append(C_EW_CATEGORY).append(" LIKE '%,").append(c).append("' OR ")
-                            .append(C_EW_CATEGORY).append(" LIKE '%, ").append(c).append("' OR ")
-                            .append(C_EW_CATEGORY).append(" LIKE '%,  ").append(c).append("' OR ")
-                            .append(C_EW_CATEGORY).append(" LIKE '%,").append(c).append(",%' OR ")
-                            .append(C_EW_CATEGORY).append(" LIKE '%, ").append(c).append(",%' OR ")
-                            .append(C_EW_CATEGORY).append(" LIKE '%,  ").append(c).append(",%' OR ")
-                            .append(C_EW_CATEGORY).append(" LIKE '%,").append(c).append(" ,%' OR ")
-                            .append(C_EW_CATEGORY).append(" LIKE '%,").append(c).append("  ,%' OR ")
-                            .append(C_EW_CATEGORY).append(" LIKE '%, ").append(c).append(" ,%' OR ")
-                            .append(C_EW_CATEGORY).append(" LIKE '%, ").append(c).append("  ,%' OR ")
-                            .append(C_EW_CATEGORY).append(" LIKE '%,  ").append(c).append(" ,%' OR ")
-                            .append(C_EW_CATEGORY).append(" LIKE '%,  ").append(c).append("  ,%' OR ");
+                    whereClause.append(column).append("='").append(c).append("' OR ")
+                            .append(column).append(" LIKE '").append(c).append(",%' OR ")
+                            .append(column).append(" LIKE '").append(c).append(" ,%' OR ")
+                            .append(column).append(" LIKE '").append(c).append("  ,%' OR ")
+                            .append(column).append(" LIKE '%,").append(c).append("' OR ")
+                            .append(column).append(" LIKE '%, ").append(c).append("' OR ")
+                            .append(column).append(" LIKE '%,  ").append(c).append("' OR ")
+                            .append(column).append(" LIKE '%,").append(c).append(",%' OR ")
+                            .append(column).append(" LIKE '%, ").append(c).append(",%' OR ")
+                            .append(column).append(" LIKE '%,  ").append(c).append(",%' OR ")
+                            .append(column).append(" LIKE '%,").append(c).append(" ,%' OR ")
+                            .append(column).append(" LIKE '%,").append(c).append("  ,%' OR ")
+                            .append(column).append(" LIKE '%, ").append(c).append(" ,%' OR ")
+                            .append(column).append(" LIKE '%, ").append(c).append("  ,%' OR ")
+                            .append(column).append(" LIKE '%,  ").append(c).append(" ,%' OR ")
+                            .append(column).append(" LIKE '%,  ").append(c).append("  ,%' OR ");
                 }
             }
             whereClause = new StringBuilder(whereClause
@@ -351,50 +411,26 @@ public class DB {
 
     /**
      * Добавляем новое слово в главной таблице engwords английских слов
-     * и в таблице с действующим уроком (если слово нужной категории)
      *
+     * @param id            id слова (если null, значит слово добавляется с новым id)
      * @param engWord       английское слово
      * @param transcription транскрипция
      * @param rusTranslate  русский перевод
      * @param category      категория
      * @return возвращает id нового слова в таблице T_ENGWORDS
      */
-    public long addRecEngWord(String engWord, String transcription,
-                              String rusTranslate, String category) {
+    public long addRecEngWord(Long id, String engWord, String transcription, String rusTranslate, String category) {
         ContentValues cv = new ContentValues();
+        if (id != null) cv.put(C_EW_ID, id);
         cv.put(C_EW_ENGWORD, engWord);
         cv.put(C_EW_TRANSCRIPTION, transcription);
         cv.put(C_EW_RUSTRANSLATE, rusTranslate);
         cv.put(C_EW_CATEGORY, category);
-        long idWord = mDB.insert(T_ENGWORDS, null, cv);
-        // таблицу T_LESSON решил обновлять при обновлении таблицы T_ENGWORDS
-        /*String strCats = getCategoryCurLesson(); // выбранные категории для текущего урока
-        String[] arr = strCats.split(",");
-        ArrayList<String> cats = new ArrayList<>();
-        for (String cat : arr) {
-            cats.add(cat.trim());
-        }
-        boolean inLesson = false; // переменная, показывающая входит слово в урок или нет
-        for (String cat : cats) {
-            if (category.contains(cat)) {
-                inLesson = true;
-                break;
-            }
-        }
-        cv = new ContentValues();
-        if (inLesson) { // добавляем слово в урок только, если его категория совпадате с категорией урока
-            cv.put(C_L_ENGWORD_ID, idWord);
-            cv.put(C_L_ENGWORD, engWord);
-            cv.put(C_L_TRANSCRIPTION, transcription);
-            cv.put(C_L_RUSTRANSLATE, rusTranslate);
-            cv.put(C_L_CATEGORY, strCats);
-            mDB.insert(T_LESSON, null, cv);
-        }*/
-        return idWord;
+        return mDB.insert(T_ENGWORDS, null, cv);
     }
 
     /**
-     * Обновляем запись в главной таблице engwords английских слов и в таблице с действующим уроком
+     * Обновляем запись в главной таблице engwords английских слов
      *
      * @param id            - id записи
      * @param engWord       - англиское слово
@@ -406,12 +442,6 @@ public class DB {
     public int updateRecEngWord(long id, String engWord, String transcription,
                                 String rusTranslate, String category) {
         ContentValues cv = new ContentValues();
-        cv.put(C_L_ENGWORD, engWord);
-        cv.put(C_L_TRANSCRIPTION, transcription);
-        cv.put(C_L_RUSTRANSLATE, rusTranslate);
-        cv.put(C_L_CATEGORY, category);
-        mDB.update(T_LESSON, cv, C_L_ENGWORD_ID + " = " + id, null);
-        cv = new ContentValues();
         cv.put(C_EW_ENGWORD, engWord);
         cv.put(C_EW_TRANSCRIPTION, transcription);
         cv.put(C_EW_RUSTRANSLATE, rusTranslate);
@@ -422,14 +452,23 @@ public class DB {
     /**
      * удалить запись из T_ENGWORDS и из T_LESSON
      *
-     * @param id записи
+     * @param id слова
+     * @return true - если слово добавляется в текущий урок, false - если в текущий урок не добавляется
      */
-    public int delRecEngWord(long id) {
-        int a = mDB.delete(T_LESSON, C_L_ENGWORD_ID + " = " + id, null);
-        Log.d("myLogs", "amount delete T_LESSON = " + a);
-        int b = mDB.delete(T_ENGWORDS, C_EW_ID + " = " + id, null);
-        Log.d("myLogs", "amount delete T_ENGWORDS = " + b);
-        return b;
+    public boolean delRecEngWord(long id) {
+        mDB.delete(T_ENGWORDS, C_EW_ID + " = " + id, null); // удаляем из таблицы T_ENGWORDS
+        // узнаем есть ли удаляемое слово в текущем уроке
+        String sqlQuery = "SELECT * FROM " + T_LESSON + " AS l1 WHERE l1." + C_L_LESSON_ID
+                + "=(SELECT MAX(" + C_L_LESSON_ID + ") FROM " + T_LESSON + ") AND " + C_L_ENGWORD_ID + "=" + id;
+        Cursor c = mDB.rawQuery(sqlQuery, null);
+        boolean inCurLesson = false;
+        if (c.moveToFirst()) {
+            inCurLesson = true;
+        }
+        c.close();
+        mDB.delete(T_LESSON, C_L_ENGWORD_ID + " = " + id, null);  // удаляем из таблицы T_ENGWORDS
+        mDB.delete(T_STATISTICS, C_S_ID_WORD + " = " + id, null);  // удаляем из таблицы T_STATISTICS
+        return inCurLesson;
     }
 
     /**
@@ -447,7 +486,7 @@ public class DB {
      * @return ArrayList<Word> массив слов
      */
     @SuppressLint("Range")
-    public ArrayList<Word> getLessonForCat(String categories, boolean isOnlyMistakes) {
+    public ArrayList<Word> createLessonForCat(String categories, boolean isOnlyMistakes) {
         ArrayList<Word> allWords = new ArrayList<>();
         Cursor c;
         if (categories != null) {
@@ -521,40 +560,48 @@ public class DB {
     }
 
     /**
-     * Удаление всех слов данных категорий
+     * Удаление всех слов данных категорий из таблицы T_ENGWORDS или T_LESSON
      *
+     * @param table      - таблица из которой удаляется категория
      * @param categories - категория, к которой может относится слово
      * @return массив из трех чисел (кол-во удаленных категорий, кол-во удаленных слов этих категорий, кол-во проапдейченных слов с категориями)
      */
     @SuppressLint("Range")
-    public int[] deleteCategories(String categories) {
+    public int[] deleteCategories(String table, String categories) {
+        String colId = table.equals(T_ENGWORDS) ? C_EW_ID : C_L_ID;
+        String colCat = table.equals(T_ENGWORDS) ? C_EW_CATEGORY : C_L_CATEGORY;
         //список со всеми категориями
         List<String> cats = strToList(categories, ",", true);
         mDB.beginTransaction();
-        Cursor c = getDataByCategory(categories); // курсор со списком всех слов данных категорий
+        Cursor c = getDataByCategory(categories, table); // курсор со списком всех слов данных категорий
         int deletedWords = 0; // счетчик для удаленных слов
         int updatedWords = 0; //счетчик для проапдейченных слов
         try {
+            String delArgs = colId + " IN (";
             if (c.moveToFirst()) {
                 do {
-                    int wordId = c.getInt(c.getColumnIndex(C_EW_ID));
-                    String catInWord = c.getString(c.getColumnIndex(C_EW_CATEGORY));
+                    int wordId = c.getInt(c.getColumnIndex(colId));
+                    String catInWord = c.getString(c.getColumnIndex(colCat));
                     //список со всеми категориями в данном слове
                     List<String> catsInWord = strToList(catInWord, ",", true);
                     catsInWord.removeAll(cats);
                     //если в слове только удаляемые категории, то удаляем его
                     if (catsInWord.size() == 0) {
-                        int del = mDB.delete(T_ENGWORDS, C_EW_ID + "=" + wordId, null);
-                        deletedWords = deletedWords + del;
+                        delArgs = delArgs + wordId + ", ";
+                        deletedWords++;
                     } else { //если в слове есть не удаляемые категории, то апдейтим его категорию
                         String newCat = listToStr(catsInWord, ", ");
                         ContentValues cv = new ContentValues();
-                        cv.put(C_EW_CATEGORY, newCat);
-                        int upd = mDB.update(T_ENGWORDS, cv, C_EW_ID + "=" + wordId, null);
-                        updatedWords = updatedWords + upd;
+                        cv.put(colCat, newCat);
+                        int upd = mDB.update(table, cv, colId + "=" + wordId, null);
+                        updatedWords += upd;
                     }
                 } while (c.moveToNext());
                 c.close();
+                if (deletedWords > 0) {
+                    delArgs = delArgs.substring(0, delArgs.length() - 2) + ")";
+                    mDB.delete(table, delArgs, null);
+                }
             }
             mDB.setTransactionSuccessful();
             return new int[]{cats.size(), deletedWords, updatedWords};
@@ -592,30 +639,50 @@ public class DB {
     /**
      * в столбце категорий таблицы со словами одна категория заменяется на другую (просто ищутся совпадения)
      *
+     * @param table   в какой таблице изменяется название категорий (T_ENGWORDS или T_LESSON)
      * @param oldName старое название катгории
      * @param newName новое название катгории
      */
-    public void categoryRename(String oldName, String newName) {
+    public void categoryRename(String table, String oldName, String newName) {
+        String column = table.equals(T_ENGWORDS) ? C_EW_CATEGORY : C_L_CATEGORY;
         // если меняется категория на пустую, то нужно удалить возможные запятые перед и после нее
         // (если в слове было несколько категорий)
         if (!oldName.equals("") && newName.equals("")) {
-            mDB.execSQL("UPDATE " + T_ENGWORDS + " SET " + C_EW_CATEGORY + " = REPLACE(" +
-                    C_EW_CATEGORY + ", ', " + oldName + "', '')");
-            mDB.execSQL("UPDATE " + T_ENGWORDS + " SET " + C_EW_CATEGORY + " = REPLACE(" +
-                    C_EW_CATEGORY + ", '," + oldName + "', '')");
-            mDB.execSQL("UPDATE " + T_ENGWORDS + " SET " + C_EW_CATEGORY + " = REPLACE(" +
-                    C_EW_CATEGORY + ", '" + oldName + ", ', '')");
-            mDB.execSQL("UPDATE " + T_ENGWORDS + " SET " + C_EW_CATEGORY + " = REPLACE(" +
-                    C_EW_CATEGORY + ", '" + oldName + ",', '')");
-            mDB.execSQL("UPDATE " + T_ENGWORDS + " SET " + C_EW_CATEGORY + " = REPLACE(" +
-                    C_EW_CATEGORY + ", '" + oldName + "', '')");
+            mDB.execSQL("UPDATE " + table + " SET " + column + " = REPLACE(" + column + ", ', " + oldName + ",', ',')");
+            mDB.execSQL("UPDATE " + table + " SET " + column + " = REPLACE(" + column + ", '," + oldName + ",', ',')");
+            mDB.execSQL("UPDATE " + table + " SET " + column + " = REPLACE(" + column + ", ', " + oldName + " ,', ',')");
+            mDB.execSQL("UPDATE " + table + " SET " + column + " = REPLACE(" + column + ", '," + oldName + " ,', ',')");
+            mDB.execSQL("UPDATE " + table + " SET " + column + " = REPLACE(" + column
+                    + ", ', " + oldName + "', '') WHERE " + column + " LIKE '%, " + oldName + "'");
+            mDB.execSQL("UPDATE " + table + " SET " + column + " = REPLACE(" + column
+                    + ", '," + oldName + "', '') WHERE " + column + " LIKE '%," + oldName + "'");
+            mDB.execSQL("UPDATE " + table + " SET " + column + " = REPLACE(" + column
+                    + ", '" + oldName + ",', '') WHERE " + column + " LIKE '" + oldName + ",%'");
+            mDB.execSQL("UPDATE " + table + " SET " + column + " = REPLACE(" + column
+                    + ", '" + oldName + " ,', '') WHERE " + column + " LIKE '" + oldName + " ,%'");
+            ContentValues cv = new ContentValues();
+            cv.put(column, "");
+            mDB.update(table, cv, column + "='" + oldName + "'", null);
         } else if (oldName.equals("") && !newName.equals("")) { // если пустая категория меняется на нормальную
             ContentValues cv = new ContentValues();
-            cv.put(C_EW_CATEGORY, newName);
-            mDB.update(T_ENGWORDS, cv, C_EW_CATEGORY + " = ''", null);
+            cv.put(column, newName);
+            mDB.update(table, cv, column + " = ''", null);
         } else if (!oldName.equals(newName)) { // делаем апдейт только, если старое и нове имя разные
-            mDB.execSQL("UPDATE " + T_ENGWORDS + " SET " + C_EW_CATEGORY + " = REPLACE(" +
-                    C_EW_CATEGORY + ", '" + oldName + "', '" + newName + "')");
+            mDB.execSQL("UPDATE " + table + " SET " + column + " = REPLACE(" + column + ", ', " + oldName + ",', ', " + newName + ",')");
+            mDB.execSQL("UPDATE " + table + " SET " + column + " = REPLACE(" + column + ", '," + oldName + ",', ', " + newName + ",')");
+            mDB.execSQL("UPDATE " + table + " SET " + column + " = REPLACE(" + column + ", ', " + oldName + " ,', ', " + newName + ",')");
+            mDB.execSQL("UPDATE " + table + " SET " + column + " = REPLACE(" + column + ", '," + oldName + " ,', ', " + newName + ",')");
+            mDB.execSQL("UPDATE " + table + " SET " + column + " = REPLACE(" + column
+                    + ", ', " + oldName + "', ', " + newName + "') WHERE " + column + " LIKE '%, " + oldName + "'");
+            mDB.execSQL("UPDATE " + table + " SET " + column + " = REPLACE(" + column
+                    + ", '," + oldName + "', ', " + newName + "') WHERE " + column + " LIKE '%," + oldName + "'");
+            mDB.execSQL("UPDATE " + table + " SET " + column + " = REPLACE(" + column
+                    + ", '" + oldName + ",', '" + newName + ",') WHERE " + column + " LIKE '" + oldName + ",%'");
+            mDB.execSQL("UPDATE " + table + " SET " + column + " = REPLACE(" + column
+                    + ", '" + oldName + " ,', '" + newName + ",') WHERE " + column + " LIKE '" + oldName + " ,%'");
+            ContentValues cv = new ContentValues();
+            cv.put(column, newName);
+            mDB.update(table, cv, column + "='" + oldName + "'", null);
         }
     }
 
@@ -689,6 +756,18 @@ public class DB {
         return getWordList(sqlQuery);
     }
 
+    /**
+     * получение всех слов из урока с данной категорией(ями)
+     *
+     * @param categories - категория, к которой может относится слово
+     * @return список всех слов из урока с данной категорией(ями)
+     */
+    @SuppressLint("Range")
+    public ArrayList<Word> getWordsFromLessonByCats(String categories) {
+        String sqlQuery = "SELECT * FROM " + T_LESSON + " WHERE " + C_L_CATEGORY + "='" + categories + "'";
+        return getWordList(sqlQuery);
+    }
+
     @SuppressLint("Range")
     private ArrayList<Word> getWordList(String sqlQuery) {
         String id = C_L_ENGWORD_ID;
@@ -722,7 +801,7 @@ public class DB {
     }
 
     /**
-     * получение категории, по текущему уроку в T_LESSON
+     * получение категории(й), по текущему уроку в T_LESSON
      *
      * @return категория
      */
@@ -827,7 +906,7 @@ public class DB {
 
 
     /**
-     * Добавление записи в таблицу действующего урока Lesson
+     * Добавление слова в один урок таблицы T_LESSON
      *
      * @param isLessonsHistory - сохраняется в T_LESSON все незавершенные уроки (true) или только последний урок (false)
      * @param idEngWord        - id англиского слова
@@ -835,14 +914,13 @@ public class DB {
      * @param transcription    - транскрипция англйского слова
      * @param rusTranslate     - русский перевод
      * @param category         - категория слова
-     * @param result           - результат урока: null - слово еще не отгадывалось, 0 - не
-     *                         отгадал, 1 - отгадал
+     * @param result           - результат урока: null - слово еще не отгадывалось, 0 - не отгадал, 1 - отгадал
      * @param current          - текущее слово (1), все остальные слова - 0
      */
     @SuppressLint("Range")
-    public void addRecLesson(boolean isLessonsHistory, int idEngWord, String engWord,
-                             String transcription, String rusTranslate, String category,
-                             Integer result, int current) {
+    public void addWordInLesson(boolean isLessonsHistory, int idEngWord, String engWord,
+                                String transcription, String rusTranslate, String category,
+                                Integer result, int current) {
         // если созраняется только послед. урок, то C_L_LESSON_ID = System.currentTimeMillis()/1000, т.к. предварительно вся таблица очищается
         long lessonId = System.currentTimeMillis() / 1000;
         // если сохраняются все незавершенные уроки, то определяется, какой C_L_LESSON_ID нужно ставить
@@ -878,14 +956,71 @@ public class DB {
             Cursor c = mDB.rawQuery("SELECT " + C_L_LESSON_ID + " FROM " + T_LESSON
                     + " WHERE " + C_L_CATEGORY + "='" + categories + "'", null);
             if (c.moveToFirst()) {
-                try {
-                    lessonId = c.getInt(0);
-                } catch (Exception ex) {
-                }
+                lessonId = c.getInt(0);
             }
             c.close();
         }
         return lessonId;
+    }
+
+    /**
+     * получаем список категорий во всех уроках
+     *
+     * @return TreeMap<Long, String> с id урока и категорией(ями) урока(ов)
+     */
+    public TreeMap<Long, String> getCatsInAllLessons() {
+        TreeMap<Long, String> treeCats = new TreeMap<>();
+        Cursor c = mDB.rawQuery("SELECT " + C_L_LESSON_ID + ", " + C_L_CATEGORY + " FROM " + T_LESSON
+                + " GROUP BY " + C_L_LESSON_ID + ", " + C_L_CATEGORY + " ORDER BY " + C_L_LESSON_ID, null);
+        if (c.moveToFirst()) {
+            do {
+                treeCats.put(c.getLong(0), c.getString(1));
+            } while (c.moveToNext());
+        }
+        c.close();
+        return treeCats;
+    }
+
+    /**
+     * @param idWord        - id слова
+     * @param engWord       - англиское слово
+     * @param transcription - транскрипция англйского слова
+     * @param rusTranslate  - русский перевод
+     * @param category      - категория слова
+     * @return true - если слово добавляется в текущий урок, false - если в текущий урок не добавляется
+     */
+    public boolean addWordInLessons(long idWord, String engWord, String transcription, String rusTranslate, String category) {
+        boolean changeInCurLesson = false;
+        List<String> wordCats = strToList(category, ",", true); // список категорий которым принадлежит добавляемое слово
+        TreeMap<Long, String> catsInLessons = getCatsInAllLessons(); // категории во всех уроках
+        for (Map.Entry<Long, String> entry : catsInLessons.entrySet()) {
+            List<String> lessonCats = strToList(entry.getValue(), ",", true); // список категорий данного урока
+            for (String cat : wordCats) {
+                if (lessonCats.contains(cat)) {
+                    int ordinal = 0; // порядковй номер слова в уроке
+                    Cursor c = mDB.rawQuery("SELECT MAX(" + C_L_ORDINAL + ") FROM " + T_LESSON
+                            + " WHERE " + C_L_LESSON_ID + "=" + entry.getKey(), null);
+                    if (c.moveToFirst()) {
+                        ordinal = c.getInt(0);
+                    }
+                    c.close();
+                    ContentValues cv = new ContentValues();
+                    cv.put(C_L_LESSON_ID, entry.getKey());
+                    cv.put(C_L_ENGWORD_ID, idWord);
+                    cv.put(C_L_ENGWORD, engWord);
+                    cv.put(C_L_TRANSCRIPTION, transcription);
+                    cv.put(C_L_RUSTRANSLATE, rusTranslate);
+                    cv.put(C_L_CATEGORY, entry.getValue());
+                    cv.put(C_L_ORDINAL, ++ordinal);
+                    mDB.insert(T_LESSON, null, cv);
+                    if (entry.getKey().equals(catsInLessons.lastKey())) {
+                        changeInCurLesson = true;
+                    }
+                    break;
+                }
+            }
+        }
+        return changeInCurLesson;
     }
 
     /**
@@ -955,7 +1090,7 @@ public class DB {
     }
 
     /**
-     * удаляет все уроки кроме текущего урока старше определенного кол-ва дней
+     * удаляет все уроки кроме текущего урока и кроме уроков, которые младше определенного кол-ва дней
      *
      * @param delDays - кол-во дней старше которых уроки удаляются
      * @return - кол0во удаленных записей
@@ -987,7 +1122,7 @@ public class DB {
      * @return получение списка категорий с количеством правильных и неправильных ответов из таблицы Statistics
      */
     @SuppressLint("Range")
-    public ArrayList<Category> getCategoryStats() {
+    public ArrayList<Category> getCategoriesStats() {
         ArrayList<Category> categoryStats = new ArrayList<>();
         String sqlQuery = "SELECT " + C_S_CATEGORY + ", SUM(" + C_S_AMOUNT_RIGHT + ") AS right1, SUM(" +
                 C_S_AMOUNT_WRONG + ") AS wrong FROM " + T_STATISTICS + " GROUP BY " + C_S_CATEGORY +
@@ -1006,6 +1141,31 @@ public class DB {
         }
         c.close();
         return categoryStats;
+    }
+
+    /**
+     * получение списка категорий с указанием сколько слов хотя бы один раз отгадано и сколько ни разу не отгадано (из таблицы Statistics)
+     *
+     * @return получение списка категорий с указанием сколько слов хотя бы один раз отгадано и сколько ни разу не отгадано (из таблицы Statistics)
+     */
+    @SuppressLint("Range")
+    public HashMap<String, Category> getRightWordsInCats() {
+        HashMap<String, Category> rightWordsInCats = new HashMap<>();
+        String sqlQuery = "SELECT " + C_S_CATEGORY + ", SUM(CASE WHEN " + C_S_AMOUNT_RIGHT +
+                ">0 THEN 1 ELSE 0 END) AS right1, SUM(CASE WHEN " + C_S_AMOUNT_RIGHT +
+                ">0 THEN 0 ELSE 1 END) AS wrong FROM " + T_STATISTICS + " GROUP BY " + C_S_CATEGORY +
+                " ORDER BY wrong DESC, right1 ";
+        Cursor c = mDB.rawQuery(sqlQuery, null);
+        if (c.moveToFirst()) {
+            do {
+                rightWordsInCats.put(c.getString(c.getColumnIndex(C_S_CATEGORY)),
+                        new Category(c.getString(c.getColumnIndex(C_S_CATEGORY)),
+                                c.getInt(c.getColumnIndex("right1")),
+                                c.getInt(c.getColumnIndex("wrong"))));
+            } while (c.moveToNext());
+        }
+        c.close();
+        return rightWordsInCats;
     }
 
     /**
@@ -1052,12 +1212,32 @@ public class DB {
     }
 
     /**
-     * удаление всей статистики по отгаданным / неотгаданным словам
+     * удаление всей статистики по определенным категориям по отгаданным / неотгаданным словам
      *
+     * @param cats строка с категориями, где категории идут в одну строку через запятую
      * @return кол-во удаленных строк
      */
-    public int removeStats() {
-        return mDB.delete(T_STATISTICS, null, null);
+    public int removeStats(String cats) {
+        String[] arr = cats.split(",");
+        String catsForIn = ""; // строка, в которой будет выражение для IN в SQL-запросе
+        for (String s : arr) {
+            catsForIn = catsForIn + "'" + s.trim() + "', ";
+        }
+        catsForIn = catsForIn.substring(0, catsForIn.length() - 2);
+        return mDB.delete(T_STATISTICS, C_S_CATEGORY + " IN (" + catsForIn + ")", null);
+    }
+
+    /**
+     * Обновляем запись в главной таблице engwords английских слов и в таблице с действующим уроком
+     *
+     * @param oldName старое название категории
+     * @param newName старое название категории
+     * @return int - кол-во обновленных строк
+     */
+    public int updateCatInStats(String oldName, String newName) {
+        ContentValues cv = new ContentValues();
+        cv.put(C_S_CATEGORY, newName);
+        return mDB.update(T_STATISTICS, cv, C_S_CATEGORY + "='" + oldName + "'", null);
     }
 
     /*

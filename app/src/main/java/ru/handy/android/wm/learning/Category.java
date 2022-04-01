@@ -38,7 +38,7 @@ public class Category implements Comparable, Comparator {
     }
 
     /**
-     * испоьзуется для получения статистики по категориям
+     * используется для получения статистики по категориям
      * @param name имя категории
      * @param amountRight кол-во правильных ответов
      * @param amountWrong кол-во неправильных ответов
@@ -47,6 +47,18 @@ public class Category implements Comparable, Comparator {
         this.name = name;
         this.amountRight = amountRight;
         this.amountWrong = amountWrong;
+    }
+
+    /**
+     * используется для получения статистики по категориям
+     * @param name имя категории
+     * @param amount кол-во слов в категории
+     * @param amountRight кол-во слов, которые отгаданы хоть 1 раз
+     * @param amountWrong кол-во слов, которые ни разу не отгадали и хоть 1 раз отгадали не верно
+     */
+    public Category(String name, int amount, int amountRight, int amountWrong) {
+        this(name, amountRight, amountWrong);
+        this.amount = amount;
     }
 
     public boolean isChecked() {

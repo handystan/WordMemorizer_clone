@@ -2,10 +2,12 @@ package ru.handy.android.wm.learning;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -172,9 +174,24 @@ public class CategoryAdapter extends BaseAdapter {
                     text1.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             span.setSpan(new ForegroundColorSpan(Color.parseColor("#00BB00")), text1.length(),
                     allText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            tvAmount.setTypeface(null, Typeface.BOLD);
+
             tvAmount.setText(span);
         } else {
-            tvAmount.setText(s(R.string.ofWords) + " " + (cat.getAmount() == 0 ? "  " : cat.getAmount()));
+            if (cat.getAmount() == 0) {
+                tvAmount.setText("");
+            } else {
+                String text = s(R.string.learned) + "\n" + cat.getAmountRight() + " " + s(R.string.from) + " " + cat.getAmount();
+                Spannable span = new SpannableString(text);
+                if (cat.getAmountRight() > 0) {
+                    span.setSpan(new StyleSpan(Typeface.BOLD), 8, 8 + (cat.getAmountRight() + "").length()
+                            , Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
+                span.setSpan(new StyleSpan(Typeface.BOLD), text.length() - (cat.getAmount() + "").length()
+                        , text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                tvAmount.setTypeface(null, Typeface.NORMAL);
+                tvAmount.setText(span);
+            }
         }
         return view;
     }
