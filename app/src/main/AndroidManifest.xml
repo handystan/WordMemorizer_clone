@@ -12,7 +12,9 @@
         android:fullBackupContent="@xml/wm_backup_rules"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppThemeBase1">
+        android:theme="@style/AppThemeBase1"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        tools:targetApi="s">
         <!-- необходимо для того, чтобы можно было посылать файлы в другие приложения -->
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -27,7 +29,7 @@
         </provider> <!-- необходимо для показа рекламы в AdMod -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-8509841932044551~4673479939" />
+            android:value="ca-app-pub-5333220833779174~4698780412" /> <!-- old from AdMob : ca-app-pub-8509841932044551~4673479939 -->
 
         <activity
             android:name=".learning.Learning"

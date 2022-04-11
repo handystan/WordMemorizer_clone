@@ -3,7 +3,6 @@ package ru.handy.android.wm.learning;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.database.sqlite.SQLiteException;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -15,17 +14,14 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.yodo1.mas.banner.Yodo1MasBannerAdView;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,7 +30,6 @@ import ru.handy.android.wm.About;
 import ru.handy.android.wm.DB;
 import ru.handy.android.wm.GlobApp;
 import ru.handy.android.wm.R;
-import ru.handy.android.wm.Thanks;
 import ru.handy.android.wm.setting.Utils;
 
 /**
@@ -53,7 +48,7 @@ public class CategoryWordsList extends AppCompatActivity implements View.OnClick
     private ArrayList<Word> wrongWords; // кол-во не отгаданных слов
     private WordsAdapter wAdapter;
     private LinearLayout llAdMobCatWordList;
-    private AdView avBottomBannerCatWordList;
+    private Yodo1MasBannerAdView avBottomBannerCatWordList;
     private DB db;
     private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
@@ -88,11 +83,8 @@ public class CategoryWordsList extends AppCompatActivity implements View.OnClick
         int amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
         avBottomBannerCatWordList = findViewById(R.id.avBottomBannerCatWordList);
         llAdMobCatWordList = findViewById(R.id.llAdMobCatWordList);
-        // инициализация AdMob для рекламы
-        MobileAds.initialize(this, initializationStatus -> Log.d("myLogs", "AdMob in CategoryWordsList is initialized"));
-        AdRequest adRequest = new AdRequest.Builder().build();
-        // загружаем баннерную рекламу
-        avBottomBannerCatWordList.loadAd(adRequest);
+        // загружаем баннерную рекламу yodo1
+        avBottomBannerCatWordList.loadAd();
         ViewGroup.LayoutParams params = llAdMobCatWordList.getLayoutParams();
         if (amountDonate > 0) {
             params.height = 0;

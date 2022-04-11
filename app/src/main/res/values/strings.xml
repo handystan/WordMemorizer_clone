@@ -39,9 +39,9 @@
     <string name="semicolon">;</string>
     <string name="only_chose_category">только слова выбранных категорий</string>
     <string name="download_data">загрузить слова</string>
-    <string name="downloading">идет загрузка...</string>
+    <string name="downloading">идет загрузка…</string>
     <string name="upload_data">выгрузить слова</string>
-    <string name="uploading">идет выгрузка...</string>
+    <string name="uploading">идет выгрузка…</string>
     <string name="amount_load_rows">Количество загруженных из файла строк</string>
     <string name="not_load_rows">Не загрузились строки № </string>
     <string name="amount_not_load_rows">Количество не загруженных строк</string>
@@ -296,7 +296,7 @@
     <string name="about_desc">
 <![CDATA[
 <p><big><b>WordMemorizer</b></big>
-<br>Версия 2.11 для версии Android 5.0 и выше.
+<br>Версия 2.12 для версии Android 5.0 и выше.
 <p><b>Производитель</b>
 <br>Handy Systems
 <p><b>e-mail</b>

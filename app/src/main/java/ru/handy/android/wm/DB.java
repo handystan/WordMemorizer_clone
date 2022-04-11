@@ -8,7 +8,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -123,7 +122,7 @@ public class DB {
             + " text, " + C_ES_VALUE + " text);";
 
     private static final String DB_NAME = "ewdb";
-    private static final int DB_VERSION = 34; // 13 - первая версия с платными настройками, 32 - версия, где убрал isFromOldDB
+    private static final int DB_VERSION = 35; // 13 - первая версия с платными настройками, 32 - версия, где убрал isFromOldDB
     private final Context mCtx;
 
     private DBHelper mDBHelper;
@@ -461,10 +460,7 @@ public class DB {
         String sqlQuery = "SELECT * FROM " + T_LESSON + " AS l1 WHERE l1." + C_L_LESSON_ID
                 + "=(SELECT MAX(" + C_L_LESSON_ID + ") FROM " + T_LESSON + ") AND " + C_L_ENGWORD_ID + "=" + id;
         Cursor c = mDB.rawQuery(sqlQuery, null);
-        boolean inCurLesson = false;
-        if (c.moveToFirst()) {
-            inCurLesson = true;
-        }
+        boolean inCurLesson = c.moveToFirst();
         c.close();
         mDB.delete(T_LESSON, C_L_ENGWORD_ID + " = " + id, null);  // удаляем из таблицы T_ENGWORDS
         mDB.delete(T_STATISTICS, C_S_ID_WORD + " = " + id, null);  // удаляем из таблицы T_STATISTICS
@@ -1255,16 +1251,13 @@ public class DB {
      */
     @SuppressLint("Range")
     public String getValueByVariable(String variable) {
-        try {
-            Cursor c = mDB.query(T_EXITSTATE, null, C_ES_VARIABLE + "=?",
-                    new String[]{variable}, null, null, null);
-            if (c != null) {
-                if (c.moveToFirst()) {
-                    return c.getString(c.getColumnIndex(C_ES_VALUE));
-                }
-                c.close();
+        Cursor c = mDB.query(T_EXITSTATE, null, C_ES_VARIABLE + "=?",
+                new String[]{variable}, null, null, null);
+        if (c != null) {
+            if (c.moveToFirst()) {
+                return c.getString(c.getColumnIndex(C_ES_VALUE));
             }
-        } catch (Exception ex) {
+            c.close();
         }
         return null;
     }

@@ -16,11 +16,15 @@ package ru.handy.android.wm;
  */
 
 import android.app.Application;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.yodo1.mas.Yodo1Mas;
+import com.yodo1.mas.helper.model.Yodo1MasAdBuildConfig;
+import com.yodo1.mas.helper.model.Yodo1MasUserPrivacyConfig;
 
 import java.util.Locale;
 
@@ -45,6 +49,19 @@ public class GlobApp extends Application {
     private TextToSpeech tts;
     private FirebaseAnalytics mFBAnalytics;
     private Learning learning;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        //yodo1
+        Yodo1MasUserPrivacyConfig agePopBuildConfig = new Yodo1MasUserPrivacyConfig.Builder()
+                .titleBackgroundColor(Color.BLUE).titleTextColor(Color.WHITE).contentBackgroundColor(Color.WHITE)
+                .contentTextColor(Color.BLACK).buttonBackgroundColor(Color.BLUE).buttonTextColor(Color.WHITE)
+                .build();
+        Yodo1MasAdBuildConfig config = new Yodo1MasAdBuildConfig.Builder().enableUserPrivacyDialog(true)
+                .userPrivacyConfig(agePopBuildConfig).build();
+        Yodo1Mas.getInstance().setAdBuildConfig(config);
+    }
 
     /**
      * Gets the default {@link FirebaseAnalytics} for this {@link Application}.
@@ -75,17 +92,17 @@ public class GlobApp extends Application {
     /**
      * Регистрирует событие обучения со всеми настройками обучения для оплаченных (PAID_LEARNING) и не оплаченных приложений (ALL_LEARNING)
      *
-     * @param paidApp               оплачено ли приложение ('Оплачено', т.е. DB.AMOUNT_DONATE > 0, 'Не оплачено')
-     * @param categories            категория(и) слов для данного урока
-     * @param learningType          тип обучения ('Выбор верного варианта', 'Написание слова', 'Комплексное обучение')
-     * @param learningSpeak         озвучивать английское слово после отгадывания или нет: 'Озвучивать слово', 'Не озвучивать слово'
-     * @param learningShowTranscr   показывать транскрипцию в обучалке или нет: 'Показывать транскрипцию', 'Не показывать транскрипцию'
-     * @param learningShowDontKnow  показывать кнопку "не знаю" в обучалке: 'Показывать кнопку \'Не знаю\'', 'Не показывать кнопку \'Не знаю\''
-     * @param learningLanguage      какие слова отгадыватся в обучалке: 'Отгадывание английских слов', 'Отгадывание русских слов'
-     * @param learningAmountWords   сколько вариантов слов для отгадывания будет предложено: от 2 до 12
-     * @param learningRepeatsAmount сохранять или нет историю по всем незаконченным урокам: 0-нет, 1-да (1 по умолчанию)
-     * @param learningRepeatsAmount кол-во повторений последовательностей в комплексном обучении: от 1 до 10 (по умолчанию - 2)
-     * @param answer                'Верный ответ' или 'Неверный ответ'
+     * @param paidApp                оплачено ли приложение ('Оплачено', т.е. DB.AMOUNT_DONATE > 0, 'Не оплачено')
+     * @param categories             категория(и) слов для данного урока
+     * @param learningType           тип обучения ('Выбор верного варианта', 'Написание слова', 'Комплексное обучение')
+     * @param learningSpeak          озвучивать английское слово после отгадывания или нет: 'Озвучивать слово', 'Не озвучивать слово'
+     * @param learningShowTranscr    показывать транскрипцию в обучалке или нет: 'Показывать транскрипцию', 'Не показывать транскрипцию'
+     * @param learningShowDontKnow   показывать кнопку "не знаю" в обучалке: 'Показывать кнопку \'Не знаю\'', 'Не показывать кнопку \'Не знаю\''
+     * @param learningLanguage       какие слова отгадыватся в обучалке: 'Отгадывание английских слов', 'Отгадывание русских слов'
+     * @param learningAmountWords    сколько вариантов слов для отгадывания будет предложено: от 2 до 12
+     * @param learningRepeatsAmount  кол-во повторений последовательностей в комплексном обучении: от 1 до 10 (по умолчанию - 2)
+     * @param learningLessonsHistory сохранять или нет историю по всем незаконченным урокам: 0-нет, 1-да (1 по умолчанию)
+     * @param answer                 'Верный ответ' или 'Неверный ответ'
      */
     synchronized public void learningEvent(String paidApp, String categories, String learningType,
                                            String learningSpeak, String learningShowTranscr,
@@ -196,7 +213,7 @@ public class GlobApp extends Application {
     /**
      * Регистрирует событие о том, что урок полностью закончен (FINISHED_LESSONS)
      *
-     * @param paidApp  оплачено ли приложение ('Оплачено', т.е. DB.AMOUNT_DONATE > 0, 'Не оплачено')
+     * @param paidApp оплачено ли приложение ('Оплачено', т.е. DB.AMOUNT_DONATE > 0, 'Не оплачено')
      */
     synchronized public void finishedLessonsEvent(String paidApp) {
         Bundle bundle = new Bundle();
@@ -254,7 +271,7 @@ public class GlobApp extends Application {
      * @return TextToSpeech
      */
     synchronized public TextToSpeech speak(final String text) {
-        if (tts == null || tts.speak(text, TextToSpeech.QUEUE_ADD, null) == TextToSpeech.ERROR) {
+        if (tts == null || tts.speak(text, TextToSpeech.QUEUE_ADD, null, null) == TextToSpeech.ERROR) {
             tts = new TextToSpeech(getApplicationContext(), status -> {
                 if (status == TextToSpeech.SUCCESS) {
                     String pronun = db.getValueByVariable(DB.PRONUNCIATION_USUK);
@@ -264,7 +281,7 @@ public class GlobApp extends Application {
                             result == TextToSpeech.LANG_NOT_SUPPORTED) {
                         Log.e("myLogs", "This Language Locale.US is not supported");
                     } else
-                        tts.speak(text, TextToSpeech.QUEUE_ADD, null);
+                        tts.speak(text, TextToSpeech.QUEUE_ADD, null, null);
                     Log.d("myLogs", "TextToSpeech initialization was successed!");
                 } else {
                     Log.e("myLogs", "TextToSpeech initialization was failed!");

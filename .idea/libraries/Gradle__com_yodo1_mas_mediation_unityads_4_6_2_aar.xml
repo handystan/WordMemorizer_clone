@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="Gradle: com.yodo1.mas.mediation:unityads:4.6.2@aar">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/82ddc173e5a4d9f745fd0f9e978440ee/transformed/jetified-unityads-4.6.2/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/65c0f867b6e545bc3ba6ab4b163b2a5d/transformed/jetified-unityads-4.6.2/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/d340311754ed27fd6fe8ae86d8282e83/transformed/jetified-unityads-4.6.2/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/d340311754ed27fd6fe8ae86d8282e83/transformed/jetified-unityads-4.6.2/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/d340311754ed27fd6fe8ae86d8282e83/transformed/jetified-unityads-4.6.2/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.yodo1.mas.mediation/unityads/4.6.2/af842e56d68159ae0e0f8fb56fe929cbd06d6991/unityads-4.6.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

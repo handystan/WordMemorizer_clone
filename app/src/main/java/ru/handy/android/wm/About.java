@@ -16,12 +16,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.yodo1.mas.banner.Yodo1MasBannerAdView;
 
-import ru.handy.android.wm.learning.Learning;
 import ru.handy.android.wm.setting.Utils;
 
 public class About extends AppCompatActivity implements View.OnClickListener {
@@ -30,7 +27,7 @@ public class About extends AppCompatActivity implements View.OnClickListener {
     private TextView mTextView;
     private int amountClick = 0; // количество нажатий на текстовое поле
     private LinearLayout llAdMobAbout;
-    private AdView avBottomBannerAbout;
+    private Yodo1MasBannerAdView avBottomBannerAbout;
     private DB db;
     private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
@@ -50,14 +47,10 @@ public class About extends AppCompatActivity implements View.OnClickListener {
 
         String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
         int amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
-        avBottomBannerAbout = findViewById(R.id.avBottomBannerAbout);
         llAdMobAbout = findViewById(R.id.llAdMobAbout);
-        // инициализация AdMob для рекламы
-        MobileAds.initialize(this, initializationStatus ->
-                Log.d("myLogs", "AdMob in " + getClass().getSimpleName() + " is initialized"));
-        AdRequest adRequest = new AdRequest.Builder().build();
-        // загружаем баннерную рекламу
-        avBottomBannerAbout.loadAd(adRequest);
+        // загружаем баннерную рекламу yodo1
+        avBottomBannerAbout = findViewById(R.id.avBottomBannerAbout);
+        avBottomBannerAbout.loadAd();
         ViewGroup.LayoutParams params = llAdMobAbout.getLayoutParams();
         if (amountDonate > 0) {
             params.height = 0;
@@ -147,7 +140,7 @@ public class About extends AppCompatActivity implements View.OnClickListener {
 
     @Override
     protected void onDestroy() {
-        Log.d("myLogs", "onDestroy Thanks");
+        Log.d("myLogs", "onDestroy About");
         super.onDestroy();
     }
 }

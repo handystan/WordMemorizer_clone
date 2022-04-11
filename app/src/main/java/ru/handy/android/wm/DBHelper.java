@@ -6,10 +6,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * класс по созданию и управлению БД
@@ -50,7 +46,7 @@ public class DBHelper extends SQLiteOpenHelper {
             insertExitState(db, DB.DICT_SEARCH_TYPE, "0");
             insertExitState(db, DB.DICT_SHOW_HISTORY, "0");
             insertExitState(db, DB.AMOUNT_DONATE, "0");
-            insertExitState(db, DB.BG_COLOR, "1"); // белый фон
+            insertExitState(db, DB.BG_COLOR, "9"); // голубой фон
             // с 32 версии это уже не нужно
             /*insertExitState(db, DB.DATE_TRIAL_STATS, ""); // дата начала месячного бесплатного периода для статистики
             insertExitState(db, DB.DATE_BG_COLOR, ""); // дата начала месячного бесплатного периода для смены цвета фона
@@ -79,7 +75,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.beginTransaction();
         try {
-            if (oldVersion <= 24 && newVersion == 34) { // версия 25 была тестовой
+            if (oldVersion <= 24 && newVersion == 35) { // версия 25 была тестовой
                 // сначала удаляем всю старую БД
                 Cursor c = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'", null);
                 while (c.moveToNext()) {
@@ -91,25 +87,25 @@ public class DBHelper extends SQLiteOpenHelper {
                 c.close();
                 // потом создаем новую БД
                 onCreate(db);
-            } else if (oldVersion == 26 && newVersion == 34) {
+            } else if (oldVersion == 26 && newVersion == 35) {
                 updateDictFrom26(db);
                 updateDictFrom27(db);
                 updateDictFrom28(db);
                 updateDictFrom30(db);
                 updateDictFrom31(db);
-            } else if (oldVersion == 27 && newVersion == 34) {
+            } else if (oldVersion == 27 && newVersion == 35) {
                 updateDictFrom27(db);
                 updateDictFrom28(db);
                 updateDictFrom30(db);
                 updateDictFrom31(db);
-            } else if (oldVersion == 28 && newVersion == 34) { // версия 29 не прошла цензуру Google
+            } else if (oldVersion == 28 && newVersion == 35) { // версия 29 не прошла цензуру Google
                 updateDictFrom28(db);
                 updateDictFrom30(db);
                 updateDictFrom31(db);
-            } else if (oldVersion == 30 && newVersion == 34) {
+            } else if (oldVersion == 30 && newVersion == 35) {
                 updateDictFrom30(db);
                 updateDictFrom31(db);
-            } else if (oldVersion == 31 && newVersion == 34) { // 32 и 33 не было, так как я восстанавливал код по ним
+            } else if (oldVersion == 31 && newVersion == 35) { // 32 и 33 не было (восстанавливал код), 34 просто не вносил изменнеия в БД
                 updateDictFrom31(db);
             }
             db.setTransactionSuccessful();

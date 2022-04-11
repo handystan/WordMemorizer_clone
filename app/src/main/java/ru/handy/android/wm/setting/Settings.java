@@ -18,12 +18,9 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.tabs.TabLayout;
-
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.yodo1.mas.banner.Yodo1MasBannerAdView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +40,7 @@ public class Settings extends AppCompatActivity {
     private LearningSetting learningSetting;
     private OtherSetting otherSetting;
     private LinearLayout llAdMobSettings;
-    private AdView avBottomBannerSettings;
+    private Yodo1MasBannerAdView avBottomBannerSettings;
     private DB db;
     private ActionBar bar;
     // что было выбрано при вызове настроек: 0-обучение, 1-словарь, 2- прочее
@@ -71,14 +68,10 @@ public class Settings extends AppCompatActivity {
 
         String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
         int amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
-        avBottomBannerSettings = findViewById(R.id.avBottomBannerSettings);
         llAdMobSettings = findViewById(R.id.llAdMobSettings);
-        // инициализация AdMob для рекламы
-        MobileAds.initialize(this, initializationStatus ->
-                Log.d("myLogs", "AdMob in " + getClass().getSimpleName() + " is initialized"));
-        AdRequest adRequest = new AdRequest.Builder().build();
-        // загружаем баннерную рекламу
-        avBottomBannerSettings.loadAd(adRequest);
+        avBottomBannerSettings = findViewById(R.id.avBottomBannerSettings);
+        // загружаем баннерную рекламу yodo1
+        avBottomBannerSettings.loadAd();
         ViewGroup.LayoutParams params = llAdMobSettings.getLayoutParams();
         if (amountDonate > 0) {
             params.height = 0;

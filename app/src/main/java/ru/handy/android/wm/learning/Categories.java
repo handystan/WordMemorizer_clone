@@ -33,10 +33,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.yodo1.mas.Yodo1Mas;
+import com.yodo1.mas.banner.Yodo1MasBannerAdView;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,7 +65,7 @@ public class Categories extends AppCompatActivity implements OnClickListener, On
     private CategoryAdapter cAdapter;
     private RelativeLayout rlCategories;
     private LinearLayout llAdMobCategories;
-    private AdView avBottomBannerCategories;
+    private Yodo1MasBannerAdView avBottomBannerCategories;
     private DB db;
     private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
@@ -100,12 +99,8 @@ public class Categories extends AppCompatActivity implements OnClickListener, On
         rlCategories = findViewById(R.id.rlCategories);
         llAdMobCategories = findViewById(R.id.llAdMobCategories);
         avBottomBannerCategories = findViewById(R.id.avBottomBannerCategories);
-        // инициализация AdMob для рекламы
-        MobileAds.initialize(this, initializationStatus ->
-                Log.d("myLogs", "AdMob in " + getClass().getSimpleName() + " is initialized"));
-        AdRequest adRequest = new AdRequest.Builder().build();
-        // загружаем баннерную рекламу
-        avBottomBannerCategories.loadAd(adRequest);
+        // загружаем баннерную рекламу yodo1
+        avBottomBannerCategories.loadAd();
         ViewGroup.LayoutParams params = llAdMobCategories.getLayoutParams();
         if (amountDonate > 0) {
             params.height = 0;
@@ -231,6 +226,10 @@ public class Categories extends AppCompatActivity implements OnClickListener, On
             }
             cAdapter.notifyDataSetChanged(); // обновляем адаптер
         });
+        //показываем полноэкранную рекламу, если необходимо
+        if (getIntent().getBooleanExtra("showInterstitialAd", false)) {
+            Yodo1Mas.getInstance().showInterstitialAd(this);
+        }
     }
 
     @Override

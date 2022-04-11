@@ -37,22 +37,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.FullScreenContentCallback;
-import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.interstitial.InterstitialAd;
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
+import com.google.firebase.BuildConfig;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.yodo1.mas.Yodo1Mas;
+import com.yodo1.mas.banner.Yodo1MasBannerAdView;
+import com.yodo1.mas.error.Yodo1MasError;
+import com.yodo1.mas.event.Yodo1MasAdEvent;
 
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import ru.handy.android.wm.About;
-import ru.handy.android.wm.BuildConfig;
 import ru.handy.android.wm.DB;
 import ru.handy.android.wm.GlobApp;
 import ru.handy.android.wm.Help;
@@ -61,12 +56,6 @@ import ru.handy.android.wm.R;
 import ru.handy.android.wm.Thanks;
 import ru.handy.android.wm.dictionary.Dictionary;
 import ru.handy.android.wm.downloads.EditData;
-import ru.handy.android.wm.learning.Categories;
-import ru.handy.android.wm.learning.Category;
-import ru.handy.android.wm.learning.CategoryWordsList;
-import ru.handy.android.wm.learning.DialogLearning;
-import ru.handy.android.wm.learning.Fixing;
-import ru.handy.android.wm.learning.Word;
 import ru.handy.android.wm.setting.Pay;
 import ru.handy.android.wm.setting.Settings;
 import ru.handy.android.wm.setting.Utils;
@@ -91,7 +80,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
     private Button bDontKnow;
     private Button bKnow;
     private Menu menu;
-    private AdView avBottomBannerLearning;
+    private Yodo1MasBannerAdView avBottomBannerLearning;
     private ArrayList<Button> buttons = new ArrayList<>();
     private DB db;
     private Fixing fixing; // класс, в котором хранится информация по текущему уроку с данной категорией
@@ -116,14 +105,12 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
     private Word message = null; // сообщение либо о полном окончании урока, либо об окончании с ошибками
     private int amountDonate = 0; // показывает сумму, которую пользователь пожертвовал разработчику
     private int lastBGColor = 100; // цвет фона для запоминания
-    private InterstitialAd interstitialAd; // местраничная плолноэкранная реклама (у меня после полностью сделанного урока)
     private Pay pay; // класс для обработки платежей
     private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
     @SuppressLint({"InflateParams", "ClickableViewAccessibility"})
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
         app = (GlobApp) getApplication(); // получаем доступ к приложению
         mFBAnalytics = app.getFBAnalytics(); // получение экземпляра FirebaseAnalytics
         db = app.getDb(); // открываем подключение к БД
@@ -134,12 +121,43 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
 
         Utils.onActivityCreateSetTheme(this);
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.learning_md);
         Log.d("myLogs", "onCreate Learning");
         String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
         amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
 
         avBottomBannerLearning = findViewById(R.id.avBottomBannerLearning);
+        // yodo1
+        Yodo1Mas.getInstance().init(this, "NE5TE0NvdA", new Yodo1Mas.InitListener() {
+            @Override
+            public void onMasInitSuccessful() {
+                // загружаем баннерную рекламу
+                avBottomBannerLearning.loadAd();
+                // устанавливаем слушатель на межстраничную рекламу
+                Yodo1Mas.getInstance().setInterstitialListener(new Yodo1Mas.InterstitialListener() {
+                    @Override
+                    public void onAdOpened(@NonNull Yodo1MasAdEvent event) {
+                    }
+
+                    @Override
+                    public void onAdError(@NonNull Yodo1MasAdEvent event, @NonNull Yodo1MasError error) {
+                        Log.d("myLogs", "interstitial ad failed to show.");
+                    }
+
+                    @Override
+                    public void onAdClosed(@NonNull Yodo1MasAdEvent event) {
+                        Log.d("myLogs", "interstitial ad was showed successfully");
+                    }
+                });
+                Log.d("myLogs", "successful init Yodo1");
+            }
+
+            @Override
+            public void onMasInitFailed(@NonNull Yodo1MasError error) {
+                Log.d("myLogs", "failed init Yodo1");
+            }
+        });
 
         // устанавливаем toolbar и actionbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -364,7 +382,6 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                                 ViewGroup.LayoutParams params = llAdMob.getLayoutParams();
                                 params.height = amountDonate == 0 ? LinearLayout.LayoutParams.WRAP_CONTENT : 0;
                                 llAdMob.setLayoutParams(params);
-                                interstitialAd = null;
                             });
                             mFBAnalytics.setUserProperty("is_paid", amountDonate == 0 ? "N" : "Y"); // оплачено приложение пользователем или нет
                         }
@@ -379,11 +396,6 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
             ViewGroup.LayoutParams params = llAdMob.getLayoutParams();
             params.height = 0;
             llAdMob.setLayoutParams(params);
-            loadAdMob(true, false); // загружаем только баннерную рекламу
-            Log.i("myLogs", "loadAdMob - загрузка только баннерной рекламы без отображения");
-        } else {
-            loadAdMob(true, true);
-            Log.i("myLogs", "loadAdMob - загрузка баннерной и полноэкранной рекламы");
         }
         // отправляем в Firebase инфу с настройками по словарю
         if (mFBAnalytics != null) {
@@ -487,65 +499,6 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
     }
 
     /**
-     * инициализируем AdMob и загружаем баннерную и межстраничную рекламу
-     *
-     * @param isBanner         выполнять загрузку баннера или нет
-     * @param isInterstitialAd выполнять загрузку InterstitialAd или нет
-     */
-    public void loadAdMob(boolean isBanner, boolean isInterstitialAd) {
-        AdRequest adRequest = new AdRequest.Builder().build();
-        if (isBanner) {
-            // инициализация AdMob для рекламы
-            MobileAds.initialize(this, initializationStatus -> Log.d("myLogs", "AdMob is initialized"));
-            // загружаем баннерную рекламу
-            avBottomBannerLearning.loadAd(adRequest);
-        }
-        if (isInterstitialAd) {
-            InterstitialAd.load(this, s(R.string.id_interstitial_lesson_end_real), adRequest,
-                    new InterstitialAdLoadCallback() {
-                        @Override
-                        public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
-                            Learning.this.interstitialAd = interstitialAd;
-                            Log.i("myLogs", "interstitial Ad is loaded");
-                            Learning.this.interstitialAd.setFullScreenContentCallback(
-                                    new FullScreenContentCallback() {
-                                        @Override
-                                        public void onAdDismissedFullScreenContent() {
-                                            // если показ межстраничной рекламы пропущен, открываем окно с выбором категории
-                                            Intent intent = new Intent(Learning.this, Categories.class);
-                                            intent.putExtra("fromAct", 0); // 0 - запуск из Learning
-                                            startActivityForResult(intent, GET_CATEGORIES);
-                                            loadAdMob(false, true);
-                                            Log.d("myLogs", "interstitial ad was dismissed.");
-                                        }
-
-                                        @Override
-                                        public void onAdFailedToShowFullScreenContent(AdError adError) {
-                                            // и после ошибки показа межстраничной рекламы открываем окно с выбором категории
-                                            Intent intent = new Intent(Learning.this, Categories.class);
-                                            intent.putExtra("fromAct", 0); // 0 - запуск из Learning
-                                            startActivityForResult(intent, GET_CATEGORIES);
-                                            loadAdMob(false, true);
-                                            Log.d("myLogs", "interstitial ad failed to show.");
-                                        }
-
-                                        @Override
-                                        public void onAdShowedFullScreenContent() {
-                                            Log.d("myLogs", "interstitial ad was shown.");
-                                        }
-                                    });
-                        }
-
-                        @Override
-                        public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                            Log.i("myLogs", loadAdError.getMessage());
-                            Learning.this.interstitialAd = null;
-                        }
-                    });
-        }
-    }
-
-    /**
      * отображает загадываемое слово и варианты ответов
      */
     public void showWords() {
@@ -631,17 +584,15 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                             if (mFBAnalytics != null) {
                                 app.finishedLessonsEvent(amountDonate > 0 ? s(R.string.paid) : s(R.string.not_paid));
                             }
-                            // показываем межстраничную рекламу после окончания урока
-                            if (interstitialAd != null) {
-                                interstitialAd.show(Learning.this);
-                            } else {
-                                Intent intent = new Intent(this, Categories.class);
-                                intent.putExtra("fromAct", 0); // 0 - запуск из Learning
-                                if (message != null) { //если есть сообщение об окончании урока
-                                    intent.putExtra("message", message.getEngWord());
-                                }
-                                startActivityForResult(intent, GET_CATEGORIES);
+                            Intent intent = new Intent(this, Categories.class);
+                            intent.putExtra("fromAct", 0); // 0 - запуск из Learning
+                            if (message != null) { //если есть сообщение об окончании урока
+                                intent.putExtra("message", message.getEngWord());
                             }
+                            if (amountDonate <= 0) { // показываем межстраничную рекламу после окончания урока
+                                intent.putExtra("showInterstitialAd", true);
+                            }
+                            startActivityForResult(intent, GET_CATEGORIES);
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -717,8 +668,6 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                 selectedWord = words.get(11);
                 break;
             case R.id.bDontKnow:
-                /*Map<Long, Category> catsMap = db.getCategoriesInLesson();
-                Log.d("myLogs", "catsMap = " + catsMap);*/
                 selectedWord = new Word(0, etAnswerWord.getText().toString(), "", etAnswerWord.getText().toString());
                 break;
             case R.id.bKnow:
@@ -908,17 +857,15 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                     String trancr = db.getValueByVariable(DB.LEARNING_SHOW_TRANSCR);
                     isShowTrancr = (trancr == null || trancr.equals("1"));
                     // если кол-во слов в катерии(ях) не совпадает с кол-вом слов в уроке из истории, то его принудительно обновляем
-                    if (db.getWordsByCategory(categories).size() != db.getWordsFromLessonByCats(categories).size()) {
-                        updateLesson(categories, true, isOnlyMistakes, 0);
-                    } else {
-                        updateLesson(categories, false, isOnlyMistakes, 0);
-                    }
+                    updateLesson(categories
+                            , db.getWordsByCategory(categories).size() != db.getWordsFromLessonByCats(categories).size()
+                            , isOnlyMistakes, 0);
                     InputMethodManager imm = (InputMethodManager) this
                             .getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(tvCheckedWord.getWindowToken(), 0);
                 } catch (SQLiteException e) {
                     //обработка ошибки, когда выбрано слишком много категорий
-                    if (e.getMessage().startsWith("Expression tree is too large")) {
+                    if (e.getMessage() != null && e.getMessage().startsWith("Expression tree is too large")) {
                         Toast.makeText(getApplicationContext(), s(R.string.to_much_categories), Toast.LENGTH_LONG).show();
                     } else {
                         e.printStackTrace();
@@ -943,7 +890,6 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                     updateLesson(fixing.getCategories(), true, false, 1);
                 }
             }
-        } else if (resultCode == AppCompatActivity.RESULT_CANCELED) {
         }
     }
 
@@ -1091,12 +1037,6 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         this.amountDonate = amountDonate;
     }
 
-    /**
-     * установление экземпляра местраничной плолноэкранной рекламы
-     */
-    public void setInterstitialAd(InterstitialAd interstitialAd) {
-        this.interstitialAd = interstitialAd;
-    }
 
     /*
      * делаем возможность получать llAdMob извне, чтобы из Pay иметь возможность его скрывать
@@ -1120,10 +1060,9 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         ViewGroup.LayoutParams params = llAdMob.getLayoutParams();
         if (amountDonate > 0) {
             params.height = 0;
-            interstitialAd = null;
         } else {
+            avBottomBannerLearning.loadAd();
             params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-            loadAdMob(true, true); // загрузка баннерной и полноэкранной рекламы
         }
         llAdMob.setLayoutParams(params);
         if (menu != null) {

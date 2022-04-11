@@ -5,12 +5,6 @@ import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -21,10 +15,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.yodo1.mas.banner.Yodo1MasBannerAdView;
 
 import ru.handy.android.wm.DB;
 import ru.handy.android.wm.GlobApp;
@@ -41,7 +38,7 @@ public class WordDescription extends AppCompatActivity implements OnClickListene
     private TextView tvCategory;
     private ImageView ivSound;
     private LinearLayout llAdMobWordDescr;
-    private AdView avBottomBannerWordDescr;
+    private Yodo1MasBannerAdView avBottomBannerWordDescr;
     private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
     @SuppressLint("ClickableViewAccessibility")
@@ -80,12 +77,8 @@ public class WordDescription extends AppCompatActivity implements OnClickListene
         int amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
         avBottomBannerWordDescr = findViewById(R.id.avBottomBannerWordDescr);
         llAdMobWordDescr = findViewById(R.id.llAdMobWordDescr);
-        // инициализация AdMob для рекламы
-        MobileAds.initialize(this, initializationStatus ->
-                Log.d("myLogs", "AdMob in " + getClass().getSimpleName() + " is initialized"));
-        AdRequest adRequest = new AdRequest.Builder().build();
-        // загружаем баннерную рекламу
-        avBottomBannerWordDescr.loadAd(adRequest);
+        // загружаем баннерную рекламу yodo1
+        avBottomBannerWordDescr.loadAd();
         ViewGroup.LayoutParams params = llAdMobWordDescr.getLayoutParams();
         if (amountDonate > 0) {
             params.height = 0;

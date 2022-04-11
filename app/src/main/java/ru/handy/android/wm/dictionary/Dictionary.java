@@ -1,7 +1,5 @@
 package ru.handy.android.wm.dictionary;
 
-import static ru.handy.android.wm.setting.Utils.strToList;
-
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.LoaderManager.LoaderCallbacks;
@@ -12,7 +10,6 @@ import android.content.Loader;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteException;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
@@ -41,24 +38,17 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.yodo1.mas.banner.Yodo1MasBannerAdView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 
 import ru.handy.android.wm.About;
 import ru.handy.android.wm.DB;
@@ -85,7 +75,7 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
     private LinearLayout llLetters;
     private LinearLayout llAdMobDict;
     private RelativeLayout rlDict;
-    private AdView avBottomBannerDict;
+    private Yodo1MasBannerAdView avBottomBannerDict;
     private final ArrayList<Button> bLetters = new ArrayList<>();
     private FloatingActionButton fab;
     private Menu menu;
@@ -129,12 +119,8 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
         avBottomBannerDict = findViewById(R.id.avBottomBannerDict);
         llAdMobDict = findViewById(R.id.llAdMobDict);
         rlDict = findViewById(R.id.rlDict);
-        // инициализация AdMob для рекламы
-        MobileAds.initialize(this, initializationStatus ->
-                Log.d("myLogs", "AdMob in " + getClass().getSimpleName() + " is initialized"));
-        AdRequest adRequest = new AdRequest.Builder().build();
-        // загружаем баннерную рекламу
-        avBottomBannerDict.loadAd(adRequest);
+        // загружаем баннерную рекламу yodo1
+        avBottomBannerDict.loadAd();
 
         // устанавливаем toolbar и actionbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -402,8 +388,6 @@ public class Dictionary extends AppCompatActivity implements LoaderCallbacks<Cur
                         + s(R.string.words_in_categories), Toast.LENGTH_LONG).show();
                 setAdapter();
             }
-        } else if (resultCode == AppCompatActivity.RESULT_CANCELED) {
-            // do nothing
         }
     }
 

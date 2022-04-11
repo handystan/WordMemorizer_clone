@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="Gradle: com.yodo1.mas:lite:4.6.2@aar">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/d8abb9e088dd1df526fb6a7424057ba5/transformed/jetified-lite-4.6.2/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/27e740e754b50b2fc1e2489e0fa7381f/transformed/jetified-lite-4.6.2/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/e1327103987bbeecec590a88b6761341/transformed/jetified-lite-4.6.2/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/e1327103987bbeecec590a88b6761341/transformed/jetified-lite-4.6.2/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/e1327103987bbeecec590a88b6761341/transformed/jetified-lite-4.6.2/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.yodo1.mas/lite/4.6.2/f58d21ce982490287666e8e4b6d6e6ea515e6146/lite-4.6.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

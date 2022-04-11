@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="Gradle: com.yodo1.mas.mediation:applovin:4.6.2@aar">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/4b04c45171d6a75ddc6f450884d58a45/transformed/jetified-applovin-4.6.2/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/4249e97de5759329b36c95c5990df100/transformed/jetified-applovin-4.6.2/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/7288a3b40fe6cb70204800f11e386659/transformed/jetified-applovin-4.6.2/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/7288a3b40fe6cb70204800f11e386659/transformed/jetified-applovin-4.6.2/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/7288a3b40fe6cb70204800f11e386659/transformed/jetified-applovin-4.6.2/AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.yodo1.mas.mediation/applovin/4.6.2/7525d3e93946ee91e319154ffad181965425d82d/applovin-4.6.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

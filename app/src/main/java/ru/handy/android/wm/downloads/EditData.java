@@ -41,10 +41,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.documentfile.provider.DocumentFile;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.yodo1.mas.banner.Yodo1MasBannerAdView;
 
 import org.mozilla.universalchardet.UniversalDetector;
 
@@ -56,9 +54,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -103,7 +101,7 @@ public class EditData extends AppCompatActivity {
     private ImageView ivShare1;
     private ImageView ivShare2;
     private LinearLayout llAdMobData;
-    private AdView avBottomBannerData;
+    private Yodo1MasBannerAdView avBottomBannerData;
     private CustomKeyboard keyboard;
     private Menu menu;
     private DB db;
@@ -169,14 +167,10 @@ public class EditData extends AppCompatActivity {
         String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
         amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
 
-        avBottomBannerData = findViewById(R.id.avBottomBannerData);
         llAdMobData = findViewById(R.id.llAdMobData);
-        // инициализация AdMob для рекламы
-        MobileAds.initialize(this, initializationStatus ->
-                Log.d("myLogs", "AdMob in " + getClass().getSimpleName() + " is initialized"));
-        AdRequest adRequest = new AdRequest.Builder().build();
-        // загружаем баннерную рекламу
-        avBottomBannerData.loadAd(adRequest);
+        avBottomBannerData = findViewById(R.id.avBottomBannerData);
+        // загружаем баннерную рекламу yodo1
+        avBottomBannerData.loadAd();
 
         // это уже не актуально, так как это убрал из платных функций
         llPayInformation.getLayoutParams().height = 0;
@@ -340,7 +334,7 @@ public class EditData extends AppCompatActivity {
                 // в зависимости от того новый это файл или нет, устанавливаем доступность кнопки по отправке файла
                 AssetFileDescriptor fileDescriptor = getApplicationContext().getContentResolver().
                         openAssetFileDescriptor(uriUploadFile, "r");
-                ivShare2.setVisibility(fileDescriptor.getLength() > 0 ? View.VISIBLE : View.GONE);
+                ivShare2.setVisibility(fileDescriptor != null && fileDescriptor.getLength() > 0 ? View.VISIBLE : View.GONE);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -410,7 +404,7 @@ public class EditData extends AppCompatActivity {
                         try {
                             AssetFileDescriptor fileDescriptor = getApplicationContext().
                                     getContentResolver().openAssetFileDescriptor(uriUploadFile, "r");
-                            ivShare2.setVisibility(fileDescriptor.getLength() > 0 ? View.VISIBLE : View.GONE);
+                            ivShare2.setVisibility(fileDescriptor != null && fileDescriptor.getLength() > 0 ? View.VISIBLE : View.GONE);
                         } catch (FileNotFoundException e) {
                             e.printStackTrace();
                         }
@@ -490,18 +484,18 @@ public class EditData extends AppCompatActivity {
      *
      * @param words список всех слов из словаря
      * @param wFile слово из файла
-     * @return
+     * @return нужно ли обновлять интерфейс Learning
      */
     private boolean addRecFromFile(HashMap<String, Word> words, Word wFile) {
         boolean refreshLearning = false; // переменная, показывающая, нужно ли обновлять интерфейс тек. урока
         // если англ. слово из файла и словаря совпадают, но не совпадает транскрипция или рус. перевод или категория
         if (words.containsKey(wFile.getEngWord())) {
             Word wDict = words.get(wFile.getEngWord());
-            if (!wDict.getTranscription().equalsIgnoreCase(wFile.getTranscription())
+            if (wDict != null && (!wDict.getTranscription().equalsIgnoreCase(wFile.getTranscription())
                     || !wDict.getRusTranslate().equalsIgnoreCase(wFile.getRusTranslate())
-                    || !wDict.getCategory().equalsIgnoreCase(wFile.getCategory())) {
+                    || !wDict.getCategory().equalsIgnoreCase(wFile.getCategory()))) {
                 // сначала удаляем слово из словаря
-                refreshLearning = db.delRecEngWord(wDict.getId()) || refreshLearning;
+                refreshLearning = db.delRecEngWord(wDict.getId());
                 // и добавляем слово из файла
                 db.addRecEngWord((long) wDict.getId(), wFile.getEngWord(), wFile.getTranscription()
                         , wFile.getRusTranslate(), wFile.getCategory());
@@ -513,7 +507,7 @@ public class EditData extends AppCompatActivity {
             long id = db.addRecEngWord(null, wFile.getEngWord(), wFile.getTranscription()
                     , wFile.getRusTranslate(), wFile.getCategory());
             refreshLearning = db.addWordInLessons(id, wFile.getEngWord(), wFile.getTranscription()
-                    , wFile.getRusTranslate(), wFile.getCategory()) || refreshLearning;
+                    , wFile.getRusTranslate(), wFile.getCategory());
         }
         return refreshLearning;
     }
@@ -657,7 +651,7 @@ public class EditData extends AppCompatActivity {
                 while ((row = br.readLine()) != null) {
                     r++;
                     Matcher match = patt.matcher(row);
-                    if ((match.find() || !match.group(1).equals("")) && match.group(8) != null) {
+                    if ((match.find() || !Objects.equals(match.group(1), "")) && match.group(8) != null) {
                         // слово из файла
                         Word wFile = new Word(0, match.group(1), match.group(3), match.group(5), match.group(8));
                         // непосредственно добавление слова в словарь
@@ -848,8 +842,6 @@ public class EditData extends AppCompatActivity {
             } else if (requestCode == GET_CAT_UPLOAD_TXT) {
                 writeTxtFile(uriUploadFile, data.getStringExtra("categories"));
             }
-        } else if (resultCode == AppCompatActivity.RESULT_CANCELED) {
-            // do nothing
         }
     }
 
@@ -935,7 +927,7 @@ public class EditData extends AppCompatActivity {
             if (uriUploadFile != null) {
                 AssetFileDescriptor fileDescriptor = getApplicationContext().getContentResolver().
                         openAssetFileDescriptor(uriUploadFile, "r");
-                if (fileDescriptor.getLength() == 0) {
+                if (fileDescriptor != null && fileDescriptor.getLength() == 0) {
                     DocumentsContract.deleteDocument(getApplicationContext().getContentResolver(), uriUploadFile);
                 }
             }

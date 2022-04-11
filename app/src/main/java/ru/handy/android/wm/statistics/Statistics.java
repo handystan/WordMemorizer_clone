@@ -24,10 +24,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.yodo1.mas.banner.Yodo1MasBannerAdView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +37,6 @@ import ru.handy.android.wm.Help;
 import ru.handy.android.wm.R;
 import ru.handy.android.wm.learning.Category;
 import ru.handy.android.wm.learning.CategoryAdapter;
-import ru.handy.android.wm.learning.Fixing;
 import ru.handy.android.wm.setting.Utils;
 
 public class Statistics extends AppCompatActivity implements View.OnClickListener {
@@ -55,7 +52,7 @@ public class Statistics extends AppCompatActivity implements View.OnClickListene
     private Button bLearningAll;
     private CategoryAdapter cAdapter;
     private LinearLayout llAdMobStatistics;
-    private AdView avBottomBannerStatistics;
+    private Yodo1MasBannerAdView avBottomBannerStatistics;
     private DB db;
     private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
 
@@ -76,14 +73,10 @@ public class Statistics extends AppCompatActivity implements View.OnClickListene
 
         String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
         int amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
-        avBottomBannerStatistics = findViewById(R.id.avBottomBannerStatistics);
         llAdMobStatistics = findViewById(R.id.llAdMobStatistics);
-        // инициализация AdMob для рекламы
-        MobileAds.initialize(this, initializationStatus ->
-                Log.d("myLogs", "AdMob in " + getClass().getSimpleName() + " is initialized"));
-        AdRequest adRequest = new AdRequest.Builder().build();
-        // загружаем баннерную рекламу
-        avBottomBannerStatistics.loadAd(adRequest);
+        avBottomBannerStatistics = findViewById(R.id.avBottomBannerStatistics);
+        // загружаем баннерную рекламу yodo1
+        avBottomBannerStatistics.loadAd();
         ViewGroup.LayoutParams params = llAdMobStatistics.getLayoutParams();
         if (amountDonate > 0) {
             params.height = 0;

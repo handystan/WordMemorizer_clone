@@ -374,16 +374,17 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true">
 
-        <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
+        <!--<com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
             android:id="@+id/avBottomBannerLearning"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             ads:adSize="SMART_BANNER"
-            ads:adUnitId="@string/id_bottom_banner_real" />
-        <!-- этот adUnitId нужно вставить перед тем, как публиковать приложение
-        ads:adUnitId="@string/id_bottom_banner_real"
-        вот это тестовый adUnitId
-        ads:adUnitId="@string/id_bottom_banner_test"-->
+            ads:adUnitId="@string/id_bottom_banner_real" />-->
+        <com.yodo1.mas.banner.Yodo1MasBannerAdView xmlns:masads="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/avBottomBannerLearning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            masads:adSize="SmartBanner" />
     </LinearLayout>
 
 </RelativeLayout>

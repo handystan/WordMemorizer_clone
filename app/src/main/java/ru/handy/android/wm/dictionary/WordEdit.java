@@ -5,7 +5,6 @@ import static ru.handy.android.wm.setting.Utils.strToList;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -14,7 +13,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
@@ -30,10 +28,8 @@ import androidx.appcompat.widget.AppCompatMultiAutoCompleteTextView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.yodo1.mas.banner.Yodo1MasBannerAdView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +55,7 @@ public class WordEdit extends AppCompatActivity {
     private CustomKeyboard keyboard;
     private RelativeLayout rlWordEdit;
     private LinearLayout llAdMobWordEdit;
-    private AdView avBottomBannerWordEdit;
+    private Yodo1MasBannerAdView avBottomBannerWordEdit;
     private DB db;
     private long id = 0; // не 0 - редактирование, 0 - добавление записи
     private FirebaseAnalytics mFBAnalytics; // переменная для регистрации событий в FirebaseAnalytics
@@ -96,12 +92,8 @@ public class WordEdit extends AppCompatActivity {
         rlWordEdit = findViewById(R.id.rlWordEdit);
         llAdMobWordEdit = findViewById(R.id.llAdMobWordEdit);
         avBottomBannerWordEdit = findViewById(R.id.avBottomBannerWordEdit);
-        // инициализация AdMob для рекламы
-        MobileAds.initialize(this, initializationStatus ->
-                Log.d("myLogs", "AdMob in " + getClass().getSimpleName() + " is initialized"));
-        AdRequest adRequest = new AdRequest.Builder().build();
-        // загружаем баннерную рекламу
-        avBottomBannerWordEdit.loadAd(adRequest);
+        // загружаем баннерную рекламу yodo1
+        avBottomBannerWordEdit.loadAd();
         ViewGroup.LayoutParams params = llAdMobWordEdit.getLayoutParams();
         if (amountDonate > 0) {
             params.height = 0;
