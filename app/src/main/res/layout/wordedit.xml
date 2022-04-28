@@ -129,7 +129,7 @@
                 android:id="@+id/avBottomBannerWordEdit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                masads:adSize="SmartBanner" />
+                masads:adSize="Banner" />
         </LinearLayout>
 
     </RelativeLayout>

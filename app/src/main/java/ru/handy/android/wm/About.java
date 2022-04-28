@@ -7,17 +7,19 @@ import android.text.Html;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.yodo1.mas.banner.Yodo1MasBannerAdListener;
 import com.yodo1.mas.banner.Yodo1MasBannerAdView;
+import com.yodo1.mas.error.Yodo1MasError;
 
 import ru.handy.android.wm.setting.Utils;
 
@@ -50,16 +52,37 @@ public class About extends AppCompatActivity implements View.OnClickListener {
         llAdMobAbout = findViewById(R.id.llAdMobAbout);
         // загружаем баннерную рекламу yodo1
         avBottomBannerAbout = findViewById(R.id.avBottomBannerAbout);
+        avBottomBannerAbout.setAdListener(new Yodo1MasBannerAdListener() {
+            @Override public void onBannerAdLoaded(Yodo1MasBannerAdView bannerAdView) {
+                Log.d("myLogs", "banner in About is loaded");
+            }
+            @Override
+            public void onBannerAdFailedToLoad(Yodo1MasBannerAdView bannerAdView, @NonNull Yodo1MasError error) {
+                Log.d("myLogs", "banner in About is failed to load");
+            }
+            @Override public void onBannerAdOpened(Yodo1MasBannerAdView bannerAdView) {
+                Log.d("myLogs", "banner in About is opened");
+            }
+            @Override
+            public void onBannerAdFailedToOpen(Yodo1MasBannerAdView bannerAdView, @NonNull Yodo1MasError error) {
+                Log.d("myLogs", "banner in About is failed to open");
+            }
+            @Override
+            public void onBannerAdClosed(Yodo1MasBannerAdView bannerAdView) {
+                Log.d("myLogs", "banner in About is slosed");
+            } });
         avBottomBannerAbout.loadAd();
-        ViewGroup.LayoutParams params = llAdMobAbout.getLayoutParams();
+        /*ViewGroup.LayoutParams params = llAdMobAbout.getLayoutParams();
         if (amountDonate > 0) {
             params.height = 0;
             Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName() + " без отображения");
+            Log.i("myLogs", "avBottomBannerAbout.getHeight() = " + avBottomBannerAbout.getHeight());
         } else {
             params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
             Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName());
+            Log.i("myLogs", "avBottomBannerAbout.getHeight() = " + avBottomBannerAbout.getHeight());
         }
-        llAdMobAbout.setLayoutParams(params);
+        llAdMobAbout.setLayoutParams(params);*/
 
         // устанавливаем toolbar и actionbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -115,7 +138,7 @@ public class About extends AppCompatActivity implements View.OnClickListener {
                     db.updateRecExitState(DB.DATE_LANGUAGE, "");
                     db.updateRecExitState(DB.DATE_LANG_WORD_AMOUNT, "");
                 }*/
-                ViewGroup.LayoutParams params = llAdMobAbout.getLayoutParams();
+                /*ViewGroup.LayoutParams params = llAdMobAbout.getLayoutParams();
                 if (amountDonate > 0) {
                     params.height = 0;
                     Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName() + " без отображения");
@@ -123,7 +146,7 @@ public class About extends AppCompatActivity implements View.OnClickListener {
                     params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
                     Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName());
                 }
-                llAdMobAbout.setLayoutParams(params);
+                llAdMobAbout.setLayoutParams(params);*/
                 amountClick = 0;
             }
         }

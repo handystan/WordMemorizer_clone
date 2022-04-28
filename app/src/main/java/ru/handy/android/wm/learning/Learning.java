@@ -21,7 +21,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
-import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -40,9 +39,9 @@ import androidx.core.content.ContextCompat;
 import com.google.firebase.BuildConfig;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.yodo1.mas.Yodo1Mas;
+import com.yodo1.mas.banner.Yodo1MasBannerAdListener;
 import com.yodo1.mas.banner.Yodo1MasBannerAdView;
 import com.yodo1.mas.error.Yodo1MasError;
-import com.yodo1.mas.event.Yodo1MasAdEvent;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -127,29 +126,11 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
         amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
 
-        avBottomBannerLearning = findViewById(R.id.avBottomBannerLearning);
         // yodo1
         Yodo1Mas.getInstance().init(this, "NE5TE0NvdA", new Yodo1Mas.InitListener() {
             @Override
             public void onMasInitSuccessful() {
                 // загружаем баннерную рекламу
-                avBottomBannerLearning.loadAd();
-                // устанавливаем слушатель на межстраничную рекламу
-                Yodo1Mas.getInstance().setInterstitialListener(new Yodo1Mas.InterstitialListener() {
-                    @Override
-                    public void onAdOpened(@NonNull Yodo1MasAdEvent event) {
-                    }
-
-                    @Override
-                    public void onAdError(@NonNull Yodo1MasAdEvent event, @NonNull Yodo1MasError error) {
-                        Log.d("myLogs", "interstitial ad failed to show.");
-                    }
-
-                    @Override
-                    public void onAdClosed(@NonNull Yodo1MasAdEvent event) {
-                        Log.d("myLogs", "interstitial ad was showed successfully");
-                    }
-                });
                 Log.d("myLogs", "successful init Yodo1");
             }
 
@@ -158,6 +139,27 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
                 Log.d("myLogs", "failed init Yodo1");
             }
         });
+        avBottomBannerLearning = findViewById(R.id.avBottomBannerLearning);
+        avBottomBannerLearning.setAdListener(new Yodo1MasBannerAdListener() {
+            @Override public void onBannerAdLoaded(Yodo1MasBannerAdView bannerAdView) {
+                Log.d("myLogs", "banner in Learning is loaded");
+            }
+            @Override
+            public void onBannerAdFailedToLoad(Yodo1MasBannerAdView bannerAdView, @NonNull Yodo1MasError error) {
+                Log.d("myLogs", "banner in Learning is failed to load");
+            }
+            @Override public void onBannerAdOpened(Yodo1MasBannerAdView bannerAdView) {
+                Log.d("myLogs", "banner in Learning is opened");
+            }
+            @Override
+            public void onBannerAdFailedToOpen(Yodo1MasBannerAdView bannerAdView, @NonNull Yodo1MasError error) {
+                Log.d("myLogs", "banner in Learning is failed to open");
+            }
+            @Override
+            public void onBannerAdClosed(Yodo1MasBannerAdView bannerAdView) {
+                Log.d("myLogs", "banner in Learning is slosed");
+            } });
+        avBottomBannerLearning.loadAd();
 
         // устанавливаем toolbar и actionbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -357,7 +359,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         // показываем или скрываем строку с баннерной рекламой
         llAdMob = findViewById(R.id.llAdMob);
         pay = app.getPay(app);
-        if (amountDonate == 0) { //если в БД нет инфы о покупках, на всякий случай смотрим в Google play
+        /*if (amountDonate == 0) { //если в БД нет инфы о покупках, на всякий случай смотрим в Google play
             try {
                 new Thread() {
                     public void run() {
@@ -396,7 +398,7 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
             ViewGroup.LayoutParams params = llAdMob.getLayoutParams();
             params.height = 0;
             llAdMob.setLayoutParams(params);
-        }
+        }*/
         // отправляем в Firebase инфу с настройками по словарю
         if (mFBAnalytics != null) {
             // по открытию Activity
@@ -1057,14 +1059,18 @@ public class Learning extends AppCompatActivity implements OnClickListener, OnTo
         //показываем рекламу или нет
         String amountDonateStr = db.getValueByVariable(DB.AMOUNT_DONATE);
         amountDonate = amountDonateStr == null ? 0 : Integer.parseInt(amountDonateStr);
-        ViewGroup.LayoutParams params = llAdMob.getLayoutParams();
+        /*ViewGroup.LayoutParams params = llAdMob.getLayoutParams();
         if (amountDonate > 0) {
             params.height = 0;
+            Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName() + " без отображения");
+            Log.i("myLogs", "avBottomBannerLearning.getHeight() = " + avBottomBannerLearning.getHeight());
         } else {
             avBottomBannerLearning.loadAd();
             params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            Log.i("myLogs", "загружена баннерная реклама в " + getClass().getSimpleName());
+            Log.i("myLogs", "avBottomBannerLearning.getHeight() = " + avBottomBannerLearning.getHeight());
         }
-        llAdMob.setLayoutParams(params);
+        llAdMob.setLayoutParams(params);*/
         if (menu != null) {
             menu.setGroupVisible(R.id.group_no_ad, amountDonate <= 0);
         }
